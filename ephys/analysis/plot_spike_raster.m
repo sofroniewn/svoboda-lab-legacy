@@ -1,7 +1,12 @@
-function plot_spike_raster(clustnum,sorted_spikes)
+function plot_spike_raster(clustnum,sorted_spikes,trial_range)
 
 spike_times = sorted_spikes{clustnum}.spike_inds(:,3);
 trials = sorted_spikes{clustnum}.spike_inds(:,1);
+
+spike_times(trials < trial_range(1)) = [];
+trials(trials < trial_range(1)) = [];
+spike_times(trials > trial_range(2)) = [];
+trials(trials > trial_range(2)) = [];
 
 figure(14)
 clf(14)

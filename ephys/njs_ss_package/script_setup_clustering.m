@@ -33,6 +33,7 @@ clust_id = 6;
 ISIviewer_njs(clust_id);
 wavesViewer_njs(clust_id);
 rasterViewer_njs(clust_id);
+stabilityViewer_njs(clust_id);
 
 %% Inspect sorted units trial by trial
 trial_id = 20;
@@ -48,12 +49,13 @@ plot_isi(clust_id,trial_id,[],s,d);
 
 %% Extract sorted units
 over_write = 1;
-sorted_spikes = extract_sorted_units(base_dir,file_list,'sorted_units_A',over_write);
+[sorted_spikes sync_trigs] = extract_sorted_units(base_dir,file_list,'sorted_units_A',over_write);
 
 %% Inspect sorted units
 plot_spike_raster(clust_id,sorted_spikes)
 plot_isi_full(clust_id,sorted_spikes)
 plot_waveforms_full(clust_id,sorted_spikes)
+plot_stability_full(clust_id,sorted_spikes,[])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

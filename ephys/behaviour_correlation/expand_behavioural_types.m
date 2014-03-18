@@ -1,4 +1,4 @@
-function full_vars = expand_behavioural_types(x_vars,var_tune,edges)
+function [full_vars col_mat] = expand_behavioural_types(x_vars,var_tune,edges)
 
 	num_behav_vars = numel(x_vars);
 	num_types = length(edges) - 1;
@@ -16,4 +16,9 @@ function full_vars = expand_behavioural_types(x_vars,var_tune,edges)
 			full_vars{ij,ik}.range = range;
 		end
 	end
+
+% define colour matrix
+col_mat = zeros(length(edges)-1,3);
+col_mat(1:end,1) = [0:(length(edges)-2)]/(length(edges)-2);
+
 end

@@ -26,11 +26,20 @@ load(f_name);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Inspect sorted units across entire session
 
+trial_range = [30 Inf];
+
 clust_id = 1;
 
-plot_spike_raster(clust_id,sorted_spikes)
-plot_isi_full(clust_id,sorted_spikes)
-plot_waveforms_full(clust_id,sorted_spikes)
+plot_spike_raster(clust_id,sorted_spikes,trial_range)
+plot_isi_full(clust_id,sorted_spikes,trial_range)
+plot_waveforms_full(clust_id,sorted_spikes,trial_range)
+plot_stability_full(clust_id,sorted_spikes,[])
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Synchronize in time
+
+[session] = sync_ephys_behaviour(base_dir,file_list,sync_trigs,session)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -38,23 +47,35 @@ plot_waveforms_full(clust_id,sorted_spikes)
 
 trial_id = 9;
 [s p d] = load_ephys_trial(base_dir,file_list,trial_id);
-start_ind = find(d.Trigger_allCh>.5,1,'first');
+start_time = sync_trigs{trial_id}.start_time;
 
 clust_id = 2;
 spike_inds = sorted_spikes{clust_id}.spike_inds(:,1) == trial_id;
 spike_times = sorted_spikes{clust_id}.spike_inds(spike_inds,3);
 
+match_time = ~isnan(session.data{trial_id}.processed_matrix(6,:));
+
+
 figure(43)
 clf(43)
 hold on
-plot(d.TimeStamps - d.TimeStamps(start_ind),-d.Trigger_allCh/5,'k')
+plot(d.TimeStamps - start_time,-d.Trigger_allCh/5,'k')
+plot(session.data{trial_id}.processed_matrix(1,match_time),-d.Trigger_allCh(session.data{trial_id}.processed_matrix(6,match_time))/5,'k')
+plot(spike_times - start_time,0,'.k')
 plot(session.data{trial_id}.processed_matrix(1,:),-(1-session.data{trial_id}.trial_matrix(9,:)),'k')
-
 plot(session.data{trial_id}.processed_matrix(1,:),session.data{trial_id}.processed_matrix(5,:))
-%plot(session.data{trial_id}.processed_matrix(1,:),session.data{trial_id}.trial_matrix(3,:),'r')
 plot(session.data{trial_id}.processed_matrix(1,:),session.data{trial_id}.trial_matrix(5,:),'Color', [1 .65 0])
 
-plot(spike_times - d.TimeStamps(start_ind),0,'.k')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Plot across session ephys and behaviour data
+
+behaviour_vector = 20*session.trial_info.mean_speed;
+%behaviour_vector = 20*session.trial_info.max_laser_power;
+
+plot_stability_full(clust_id,sorted_spikes,behaviour_vector);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -78,8 +99,9 @@ groups(session.trial_info.max_laser_power > 0) = 150;
 col_mat = [0 0 0; 1 0 0; 0 1 0];
 
 clust_id = 2;
+trial_range = [1 30];
 
-plot_spike_raster_groups(clust_id,sorted_spikes,groups,group_ids,col_mat);
+plot_spike_raster_groups(clust_id,sorted_spikes,trial_range,groups,group_ids,col_mat);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -138,22 +160,11 @@ x_vars{4}.range = [1 5];
 
 x_vals = diff(edges)/2+edges(1:end-1);
 
-
-% define colour matrix
-col_mat = zeros(length(edges)-1,3);
-col_mat(1:end,1) = [0:(length(edges)-2)]/(length(edges)-2);
-
 % make full variable array for small variable array
-full_vars = expand_behavioural_types(x_vars,var_tune,edges);
+[full_vars col_mat] = expand_behavioural_types(x_vars,var_tune,edges);
 
 % extract num spikes in each time window where conditions are true
-extracted_times = extract_time_windows(session,full_vars,t_window_inds);
-extracted_times(:,4) = (extracted_times(:,2) - 500)/500;
-extracted_times(:,5) = (extracted_times(:,3) - 500)/500;
-size(extracted_times,1)
-
-% Set max time
-max_time = t_window_inds/500;
+[extracted_times max_time] = extract_time_windows(session,full_vars,t_window_inds,trial_range);
 
 % either plot rasters or make tuning curves with error bars
 group_ids = [1:length(edges)-1];
@@ -162,6 +173,15 @@ tuning_curve.x_vals = x_vals;
 
 plot_tuning_curves(tuning_curve)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+%% SCRAP
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Across transition rasters and PSTHs

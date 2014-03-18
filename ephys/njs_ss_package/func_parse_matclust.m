@@ -42,7 +42,7 @@ if n_spk>1
     iCh_tmp = double(detection_ch);
     spike_amp = s.spike_amp;
     spike_amp(spike_amp>.15*10^(-3)) = .15*10^(-3);
-    spike_amp(spike_amp<-.4*10^(-3)) = -.4*10^(-3);
+    spike_amp(spike_amp<-.6*10^(-3)) = -.6*10^(-3);
     spike_amp = -spike_amp;
 
     % save data for matclust

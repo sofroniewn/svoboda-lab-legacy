@@ -1,4 +1,4 @@
-function sorted_spikes = extract_sorted_units(base_dir,file_list,sorted_name,overwrite)
+function [sorted_spikes sync_trigs] = extract_sorted_units(base_dir,file_list,sorted_name,overwrite)
 
 
 f_name_sorted_units = fullfile(base_dir,'ephys','sorted',[sorted_name '.mat']);
@@ -20,11 +20,18 @@ for clust_id = 1:num_clusters
 	sorted_spikes{clust_id}.spike_inds = []; %trial_num, index_val, time_stamp
 	sorted_spikes{clust_id}.spike_waves = []; %spike wave forms
 end
+sync_trigs = cell(numel(file_list),1);
+
 
 for trial_id = 1:numel(file_list)
 	display(num2str(trial_id));
 	[s p d] = load_ephys_trial(base_dir,file_list,trial_id);
-
+	[start_ind start_time ephys_inds ephys_time] = extract_behaviour_triggers(d);
+	sync_trigs{trial_id}.start_ind = start_ind;
+	sync_trigs{trial_id}.ephys_inds = ephys_inds;
+	sync_trigs{trial_id}.start_time = start_time;
+	sync_trigs{trial_id}.ephys_time = ephys_time;
+	
 	for clust_id = 1:num_clusters
 		display(num2str(clust_id));
 
@@ -50,5 +57,5 @@ for trial_id = 1:numel(file_list)
 		sorted_spikes{clust_id}.spike_waves = cat(1,sorted_spikes{clust_id}.spike_waves,spike_wave_detect);	
 	end
 end
-	save(f_name_sorted_units,'sorted_spikes');
+	save(f_name_sorted_units,'sorted_spikes','sync_trigs');
 end
