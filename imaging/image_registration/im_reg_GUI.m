@@ -355,7 +355,8 @@ if FileName ~= 0
     if strcmp(ext,'.mat') == 1
       load(fullfile(PathName,FileName));
     elseif strcmp(ext,'.tif') == 1
-        ref = generate_reference(fullfile(PathName,FileName),1)
+        align_chan = str2num(get(handles.edit_align_channel,'string'));
+        ref = generate_reference(fullfile(PathName,FileName),align_chan,1);
     else
       error('Wrong file type for reference')
     end
@@ -368,7 +369,7 @@ if FileName ~= 0
     if get(handles.checkbox_behaviour,'value') == 0
        set(handles.text_num_behaviour,'enable','off')
     end
-        set(handles.pushbutton_data_dir,'enable','on')
+    set(handles.pushbutton_data_dir,'enable','on')
     set(handles.pushbutton_load_ref,'enable','on')
     set(handles.togglebutton_TCP,'Enable','on') 
     set(handles.slider_trial_num,'enable','off')

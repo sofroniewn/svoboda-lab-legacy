@@ -1,4 +1,5 @@
-function ref = generate_reference(base_im_path,save_opt)
+function ref = generate_reference(base_im_path,align_chan,save_opt)
+
 
 % Load in images
 [im im_props] = load_image(base_im_path);
@@ -8,6 +9,9 @@ ref.im_props.frameRate = im_props.frameRate;
 ref.im_props.numPlanes = im_props.numPlanes;
 ref.im_props.height = im_props.height;
 ref.im_props.width = im_props.width;
+ref.im_props.align_chan = align_chan;
+
+im = im(:,:,align_chan:ref.im_props.nchans:end);
 
 ref.base_images = cell(ref.im_props.numPlanes,1);
 
