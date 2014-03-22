@@ -10,6 +10,8 @@ trials(trials < trial_range(1)) = [];
 spike_times(trials > trial_range(2)) = [];
 trials(trials > trial_range(2)) = [];
 
+max_time = max(spike_times);
+
 figure(14)
 clf(14)
 hold on
@@ -24,7 +26,7 @@ for i_group = 1:num_groups-1
 	for i_trial = 1:length(trials_ids)
     	spike_times_psth{i_trial,1} = spike_times(trials == trials_ids(i_trial))';
 	end
-	[psth t] = func_getPSTH(spike_times_psth,0,5);
+	[psth t] = func_getPSTH(spike_times_psth,0,max_time);
 	plot(t(10:end-10),psth(10:end-10),'LineWidth',2,'Color',col_mat(i_group,:));
 	max_psth = max(max_psth,max(psth(10:end-10)));
 	tot_trials = tot_trials + length(trials_ids);
@@ -45,7 +47,7 @@ for i_group = 1:num_groups-1
 	plot(spike_times_group,prev_trials+(trials_group)*100/tot_trials,'.','Color',col_mat(i_group,:))
 	prev_trials = prev_trials + max(trials_group)*100/tot_trials + 1;
 end
-xlim([0 5])
+xlim([0 max_time])
 ylim([0 100+10+round(10*max_psth)/10+10])
 
 return
@@ -54,15 +56,6 @@ return
 
 
 function [PSTH time] = func_getPSTH(SpikeTimes, PSTH_StartTime, PSTH_EndTime)
-
-% 
-% SpikeTimes -- {n_rep,1}
-% 
-
-if nargin == 1
-    PSTH_StartTime = -.52;
-    PSTH_EndTime = 5.020;
-end
 
 time = PSTH_StartTime:.001:PSTH_EndTime;
 

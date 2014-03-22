@@ -23,7 +23,7 @@ end
 bar(t(10:end-10),psth(10:end-10),'k');
 max_psth = max(psth(10:end-10));
 plot(spike_times,trials/max(trials)*max_psth+max_psth*1.2,'.k')
-xlim([0 t(end)])
+xlim([min(spike_times) max(spike_times)])
 
 return
 
@@ -31,15 +31,6 @@ return
 
 
 function [PSTH time] = func_getPSTH(SpikeTimes, PSTH_StartTime, PSTH_EndTime)
-
-% 
-% SpikeTimes -- {n_rep,1}
-% 
-
-if nargin == 1
-    PSTH_StartTime = -.52;
-    PSTH_EndTime = 5.020;
-end
 
 time = PSTH_StartTime:.001:PSTH_EndTime;
 

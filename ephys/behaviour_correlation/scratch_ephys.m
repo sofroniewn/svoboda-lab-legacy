@@ -26,7 +26,7 @@ load(f_name);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Inspect sorted units across entire session
 
-trial_range = [30 Inf];
+trial_range = [0 Inf];
 
 clust_id = 1;
 
