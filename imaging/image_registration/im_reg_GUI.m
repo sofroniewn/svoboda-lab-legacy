@@ -22,7 +22,7 @@ function varargout = im_reg_GUI(varargin)
 
 % Edit the above text to modify the response to help im_reg_GUI
 
-% Last Modified by GUIDE v2.5 01-Mar-2014 19:05:58
+% Last Modified by GUIDE v2.5 29-Mar-2014 12:18:00
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -68,12 +68,19 @@ for ij = 1:numel(plot_list)
     plot_names{ij} = plot_list(ij).name;
 end
 set(handles.popupmenu_list_plots,'string',plot_names)
-set(handles.popupmenu_list_plots,'value',2)
+set(handles.popupmenu_list_plots,'value',3)
 
 handles.jTcpObj = [];
 
 % disable gui buttons that should not be used
 im_gui_toggle_enable(handles,'off',[1 3 4 5 6])
+set(handles.pushbutton_draw_rois,'enable','off')
+set(handles.pushbutton_save_rois,'enable','off')
+set(handles.pushbutton_import_rois,'enable','off')
+set(handles.pushbutton_load_rois,'enable','off')
+set(handles.edit_rois_name,'enable','off')
+set(handles.text_rois_name,'enable','off')
+
 set(handles.togglebutton_TCP,'Enable','off') 
 
 set(handles.text_status,'String','Status: offline')
@@ -192,11 +199,18 @@ imshow(zeros(512,512))
 
 % disable gui buttons that should not be used
 im_gui_toggle_enable(handles,'off',[1 3 4 5 6])
+set(handles.pushbutton_draw_rois,'enable','off')
+set(handles.pushbutton_save_rois,'enable','off')
+set(handles.pushbutton_import_rois,'enable','off')
+set(handles.pushbutton_load_rois,'enable','off')
+set(handles.edit_rois_name,'enable','off')
+set(handles.text_rois_name,'enable','off')
+
 set(handles.text_frac_registered,'String',sprintf('Registered %d/%d',0,0))
 set(handles.text_status,'String','Status: offline')
 
 set(handles.edit_trial_num,'String',num2str(0))
-set(handles.popupmenu_list_plots,'Value',2)
+set(handles.popupmenu_list_plots,'Value',3)
 
 
 start_path = handles.datastr;
@@ -231,6 +245,15 @@ if folder_name ~= 0
     handles.text_path = fullfile(im_session.basic_info.data_dir,type_name);
 
     set(handles.pushbutton_load_ref,'enable','on')
+    guidata(hObject, handles);
+
+    ref_files = dir(fullfile(handles.data_dir,'ref_images_*.mat'));
+    if numel(ref_files) > 0
+        handles.ref_images_startup = ref_files(1).name;
+        pushbutton_load_ref_Callback(hObject, eventdata, handles)
+    else
+        handles.ref_images_startup = [];
+    end
 else
 end
 
@@ -333,8 +356,14 @@ function pushbutton_load_ref_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-start_path = fullfile(handles.base_path,'scanimage','*.*');
-[FileName,PathName,FilterIndex] = uigetfile(start_path);
+if isempty(handles.ref_images_startup)
+    start_path = fullfile(handles.base_path,'scanimage','*.*');
+    [FileName,PathName,FilterIndex] = uigetfile(start_path);
+else
+    PathName = handles.data_dir;
+    FileName = handles.ref_images_startup;
+    handles.ref_images_startup = [];
+end
 
 if FileName ~= 0
     im_gui_toggle_enable(handles,'off',[1 3 4 5 6])
@@ -349,18 +378,46 @@ if FileName ~= 0
     set(handles.text_frac_registered,'Enable','off')
     set(handles.togglebutton_TCP,'Enable','off') 
     drawnow
+    overwrite = get(handles.checkbox_overwrite,'Value');
 
     global im_session
     [pathstr,name,ext] = fileparts(FileName);
     if strcmp(ext,'.mat') == 1
       load(fullfile(PathName,FileName));
     elseif strcmp(ext,'.tif') == 1
-        align_chan = str2num(get(handles.edit_align_channel,'string'));
-        ref = generate_reference(fullfile(PathName,FileName),align_chan,1);
+        [pathstr,name,ext] = fileparts(base_im_path);
+        if exist(fullfile(PathName,['ref_images_' name '.mat'])) == 2 && overwrite == 0
+            load(fullfile(PathName,['ref_images_' name '.mat']));
+        else
+            align_chan = str2num(get(handles.edit_align_channel,'string'));
+            ref = generate_reference(fullfile(PathName,FileName),align_chan,1);
+        end
     else
       error('Wrong file type for reference')
     end
+    
+    if strcmp(name(1:11),'ref_images_')
+        name = name(12:end);
+    end
+
     im_session.ref = ref;
+    im_session.ref.path_name = PathName;
+    im_session.ref.file_name = name;
+
+    roi_file_names = dir(fullfile(PathName,['ROIs_*_' name '.mat']));
+    if numel(roi_file_names) > 0 
+        if exist(fullfile(PathName,['ROIs_cells_' name '.mat'])) == 2
+            load(fullfile(PathName,['ROIs_cells_' name '.mat']));
+            set(handles.edit_rois_name,'String','cells');
+        else
+            load(fullfile(PathName,roi_file_names(1).name))
+            file_name_tag = roi_file_names(1).name(6:end);
+            roi_tag_end = strfind(file_name_tag,'_');
+            file_name_tag = file_name_tag(1:roi_tag_end-1);
+            set(handles.edit_rois_name,'String',file_name_tag);
+        end
+        im_session.ref.roi_array = roi_array;
+    end
 
     set(handles.text_num_planes,'String',sprintf('Num planes %d',im_session.ref.im_props.numPlanes))
     set(handles.text_num_chan,'String',sprintf('Num channels %d',im_session.ref.im_props.nchans))
@@ -375,6 +432,12 @@ if FileName ~= 0
     set(handles.slider_trial_num,'enable','off')
     set(handles.edit_trial_num,'enable','off')
     set(handles.pushbutton_cluster_path,'enable','on')
+    set(handles.pushbutton_draw_rois,'enable','on')
+    set(handles.pushbutton_import_rois,'enable','on')
+    set(handles.pushbutton_load_rois,'enable','on')
+    set(handles.edit_rois_name,'enable','on')
+    set(handles.text_rois_name,'enable','on')
+
     %set(handles.togglebutton_online_mode,'enable','off')
     %set(handles.togglebutton_realtime_mode,'enable','off')
     set(handles.text_time,'enable','off')
@@ -416,7 +479,7 @@ if val == 1
     session = [];
     session = load_session_data(base_path_behaviour);
     session = parse_session_data(1,session);
-    legacy = 1;
+    legacy = 0;
     % correct if looking at layer 4 legacy data
     if legacy == 1
       ind = unique(session.trial_info.trial_start);
@@ -1028,3 +1091,86 @@ end
 %    togglebutton_TCP_Callback(handles.togglebutton_TCP, eventdata, handles)
 %  end
 %end
+
+
+% --- Executes on button press in pushbutton_register_cluster.
+function pushbutton_register_cluster_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_register_cluster (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+evalScript = prepare_register_cluster;
+
+
+% --- Executes on button press in pushbutton_draw_rois.
+function pushbutton_draw_rois_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_draw_rois (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+set(handles.pushbutton_save_rois,'enable','on')
+overwrite = get(handles.checkbox_overwrite,'Value');
+c_lim = zeros(1,2);
+c_lim(1) = round(get(handles.slider_look_up_table_black,'Value'));
+c_lim(2) = round(get(handles.slider_look_up_table,'Value'));
+plot_planes_str = get(handles.edit_display_planes,'string');
+plot_planes = eval(plot_planes_str);
+draw_rois(plot_planes(1),overwrite,c_lim);
+
+
+% --- Executes on button press in pushbutton_save_rois.
+function pushbutton_save_rois_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_save_rois (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+file_name_tag = get(handles.edit_rois_name,'String');
+save_rois(file_name_tag)
+
+% --- Executes on button press in pushbutton_import_rois.
+function pushbutton_import_rois_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_import_rois (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in pushbutton_load_rois.
+function pushbutton_load_rois_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_load_rois (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+start_path = fullfile(handles.data_dir,'ROIs_*.mat');
+[FileName,PathName,FilterIndex] = uigetfile(start_path);
+
+if FileName ~= 0
+    global im_session;
+    load(fullfile(PathName,FileName));
+    file_name_tag = FileName(6:end);
+    roi_tag_end = strfind(file_name_tag,'_');
+    file_name_tag = file_name_tag(1:roi_tag_end-1);
+    set(handles.edit_rois_name,'String',file_name_tag);
+    im_session.ref.roi_array = roi_array;
+    plot_im_gui(handles,1);
+end
+
+function edit_rois_name_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_rois_name (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_rois_name as text
+%        str2double(get(hObject,'String')) returns contents of edit_rois_name as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_rois_name_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_rois_name (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

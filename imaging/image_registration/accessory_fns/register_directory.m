@@ -19,12 +19,14 @@ for ij = start_trial:num_files
 	%drawnow
 	cur_file = fullfile(im_session.basic_info.data_dir,im_session.basic_info.cur_files(ij).name);
 	trial_name = cur_file(end-6:end-4);
-
+	[pathstr, base_name, ext] = fileparts(cur_file);
+	
 	% define summary name
+	replace_start = strfind(base_name,'main');
+	replace_end = replace_start+4;
 	type_name = 'summary';
-	file_name = [im_session.basic_info.anm_str '_' im_session.basic_info.date_str '_' im_session.basic_info.run_str '_' type_name '_' trial_name '.mat'];
-	folder_name = fullfile(im_session.basic_info.data_dir,type_name);
-	summary_file_name = fullfile(folder_name,file_name);
+	file_name = [base_name(1:replace_start-1) type_name  base_name(replace_end:end)];
+	summary_file_name = fullfile(im_session.basic_info.data_dir,type_name,[file_name '.mat']);
 	
 	% if overwrite is off and summary file exists load it in
 	if save_opts.overwrite ~= 1 && exist(summary_file_name) == 2
@@ -50,9 +52,8 @@ for ij = start_trial:num_files
 			end
 			drawnow
 			type_name = 'registered';
-			file_name = [im_session.basic_info.anm_str '_' im_session.basic_info.date_str '_' im_session.basic_info.run_str '_' type_name '_' trial_name '.mat'];
-			folder_name = fullfile(im_session.basic_info.data_dir,type_name);
-			full_file_name = fullfile(folder_name,file_name);
+			file_name = [base_name(1:replace_start-1) type_name  base_name(replace_end:end)];
+			full_file_name = fullfile(im_session.basic_info.data_dir,type_name,[file_name '.mat']);	
 			save(full_file_name,'im_aligned');
 		end
 	end
@@ -72,9 +73,8 @@ for ij = start_trial:num_files
 		scim_frame_trig = im_summary.behaviour.align_vect;
 		[trial_data data_variable_names] = parse_behaviour2im(trial_data_raw,behaviour_trial_num,scim_frame_trig);
   		type_name = 'parsed_behaviour';
-		file_name = [im_session.basic_info.anm_str '_' im_session.basic_info.date_str '_' im_session.basic_info.run_str '_' type_name '_' trial_name '.mat'];
-		folder_name = fullfile(im_session.basic_info.data_dir,type_name);
-		full_file_name = fullfile(folder_name,file_name);
+		file_name = [base_name(1:replace_start-1) type_name  base_name(replace_end:end)];
+		full_file_name = fullfile(im_session.basic_info.data_dir,type_name,[file_name '.mat']);	
 		save(full_file_name,'trial_data','data_variable_names');
 	else
 		trial_data = [];
@@ -92,9 +92,8 @@ for ij = start_trial:num_files
 		end
 		drawnow
 		type_name = 'text';
-		file_name = [im_session.basic_info.anm_str '_' im_session.basic_info.date_str '_' im_session.basic_info.run_str '_' type_name '_' trial_name '.txt'];
-		folder_name = handles.text_path;
-		full_file_name = fullfile(folder_name,file_name);
+		file_name = [base_name(1:replace_start-1) type_name  base_name(replace_end:end)];
+		full_file_name = fullfile(im_session.basic_info.data_dir,type_name,[file_name '.txt']);	
 		analyze_chan = str2double(get(handles.edit_analyze_chan,'String'));
 		save_im2text(im_aligned,im_summary,trial_data,analyze_chan,full_file_name);
 	end

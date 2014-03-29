@@ -36,6 +36,7 @@ fprintf(f,[fmt,'%u\n'],[y;x;z;dat]);
 
 % write behaviour to text
 if isempty(trial_data) ~= 1
+    trial_data = trial_data(:,12); % hack for including corridor position only
     tSize = size(trial_data,1);
     dSize = size(trial_data,2);
     z = repmat(999,1,dSize);

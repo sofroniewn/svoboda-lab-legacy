@@ -1,0 +1,30 @@
+function draw_rois(cur_plane,overwrite,clim)
+
+global im_session
+
+
+if isfield(im_session.ref,'roi_array') == 0 || overwrite == 1;
+	im_session.ref.roi_array = cell(im_session.ref.im_props.numPlanes,1);
+	for ij = 1:im_session.ref.im_props.numPlanes
+		im_session.ref.roi_array{ij} = roi.roiArray();
+		im_session.ref.roi_array{ij}.workingImage = im_session.ref.base_images{ij};
+		im_session.ref.roi_array{ij}.baseWorkingImage = im_session.ref.base_images{ij};
+		im_session.ref.roi_array{ij}.workingImageSettings.pixelRange = {['[' num2str(clim(1)) ' ' num2str(clim(2)) ']']};
+		im_session.ref.roi_array{ij}.roiIdRange = [1 10000] + 10000*(ij-1);
+	end
+else
+	for ij = 1:im_session.ref.im_props.numPlanes
+		im_session.ref.roi_array{ij}.workingImage = im_session.ref.base_images{ij};
+		im_session.ref.roi_array{ij}.baseWorkingImage = im_session.ref.base_images{ij};
+		im_session.ref.roi_array{ij}.workingImageSettings.pixelRange = {['[' num2str(clim(1)) ' ' num2str(clim(2)) ']']};
+	end
+end
+
+if isempty(im_session.ref.roi_array{cur_plane}.guiHandles)~=1
+	if ishandle(im_session.ref.roi_array{cur_plane}.guiHandles(3))
+		close(im_session.ref.roi_array{cur_plane}.guiHandles(3));
+		im_session.ref.roi_array{cur_plane}.guiHandles = [];
+	end
+end
+
+im_session.ref.roi_array{cur_plane}.startGui;

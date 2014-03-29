@@ -5,6 +5,7 @@ set(handles.pushbutton_load_ref,'enable',enable_str)
 set(handles.pushbutton_register_im,'enable',enable_str)
 set(handles.togglebutton_online_mode,'enable',enable_str)
 set(handles.togglebutton_realtime_mode,'enable',enable_str)
+set(handles.pushbutton_register_cluster,'enable',enable_str)
 end
 
 if any(ismember(type,2))
