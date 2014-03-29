@@ -11,9 +11,9 @@ ch_spikes = [1:2, 4:26, 30:31];
 base_dir = '/Users/sofroniewn/Documents/DATA/WGNR_DATA/anm_0221172/2014_02_21/run_09';
 f_name_flag = '*_trial*.bin';
 file_nums = [1:100];
-over_write = 1;
-over_write_spikes = 1;
-over_write_cluster = 1;
+over_write = 0;
+over_write_spikes = 0;
+over_write_cluster = 0;
 cluster_name = 'matclust_data_B.mat';
 
 file_list = func_list_files(base_dir,f_name_flag,file_nums);

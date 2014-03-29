@@ -1,7 +1,4 @@
-function [spike_clustered spike_not_clustered spike_artifact ch_id] = extract_sorted_spike_times(clust_id,trial_id,ch_id,s,d)
-
-global clustattrib;
-global clustdata;
+function [spike_clustered spike_not_clustered spike_artifact ch_id] = extract_sorted_spike_times(clustattrib,clustdata,clust_id,trial_id,ch_id,s,d)
 
 % look at current trial
 keep_inds = find(ismember(clustdata.customvar.trials,trial_id));

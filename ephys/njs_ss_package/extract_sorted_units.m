@@ -1,4 +1,4 @@
-function [sorted_spikes sync_trigs] = extract_sorted_units(base_dir,file_list,sorted_name,overwrite)
+function [sorted_spikes sync_trigs] = extract_sorted_units(clustattrib,clustdata,base_dir,file_list,sorted_name,overwrite)
 
 
 f_name_sorted_units = fullfile(base_dir,'ephys','sorted',[sorted_name '.mat']);
@@ -7,9 +7,6 @@ if overwrite == 0 && exist(f_name_sorted_units) == 2
     disp(['LOAD SORTED UNITS']);
     load(f_name_sorted_units);
 else
-
-global clustattrib
-global clustdata
 
 num_clusters = numel(clustattrib.clusters);
 
@@ -36,7 +33,7 @@ for trial_id = 1:numel(file_list)
 		display(num2str(clust_id));
 
 		ch_id = sorted_spikes{clust_id}.detected_chan;
-		[spike_clustered spike_not_clustered spike_artifact ch_id] = extract_sorted_spike_times(clust_id,trial_id,ch_id,s,d);
+		[spike_clustered spike_not_clustered spike_artifact ch_id] = extract_sorted_spike_times(clustattrib,clustdata,clust_id,trial_id,ch_id,s,d);
 
 		spike_inds = s.spikes_all(spike_clustered,2);
 		spike_times = d.TimeStamps(spike_inds);
