@@ -15,6 +15,14 @@ for ij = 1:num_planes
 end
 
 roi_array = im_session.ref.roi_array;
+for ij = 1:num_planes
+	if ~isempty(roi_array{ij}.permanentAccessoryImages)
+		roi_array{ij}.permanentAccessoryImages = {};
+		roi_array{ij}.accessoryImagesRelPaths = {};
+		roi_array{ij}.accessoryImageProps = [];
+	end
+end
+
 save(fullfile(im_session.ref.path_name,['ROIs_' file_name_tag '_' im_session.ref.file_name '.mat']),'roi_array')
 
 display('ROIs saved')

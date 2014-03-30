@@ -68,7 +68,7 @@ for ij = 1:numel(plot_list)
     plot_names{ij} = plot_list(ij).name;
 end
 set(handles.popupmenu_list_plots,'string',plot_names)
-set(handles.popupmenu_list_plots,'value',3)
+set(handles.popupmenu_list_plots,'value',4)
 
 handles.jTcpObj = [];
 
@@ -210,7 +210,7 @@ set(handles.text_frac_registered,'String',sprintf('Registered %d/%d',0,0))
 set(handles.text_status,'String','Status: offline')
 
 set(handles.edit_trial_num,'String',num2str(0))
-set(handles.popupmenu_list_plots,'Value',3)
+set(handles.popupmenu_list_plots,'Value',4)
 
 
 start_path = handles.datastr;
@@ -1133,6 +1133,24 @@ function pushbutton_import_rois_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+start_path = fullfile(handles.data_dir,'ROIs_*.mat');
+[FileName,PathName,FilterIndex] = uigetfile(start_path);
+
+if FileName ~= 0
+    set(handles.pushbutton_save_rois,'enable','on')
+    global im_session;
+    load(fullfile(PathName,FileName));
+    im_session.ref.roi_array_source = roi_array;
+
+    im_session.ref.roi_array = cell(im_session.ref.im_props.numPlanes,1);
+    for ij = 1:im_session.ref.im_props.numPlanes
+        roi_new = roi.roiArray();
+        roi_new.masterImage = im_session.ref.base_images{ij};
+        roi.roiArray.findMatchingRoisInNewImage(im_session.ref.roi_array_source{ij},roi_new);
+        im_session.ref.roi_array{ij} = roi_new;
+    end
+    plot_im_gui(handles,1);
+end
 
 % --- Executes on button press in pushbutton_load_rois.
 function pushbutton_load_rois_Callback(hObject, eventdata, handles)
