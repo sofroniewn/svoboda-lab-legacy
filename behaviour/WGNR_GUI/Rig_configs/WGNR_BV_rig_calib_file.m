@@ -17,7 +17,7 @@ rig_config.TCP_IP_address = [];
 % AI input channels
 rig_config.ai_channels_ball_tracker_clock = '0';
 rig_config.ai_channels_cam = '{1, 2, 3, 4}';
-rig_config.ai_channels_scan_image_frame_clock = '2';
+rig_config.ai_channels_scan_image_frame_clock = '5';
 rig_config.ai_channels_lick = '6';
 rig_config.ai_channels_scim_logging = '7';
 
