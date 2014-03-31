@@ -58,20 +58,38 @@ for ij = start_trial:num_files
 		end
 	end
 
+	% update im_session	
+	tmp_raw_mean = zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,1);
+	tmp_align_mean = zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,1);
+	for ih = 1:num_chan
+		for ik = 1:num_planes
+			% extract mean images and summary data for each plane 
+			tmp_raw_mean(:,:,ik,ih,1) = im_summary.mean_raw{ik,ih};
+			tmp_align_mean(:,:,ik,ih,1) = im_summary.mean_aligned{ik,ih};
+		end
+	end
+	im_session.reg.nFrames = cat(1,im_session.reg.nFrames, im_summary.props.num_frames);
+	im_session.reg.startFrame = cat(1,im_session.reg.startFrame, im_summary.props.firstFrame);
+	im_session.reg.raw_mean = cat(5,im_session.reg.raw_mean, tmp_raw_mean);
+	im_session.reg.align_mean = cat(5,im_session.reg.align_mean, tmp_align_mean);
+	
 	% extract behaviour information if necessary
 	if behaviour_val == 1
+    	trial_num_im_session = ij;
 		if get(handles.togglebutton_online_mode,'value') == 0
-			global behaviour_scim_trial_align;
-			behaviour_trial_num = behaviour_scim_trial_align(ij);
+			trial_num_session = im_session.ref.behaviour_scim_trial_align(ij);
 		else
-			behaviour_trial_num = ij;
+			trial_num_session = ij;
 		end
-		global session;	
-		scim_trig_vect = session.data{behaviour_trial_num}.processed_matrix(6,:);
-		im_summary = extract_behviour_scim_data(im_summary,scim_trig_vect,behaviour_trial_num);
-		trial_data_raw = session.data{behaviour_trial_num};
+		fprintf('(scim_align) loading file %g/%g \n',ij,num_files);
+    	%%% ALIGN
+		global remove_first;
+		[im_summary remove_first] = sync_behviour_scim_data(im_summary,trial_num_session,trial_num_im_session,remove_first);
+
+		global session;
+		trial_data_raw = session.data{trial_num_session};
 		scim_frame_trig = im_summary.behaviour.align_vect;
-		[trial_data data_variable_names] = parse_behaviour2im(trial_data_raw,behaviour_trial_num,scim_frame_trig);
+		[trial_data data_variable_names] = parse_behaviour2im(trial_data_raw,trial_num_session,scim_frame_trig);
   		type_name = 'parsed_behaviour';
 		file_name = [base_name(1:replace_start-1) type_name  base_name(replace_end:end)];
 		full_file_name = fullfile(im_session.basic_info.data_dir,type_name,[file_name '.mat']);	
@@ -79,8 +97,6 @@ for ij = start_trial:num_files
 	else
 		trial_data = [];
   	end
-
-
 
 	% save text file
 	if save_opts.text == 1 && isempty(im_aligned) ~=1
@@ -101,21 +117,6 @@ for ij = start_trial:num_files
 	set(handles.text_status,'String','Status: updating')
 	drawnow
 
-	% update im_session	
-	tmp_raw_mean = zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,1);
-	tmp_align_mean = zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,1);
-	for ih = 1:num_chan
-		for ik = 1:num_planes
-			% extract mean images and summary data for each plane 
-			tmp_raw_mean(:,:,ik,ih,1) = im_summary.mean_raw{ik,ih};
-			tmp_align_mean(:,:,ik,ih,1) = im_summary.mean_aligned{ik,ih};
-		end
-	end
-	im_session.reg.nFrames = cat(1,im_session.reg.nFrames, im_summary.props.num_frames);
-	im_session.reg.startFrame = cat(1,im_session.reg.startFrame, im_summary.props.firstFrame);
-	im_session.reg.raw_mean = cat(5,im_session.reg.raw_mean, tmp_raw_mean);
-	im_session.reg.align_mean = cat(5,im_session.reg.align_mean, tmp_align_mean);
-	
 	if num_files > 0 & start_trial > 0
 		set(handles.slider_trial_num,'max',ij)
 		set(handles.slider_trial_num,'SliderStep',[1/(ij+1) 1/(ij+1)])

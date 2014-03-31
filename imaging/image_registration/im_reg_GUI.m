@@ -22,7 +22,7 @@ function varargout = im_reg_GUI(varargin)
 
 % Edit the above text to modify the response to help im_reg_GUI
 
-% Last Modified by GUIDE v2.5 29-Mar-2014 12:18:00
+% Last Modified by GUIDE v2.5 31-Mar-2014 11:45:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -205,6 +205,7 @@ set(handles.pushbutton_import_rois,'enable','off')
 set(handles.pushbutton_load_rois,'enable','off')
 set(handles.edit_rois_name,'enable','off')
 set(handles.text_rois_name,'enable','off')
+set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(0)]);
 
 set(handles.text_frac_registered,'String',sprintf('Registered %d/%d',0,0))
 set(handles.text_status,'String','Status: offline')
@@ -469,6 +470,9 @@ set(handles.pushbutton_data_dir,'enable','off')
 %set(handles.text_frac_registered,'enable','on')
 drawnow
 
+global im_session;
+num_files_im = numel(im_session.basic_info.cur_files);
+num_files = numel(im_session.basic_info.cur_files);
 % Check if behaviour mode on
 val = get(handles.checkbox_behaviour,'Value');
 if val == 1
@@ -479,25 +483,14 @@ if val == 1
     session = [];
     session = load_session_data(base_path_behaviour);
     session = parse_session_data(1,session);
-    legacy = 0;
-    % correct if looking at layer 4 legacy data
-    if legacy == 1
-      ind = unique(session.trial_info.trial_start);
-      num_files = numel(session.data);
-      for ij = 1:num_files-1
-        session.data{ij}.trial_matrix = [session.data{ij}.trial_matrix(:,ind:end) session.data{ij+1}.trial_matrix(:,1:ind-1)];
-        session.data{ij}.processed_matrix = [session.data{ij}.processed_matrix(:,ind:end) session.data{ij+1}.processed_matrix(:,1:ind-1)];
-        session.trial_info.trial_start(ij) = find(session.data{ij}.trial_matrix(9,:)==1,1,'first');
-      end
-    end
+
+    num_files = min(num_files_im,numel(session.data));
     % match scim behaviour trial numbers (assume one to one)
-    global behaviour_scim_trial_align;
-    behaviour_scim_trial_align = [1:numel(session.data)];
+    im_session.ref.behaviour_scim_trial_align = [1:numel(session.data)];
+    
     % initialize global variables for scim alignment
-    global prev_num_trigs_behaviour;
-    prev_num_trigs_behaviour = 0;
-    global extra_frame_behaviour;
-    extra_frame_behaviour = 0;
+    global remove_first;
+    remove_first = 0;
     set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
     set(handles.text_status,'String','Status: waiting')
     drawnow
@@ -509,9 +502,7 @@ set(handles.edit_trial_num,'enable','on')
 % Setup registration
 setup_im_reg(handles);
 % Register directory
-global im_session;
-num_files = numel(im_session.basic_info.cur_files);
-register_directory(start_trial,num_files,num_files,align_chan,save_opts,handles)
+register_directory(start_trial,num_files,num_files_im,align_chan,save_opts,handles)
 
 im_gui_toggle_enable(handles,'on',[1 2])
 
@@ -556,9 +547,9 @@ if value == 1
 
   % set(handles.text_elapsed_time,'Enable','on')
    
-  start_flag = 1;
+start_flag = 1;
 
-   % Check if behaviour mode on
+% Check if behaviour mode on
   val = get(handles.checkbox_behaviour,'Value');
   if val == 1
     % match scim behaviour trial numbers (assume one to one)
@@ -696,9 +687,9 @@ else
     stop(handles.obj_t_realtime);
     delete(handles.obj_t_realtime);
     
-  im_gui_toggle_enable(handles,'on',[1 2])
-  set(handles.pushbutton_load_ref,'enable','on')
-  set(handles.pushbutton_data_dir,'enable','on')
+    im_gui_toggle_enable(handles,'on',[1 2])
+    set(handles.pushbutton_load_ref,'enable','on')
+    set(handles.pushbutton_data_dir,'enable','on')
 
    time_elapsed_str = sprintf('Time online %.1f s',0);
    set(handles.text_time,'String',time_elapsed_str)
@@ -1192,3 +1183,48 @@ function edit_rois_name_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in pushbutton_gen_catsa.
+function pushbutton_gen_catsa_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_gen_catsa (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in pushbutton_sync_behaviour.
+function pushbutton_sync_behaviour_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_sync_behaviour (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+    % match scim behaviour trial numbers (assume one to one)
+    %global behaviour_scim_trial_align;
+    %behaviour_scim_trial_align = [1:numel(session.data)];
+    % initialize global variables for scim alignment
+    global prev_num_trigs_behaviour;
+    prev_num_trigs_behaviour = 0;
+    global extra_frame_behaviour;
+    extra_frame_behaviour = 0;
+
+%global session;
+%num_files = numel(im_session.basic_info.cur_files);
+%num_behaviour = numel(session.data);
+%if num_files > num_behaviour
+%start_flag = 0;
+%end
+
+
+
+% --- Executes on button press in pushbutton_gen_text.
+function pushbutton_gen_text_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_gen_text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in pushbutton_save_session.
+function pushbutton_save_session_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_save_session (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

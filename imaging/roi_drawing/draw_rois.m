@@ -13,14 +13,13 @@ if isfield(im_session.ref,'roi_array') == 0 || overwrite == 1;
 		im_session.ref.roi_array{ij}.masterImage = im_session.ref.base_images{ij};
 		im_session.ref.roi_array{ij}.roiIdRange = [1 10000] + 10000*(ij-1);
 		im_session.ref.roi_array{ij}.settings.selectedColor = [1 .5 0];
+
 	end
 else
 	for ij = 1:im_session.ref.im_props.numPlanes
 		im_session.ref.roi_array{ij}.workingImage = im_session.ref.base_images{ij};
 		im_session.ref.roi_array{ij}.baseWorkingImage = im_session.ref.base_images{ij};
 		im_session.ref.roi_array{ij}.masterImage = im_session.ref.base_images{ij};
-		im_session.ref.roi_array{ij}.workingImageSettings.pixelRange = {['[' num2str(clim(1)) ' ' num2str(clim(2)) ']']};
-		im_session.ref.roi_array{ij}.settings.selectedColor = [1 .5 0];
 	end
 end
 
@@ -47,5 +46,9 @@ if isempty(im_session.ref.roi_array{cur_plane}.guiHandles)~=1
 		im_session.ref.roi_array{cur_plane}.guiHandles = [];
 	end
 end
+
+im_session.ref.roi_array{cur_plane}.workingImageSettings.pixelRange = {['[' num2str(clim(1)) ' ' num2str(clim(2)) ']']};
+im_session.ref.roi_array{cur_plane}.settings.selectedColor = [1 .5 0];
+
 
 im_session.ref.roi_array{cur_plane}.startGui;

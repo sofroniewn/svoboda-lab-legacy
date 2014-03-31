@@ -1,4 +1,4 @@
-function session = func_scim_align(session,scim_info)
+function session = func_scim_align_2(session,scim_info)
 %%
 disp(['--------------------------------------------']);
 disp(['GENERATE SCIM ALIGNMENT']);
@@ -19,16 +19,16 @@ num_files = numel(session.data);
 
 %%
 
-%%% REMOVE TRIGGERS CORRESPONDING TO INTERMEDIATE PLANES
-    numPlanes = scim_info{1}.numPlanes;
-for ij = 1:num_files
-% LEGACY CODE
-%   session.trial_info.scim_num_trigs(ij) = length(find(session.data{ij}.processed_matrix(6,:)));
-%   if ij > 1 && session.trial_info.scim_logging(ij-1) == 1;
-%       session.trial_info.scim_cum_trigs(ij) = session.trial_info.scim_cum_trigs(ij-1) + session.trial_info.scim_num_trigs(ij-1);
-%   else
-%       session.trial_info.scim_cum_trigs(ij) = 0;
-%   end     
+numPlanes = scim_info{1}.numPlanes;
+remove_first = 0;
+
+%%
+display([]);
+display(['Start alignment ']);
+for ij = 1:16 %num_files-1
+    fprintf('(scim_align) loading file %g/%g \n',ij,num_files-1);
+
+    %%% REMOVE TRIGGERS CORRESPONDING TO INTERMEDIATE PLANES
     scim_trigs = find(session.data{ij}.processed_matrix(6,:));
     frame_shift = mod(session.trial_info.scim_cum_trigs(ij),numPlanes);
     if frame_shift ~=0
@@ -37,15 +37,16 @@ for ij = 1:num_files
     scim_trigs = scim_trigs(1+frame_shift:numPlanes:end);
     session.data{ij}.processed_matrix(7,:) = 0*session.data{ij}.processed_matrix(7,:);
     session.data{ij}.processed_matrix(7,scim_trigs) = 1;
+    if remove_first
+        ind = find(session.data{ij}.processed_matrix(7,:) == 1,1,'first');
+        session.data{ij}.processed_matrix(7,ind) = 0;
+        session.trial_info.firstFrameNumberRelTrigger(ij) = session.trial_info.scim_cum_trigs(ij) + frame_shift + 1 + numPlanes;
+    else
+        session.trial_info.firstFrameNumberRelTrigger(ij) = session.trial_info.scim_cum_trigs(ij) + frame_shift + 1;
+    end
+    remove_first = 0;
     session.trial_info.scim_num_frames(ij) = length(find(session.data{ij}.processed_matrix(7,:)));
-    session.trial_info.firstFrameNumberRelTrigger(ij) = session.trial_info.scim_cum_trigs(ij) + frame_shift + 1;
-end
 
-%%
-display([]);
-display(['Start alignment ']);
-for ij = 1:10 %num_files-1
-    fprintf('(scim_align) loading file %g/%g \n',ij,num_files-1);
     scim_info{ij}.nvols = scim_info{ij}.nframes/numPlanes;
     
     % Check if trial has logging enabled
@@ -54,7 +55,6 @@ for ij = 1:10 %num_files-1
         if scim_info{ij}.firstFrameNumberRelTrigger ~= session.trial_info.firstFrameNumberRelTrigger(ij)
             error(['Not aligned trigger start trial ' num2str(ij)])
         end
-        
         % Check if number of volumes is either correct or one extra
         if scim_info{ij}.nvols == session.trial_info.scim_num_frames(ij) || scim_info{ij}.nvols - 1 == session.trial_info.scim_num_frames(ij)
             % Check if number of volumes is one extra
@@ -64,12 +64,7 @@ for ij = 1:10 %num_files-1
                 session.data{ij}.processed_matrix(7,end) = 1;
                 session.trial_info.scim_num_frames(ij) = session.trial_info.scim_num_frames(ij)+1;
                % If next file exists remove first volume from that one
-               if ij+1 <= num_files
-                ind = find(session.data{ij+1}.processed_matrix(7,:) == 1,1,'first');
-                session.data{ij+1}.processed_matrix(7,ind) = 0;
-                session.trial_info.scim_num_frames(ij+1) = session.trial_info.scim_num_frames(ij+1)-1;
-                session.trial_info.firstFrameNumberRelTrigger(ij+1) = session.trial_info.firstFrameNumberRelTrigger(ij+1) + scim_info{ij}.numPlanes;
-               end
+                remove_first = 1;
             end
         else
             error(['Not aligned num vols ' num2str(ij)])
