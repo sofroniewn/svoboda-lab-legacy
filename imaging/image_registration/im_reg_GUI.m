@@ -1148,6 +1148,9 @@ if FileName ~= 0
     set(handles.pushbutton_save_rois,'enable','on')
     global im_session;
     load(fullfile(PathName,FileName));
+    for ik = 1:numel(roi_array)
+        roi_array{ik}.idStr = ['Source' num2str(ik)];
+    end
     im_session.ref.roi_array_source = roi_array;
 
     im_session.ref.roi_array = cell(im_session.ref.im_props.numPlanes,1);
