@@ -22,7 +22,7 @@ function varargout = im_reg_GUI(varargin)
 
 % Edit the above text to modify the response to help im_reg_GUI
 
-% Last Modified by GUIDE v2.5 31-Mar-2014 11:45:48
+% Last Modified by GUIDE v2.5 01-Apr-2014 13:55:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -473,6 +473,12 @@ function pushbutton_register_im_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+use_cluser = get(handles.checkbox_use_cluster,'Value');
+
+if use_cluser
+    evalScript = prepare_register_cluster;
+else
+
 save_opts.overwrite = get(handles.checkbox_overwrite,'Value');
 save_opts.aligned = get(handles.checkbox_save_aligned,'Value');
 save_opts.text = get(handles.checkbox_save_text,'Value');
@@ -528,6 +534,7 @@ im_gui_toggle_enable(handles,'on',[1 2])
 set(handles.text_time,'enable','off')
 set(handles.pushbutton_data_dir,'enable','on')
 set(handles.text_status,'String','Status: offline')
+end
 
 % --- Executes on button press in togglebutton_online_mode.
 function togglebutton_online_mode_Callback(hObject, eventdata, handles)
@@ -1103,15 +1110,6 @@ end
 %end
 
 
-% --- Executes on button press in pushbutton_register_cluster.
-function pushbutton_register_cluster_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton_register_cluster (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-evalScript = prepare_register_cluster;
-
-
 % --- Executes on button press in pushbutton_draw_rois.
 function pushbutton_draw_rois_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_draw_rois (see GCBO)
@@ -1231,8 +1229,19 @@ if num_files > 0
     cur_status = get(handles.text_status,'String');
     set(handles.text_status,'String','Status: extracting CaTSA')
     drawnow
-    session_ca = get_session_ca(num_files,neuropilDilationRange,signalChannels,neuropilSubSF,file_name_tag,overwrite);
+    save_path = fileparts(im_session.basic_info.data_dir);
+    file_name_tag = get(handles.edit_rois_name,'String');
+    session_path = fullfile(save_path,'session');
+
+    if exist(session_path) ~= 7
+        mkdir(session_path);
+    end
+
+    caTSA_file_name = fullfile(session_path,['session_ca_data_' file_name_tag '.mat']);
+    session_ca = get_session_ca(caTSA_file_name,num_files,neuropilDilationRange,signalChannels,neuropilSubSF,file_name_tag,overwrite);
     set(handles.text_status,'String',cur_status)
+
+    pushbutton_save_session_Callback(handles.pushbutton_save_session, eventdata, handles);
 end
 
 
@@ -1252,7 +1261,16 @@ if behaviour_on
 end
 analyze_chan = str2num(get(handles.edit_analyze_chan,'string'));
 
-save_path_im = fullfile(im_session.ref.path_name,['Text_images_' im_session.ref.file_name '.txt']);
+save_path = fileparts(im_session.basic_info.data_dir);
+file_name_tag = get(handles.edit_rois_name,'String');
+save_path = fullfile(save_path,'session');
+
+if exist(save_path) ~= 7
+    mkdir(save_path);
+end
+
+
+save_path_im = fullfile(save_path,['Text_images_' im_session.ref.file_name '.txt']);
 overwrite = get(handles.checkbox_overwrite,'Value');
 
 if overwrite ~= 1 && exist(save_path_im) == 2
@@ -1261,11 +1279,12 @@ else
     imaging_on = 1;
 end
 
+
 if num_files > 0
     cur_status = get(handles.text_status,'String');
     set(handles.text_status,'String','Status: extracting text')
     drawnow
-    save_session_im_text(num_files,analyze_chan,imaging_on,behaviour_on);
+    save_session_im_text(save_path,num_files,analyze_chan,imaging_on,behaviour_on);
     set(handles.text_status,'String',cur_status)
 end
 
@@ -1296,3 +1315,12 @@ save_common_data_format(session_path,file_name_tag,overwrite,session,im_session,
 set(handles.text_status,'String',cur_status)
 
  
+
+
+% --- Executes on button press in checkbox_use_cluster.
+function checkbox_use_cluster_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_use_cluster (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_use_cluster

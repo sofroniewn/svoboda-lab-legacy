@@ -61,6 +61,10 @@ function register_cluster_directory(data_dir,file_num)
 			im_aligned{ik,ij} = im_adj_tmp(:,:,ik:num_planes:end);
 			mean_raw{ik,ij} = mean(im{ik,ij},3);
 			mean_aligned{ik,ij} = mean(im_aligned{ik,ij},3);
+			im{ik,ij} = uint16(im{ik,ij});
+			im_adj{ik,ij} = uint16(im_adj{ik,ij});
+			mean_raw{ik,ij} = uint16(mean_raw{ik,ij});
+			mean_aligned{ik,ij} = uint16(mean_aligned{ik,ij});
 			shifts{ik} = shifts_raw(ik:num_planes:end,:);
 		end
 	end

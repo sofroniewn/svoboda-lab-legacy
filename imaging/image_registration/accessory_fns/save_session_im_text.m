@@ -1,4 +1,4 @@
-function save_session_im_text(num_files,analyze_chan,imaging_on,behaviour_on)
+function save_session_im_text(save_path,num_files,analyze_chan,imaging_on,behaviour_on)
 
 global im_session;
 full_im_dat = [];
@@ -47,7 +47,7 @@ for ij = 1:num_files
 end
 
 if imaging_on
-	save_path_im = fullfile(im_session.ref.path_name,['Text_images_' im_session.ref.file_name '.txt']);
+	save_path_im = fullfile(save_path,['Text_images_' im_session.ref.file_name '.txt']);
 	tSize = size(full_im_dat,1);
 	% write to text
 	f = fopen(save_path_im,'w');
@@ -57,7 +57,7 @@ if imaging_on
 end
 
 if behaviour_on
-	save_path_bv = fullfile(im_session.ref.path_name,['Text_behaviour_' im_session.ref.file_name '.txt']);
+	save_path_bv = fullfile(save_path,['Text_behaviour_' im_session.ref.file_name '.txt']);
 	
 	% write to text
 	tSize = size(full_trial_data,1);
@@ -71,7 +71,7 @@ if behaviour_on
     fprintf(f,[fmt,'%.4f\n'],[y;x;z;full_trial_data]);
 	fclose(f);
 
-	save_path_bv = fullfile(im_session.ref.path_name,['Text_behaviour_names' im_session.ref.file_name '.mat']);
+	save_path_bv = fullfile(save_path,['Text_behaviour_names_' im_session.ref.file_name '.mat']);
 	save(save_path_bv,'data_variable_names')
 end
 

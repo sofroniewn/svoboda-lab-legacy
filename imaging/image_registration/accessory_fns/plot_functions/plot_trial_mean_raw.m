@@ -10,11 +10,20 @@ for ij = 1:num_planes
 	col_val = floor((ij-1)/plane_rep);
 	start_x = 1 + row_val*im_session.ref.im_props.height;
 	start_y = 1 + col_val*im_session.ref.im_props.height;
-	if trial_num > 0
-		im_use = squeeze(im_session.reg.raw_mean(:,:,plot_planes(ij),chan_num,trial_num));
+	if isfield(im_session,'reg')
+		if isempty(im_session.reg.raw_mean)~=1
+			if trial_num > 0
+				im_use = squeeze(im_session.reg.raw_mean(:,:,plot_planes(ij),chan_num,trial_num));
+			else
+			im_use = im_session.ref.base_images{plot_planes(ij)};
+			end
+		else
+			im_use = 0*im_session.ref.base_images{plot_planes(ij)};
+		end
 	else
-		im_use = im_session.ref.base_images{plot_planes(ij)};
+			im_use = 0*im_session.ref.base_images{plot_planes(ij)};
 	end
+
 	im_comb(start_y:start_y+im_session.ref.im_props.height-1,start_x:start_x+im_session.ref.im_props.width-1) = im_use;
 end
 

@@ -59,8 +59,8 @@ for ij = start_trial:num_files
 	end
 
 	% update im_session	
-	tmp_raw_mean = zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,1);
-	tmp_align_mean = zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,1);
+	tmp_raw_mean = zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,1,'uint16');
+	tmp_align_mean = zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,1,'uint16');
 	for ih = 1:num_chan
 		for ik = 1:num_planes
 			% extract mean images and summary data for each plane 
