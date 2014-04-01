@@ -80,6 +80,9 @@ set(handles.pushbutton_import_rois,'enable','off')
 set(handles.pushbutton_load_rois,'enable','off')
 set(handles.edit_rois_name,'enable','off')
 set(handles.text_rois_name,'enable','off')
+set(handles.pushbutton_gen_catsa,'enable','off')
+set(handles.pushbutton_gen_text,'enable','off')
+set(handles.pushbutton_save_session,'enable','off')
 
 set(handles.togglebutton_TCP,'Enable','off') 
 
@@ -205,6 +208,10 @@ set(handles.pushbutton_import_rois,'enable','off')
 set(handles.pushbutton_load_rois,'enable','off')
 set(handles.edit_rois_name,'enable','off')
 set(handles.text_rois_name,'enable','off')
+set(handles.pushbutton_gen_catsa,'enable','off')
+set(handles.pushbutton_gen_text,'enable','off')
+set(handles.pushbutton_save_session,'enable','off')
+
 set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(0)]);
 
 set(handles.text_frac_registered,'String',sprintf('Registered %d/%d',0,0))
@@ -438,7 +445,10 @@ if FileName ~= 0
     set(handles.pushbutton_load_rois,'enable','on')
     set(handles.edit_rois_name,'enable','on')
     set(handles.text_rois_name,'enable','on')
-
+    set(handles.pushbutton_gen_catsa,'enable','on')
+    set(handles.pushbutton_gen_text,'enable','on')
+    set(handles.pushbutton_save_session,'enable','on')
+    
     %set(handles.togglebutton_online_mode,'enable','off')
     %set(handles.togglebutton_realtime_mode,'enable','off')
     set(handles.text_time,'enable','off')
@@ -1191,29 +1201,30 @@ function pushbutton_gen_catsa_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+neuropilDilationRange = [3 8];
+neuropilSubSF = -1;
 
-% --- Executes on button press in pushbutton_sync_behaviour.
-function pushbutton_sync_behaviour_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton_sync_behaviour (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+global im_session;
+num_files = numel(im_session.basic_info.cur_files);
+% Check if behaviour mode on
+val = get(handles.checkbox_behaviour,'Value');
+if val == 1
+    global session;
+    num_files = min(num_files,numel(session.data));
+end
 
-    % match scim behaviour trial numbers (assume one to one)
-    %global behaviour_scim_trial_align;
-    %behaviour_scim_trial_align = [1:numel(session.data)];
-    % initialize global variables for scim alignment
-    global prev_num_trigs_behaviour;
-    prev_num_trigs_behaviour = 0;
-    global extra_frame_behaviour;
-    extra_frame_behaviour = 0;
-
-%global session;
-%num_files = numel(im_session.basic_info.cur_files);
-%num_behaviour = numel(session.data);
-%if num_files > num_behaviour
-%start_flag = 0;
-%end
-
+signalChannels = str2num(get(handles.edit_analyze_chan,'string'));
+overwrite = get(handles.checkbox_overwrite,'Value');
+file_name_tag = get(handles.edit_rois_name,'String');
+global session_ca;
+session_ca = [];
+if num_files > 0
+    cur_status = get(handles.text_status,'String');
+    set(handles.text_status,'String','Status: extracting CaTSA')
+    drawnow
+    session_ca = get_session_ca(num_files,neuropilDilationRange,signalChannels,neuropilSubSF,file_name_tag,overwrite);
+    set(handles.text_status,'String',cur_status)
+end
 
 
 % --- Executes on button press in pushbutton_gen_text.
