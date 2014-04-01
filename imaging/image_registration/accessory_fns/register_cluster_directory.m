@@ -101,4 +101,5 @@ function register_cluster_directory(data_dir,file_num)
 	full_file_name = fullfile(data_dir,type_name,[file_name '.mat']);
 	save(full_file_name,'im_aligned');
 
+	fprintf('DONE %s \n',file_num);
 end
