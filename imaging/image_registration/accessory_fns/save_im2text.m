@@ -1,4 +1,4 @@
-function save_im2text(im_align,im_summary,trial_data,analyze_chan,save_path)
+function [im_cords dat] = save_im2text(im_aligned,trial_data,analyze_chan,save_path,save_on)
 %% CONVERT IMAGES TO TEXT FILE
 % stimFolder - folder that contains the stim file
 % stimName - name of the mat file containing the stim info
@@ -7,20 +7,21 @@ function save_im2text(im_align,im_summary,trial_data,analyze_chan,save_path)
 % thisZ - which plane we're doing
 
 
-tSize = im_summary.props.num_frames;
-num_pixels = im_summary.props.width*im_summary.props.height;
+tSize = size(im_aligned{1,1},3);
+num_planes = size(im_aligned,1);
+num_pixels = size(im_aligned{1,1},1)*size(im_aligned{1,1},2);
 
 % get the coordinates
-[X Y] = meshgrid(1:im_summary.props.width,1:im_summary.props.height);
+[X Y] = meshgrid(1:size(im_aligned{1,1},2),1:size(im_aligned{1,1},1));
 
-dat = zeros(tSize,num_pixels*im_summary.props.num_planes,'uint16');
-x = zeros(1,num_pixels*im_summary.props.num_planes,'uint16');
-y = zeros(1,num_pixels*im_summary.props.num_planes,'uint16');
-z = zeros(1,num_pixels*im_summary.props.num_planes,'uint16');
+dat = zeros(tSize,num_pixels*num_planes,'uint16');
+x = zeros(1,num_pixels*num_planes,'uint16');
+y = zeros(1,num_pixels*num_planes,'uint16');
+z = zeros(1,num_pixels*num_planes,'uint16');
 
 % parse the info
-for iPlane = 1:im_summary.props.num_planes
-    im_tmp = uint16(im_align{iPlane,analyze_chan});
+for iPlane = 1:num_planes
+    im_tmp = uint16(im_aligned{iPlane,analyze_chan});
     im_tmp = permute(im_tmp,[3 1 2]);    
     im_tmp = reshape(im_tmp,tSize,num_pixels);
     dat(:,(iPlane-1)*num_pixels+1:(iPlane)*num_pixels) = im_tmp;
@@ -29,10 +30,18 @@ for iPlane = 1:im_summary.props.num_planes
     z((iPlane-1)*num_pixels+1:(iPlane)*num_pixels) = iPlane;
 end
 
-% write the plane to text
-f = fopen(save_path,'w');
-fmt = repmat('%u ',1,tSize+2);
-fprintf(f,[fmt,'%u\n'],[y;x;z;dat]);
+im_cords.x = x;
+im_cords.y = x;
+im_cords.z = z;
+
+if save_on == 1
+    % write the plane to text
+    f = fopen(save_path,'w');
+    fmt = repmat('%u ',1,tSize+2);
+    fprintf(f,[fmt,'%u\n'],[y;x;z;dat]);
+end
+
+bv_cords = [];
 
 % write behaviour to text
 if isempty(trial_data) ~= 1
@@ -42,12 +51,16 @@ if isempty(trial_data) ~= 1
     z = repmat(999,1,dSize);
     x = repmat(1,1,dSize);
     y = 1:dSize;
-    
-    fmt = repmat('%.4f ',1,tSize+2);
-    fprintf(f,[fmt,'%.4f\n'],[y;x;z;trial_data]);
+
+   if save_on == 1
+        fmt = repmat('%.4f ',1,tSize+2);
+        fprintf(f,[fmt,'%.4f\n'],[y;x;z;trial_data]);
+    end
 end
 
-% close file
-fclose(f);
+if save_on == 1
+    % close file
+    fclose(f);
+end
 
 end

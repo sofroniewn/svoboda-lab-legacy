@@ -141,6 +141,12 @@ set(gca,'ytick',[-size_axial_displacements:size_axial_displacements/2:size_axial
 set(gca,'box','off')
 xlabel('z','FontSize',14)
 
+clear global im_session;
+global im_session;
+clear global session_ca;
+global session_ca;
+clear global session;
+global session;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -238,6 +244,9 @@ if folder_name ~= 0
     global session;
     session = [];
     session.data = [];
+
+    clear global session_ca;
+    global session_ca;
 
     set(handles.text_anm,'Enable','on')
     set(handles.text_date,'Enable','on')
@@ -1233,9 +1242,57 @@ function pushbutton_gen_text_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+global im_session;
+num_files = numel(im_session.basic_info.cur_files);
+% Check if behaviour mode on
+behaviour_on = get(handles.checkbox_behaviour,'Value');
+if behaviour_on
+    global session;
+    num_files = min(num_files,numel(session.data));
+end
+analyze_chan = str2num(get(handles.edit_analyze_chan,'string'));
+
+save_path_im = fullfile(im_session.ref.path_name,['Text_images_' im_session.ref.file_name '.txt']);
+overwrite = get(handles.checkbox_overwrite,'Value');
+
+if overwrite ~= 1 && exist(save_path_im) == 2
+    imaging_on = 0;
+else
+    imaging_on = 1;
+end
+
+if num_files > 0
+    cur_status = get(handles.text_status,'String');
+    set(handles.text_status,'String','Status: extracting text')
+    drawnow
+    save_session_im_text(num_files,analyze_chan,imaging_on,behaviour_on);
+    set(handles.text_status,'String',cur_status)
+end
 
 % --- Executes on button press in pushbutton_save_session.
 function pushbutton_save_session_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_save_session (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+global im_session;
+global session_ca;
+global session;
+
+save_path = fileparts(im_session.basic_info.data_dir);
+file_name_tag = get(handles.edit_rois_name,'String');
+session_path = fullfile(save_path,'session');
+
+if exist(session_path) ~= 7
+    mkdir(session_path);
+end
+
+overwrite = get(handles.checkbox_overwrite,'Value');
+cur_status = get(handles.text_status,'String');
+set(handles.text_status,'String','Status: saving session')
+drawnow
+save_common_data_format(session_path,file_name_tag,overwrite,session,im_session,session_ca);
+set(handles.text_status,'String',cur_status)
+
+ 

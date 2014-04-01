@@ -111,7 +111,7 @@ for ij = start_trial:num_files
 		file_name = [base_name(1:replace_start-1) type_name  base_name(replace_end:end)];
 		full_file_name = fullfile(im_session.basic_info.data_dir,type_name,[file_name '.txt']);	
 		analyze_chan = str2double(get(handles.edit_analyze_chan,'String'));
-		save_im2text(im_aligned,im_summary,trial_data,analyze_chan,full_file_name);
+		save_im2text(im_aligned,trial_data,analyze_chan,full_file_name,1);
 	end
 
 	set(handles.text_status,'String','Status: updating')
