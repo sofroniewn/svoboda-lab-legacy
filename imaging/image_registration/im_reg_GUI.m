@@ -1301,6 +1301,8 @@ function pushbutton_save_session_Callback(hObject, eventdata, handles)
 global im_session;
 global session_ca;
 global session;
+num_files = min(numel(im_session.basic_info.cur_files),numel(session.data));
+behaviour_on = get(handles.checkbox_behaviour,'Value');
 
 save_path = fileparts(im_session.basic_info.data_dir);
 file_name_tag = get(handles.edit_rois_name,'String');
@@ -1314,7 +1316,7 @@ overwrite = get(handles.checkbox_overwrite,'Value');
 cur_status = get(handles.text_status,'String');
 set(handles.text_status,'String','Status: saving session')
 drawnow
-save_common_data_format(session_path,file_name_tag,overwrite,session,im_session,session_ca);
+save_common_data_format(session_path,file_name_tag,overwrite,num_files,behaviour_on,session,im_session,session_ca);
 set(handles.text_status,'String',cur_status)
 
  
