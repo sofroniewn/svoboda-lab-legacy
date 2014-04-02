@@ -17,8 +17,6 @@ for ij = 1:num_planes
 			end
 			im_session.ref.roi_array{plot_planes(ij)}.guiHandles = [];
 		end
-		im_session.ref.roi_array{plot_planes(ij)}.workingImage = im_session.ref.base_images{plot_planes(ij)};
-		im_session.ref.roi_array{plot_planes(ij)}.baseWorkingImage = im_session.ref.base_images{plot_planes(ij)};
 		im_session.ref.roi_array{plot_planes(ij)}.workingImageSettings.pixelRange = {['[' num2str(clim(1)) ' ' num2str(clim(2)) ']']};
 		im_use = generateImage(im_session.ref.roi_array{plot_planes(ij)}, 1, 1, 0);
 	else
