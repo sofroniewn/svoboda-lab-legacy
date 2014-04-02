@@ -1272,7 +1272,6 @@ if exist(save_path) ~= 7
     mkdir(save_path);
 end
 
-
 save_path_im = fullfile(save_path,['Text_images_' im_session.ref.file_name '.txt']);
 overwrite = get(handles.checkbox_overwrite,'Value');
 
@@ -1282,6 +1281,13 @@ else
     imaging_on = 1;
 end
 
+use_cluser = get(handles.checkbox_use_cluster,'Value');
+
+if use_cluser
+    evalScript = prepare_text_cluster(num_files,analyze_chan);
+else
+    imaging_on = 0;
+end
 
 if num_files > 0
     cur_status = get(handles.text_status,'String');

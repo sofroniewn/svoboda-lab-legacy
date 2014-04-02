@@ -47,13 +47,17 @@ for ij = 1:num_files
 end
 
 if imaging_on
-	save_path_im = fullfile(save_path,['Text_images_' im_session.ref.file_name '.txt']);
 	tSize = size(full_im_dat,1);
-	% write to text
-	f = fopen(save_path_im,'w');
-	fmt = repmat('%u ',1,tSize+2);
-	fprintf(f,[fmt,'%u\n'],[im_cords.y;im_cords.x;im_cords.z;full_im_dat]);
-	fclose(f);
+	num_planes = max(im_cords.z);
+	% parse the info
+	for iPlane = 1:num_planes
+    	save_path_im = fullfile(save_path,['Text_images_plane_' sprintf('0%d',iPlane) '_' im_session.ref.file_name '.txt']);
+		% write to text
+		f = fopen(save_path_im,'w');
+		fmt = repmat('%u ',1,tSize+2);
+		fprintf(f,[fmt,'%u\n'],[im_cords.y(im_cords.z==iPlane);im_cords.x(im_cords.z==iPlane);im_cords.z(im_cords.z==iPlane);full_im_dat(:,im_cords.z==iPlane)]);
+		fclose(f);
+	end
 end
 
 if behaviour_on
