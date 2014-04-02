@@ -1290,7 +1290,6 @@ use_cluser = get(handles.checkbox_use_cluster,'Value');
 if use_cluser
     num_files = min(num_files,length(im_session.reg.nFrames));
     evalScript = prepare_text_cluster(num_files,analyze_chan);
-else
     imaging_on = 0;
 end
 

@@ -82,4 +82,5 @@ if behaviour_on
 	save(save_path_bv,'data_variable_names')
 end
 
+fprintf('(text)  DONE\n');
 
