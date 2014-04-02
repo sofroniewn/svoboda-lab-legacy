@@ -10,6 +10,7 @@ else
 	session_ca.im_session.reg = [];
 	session_ca = calculate_dff(session_ca,im_session,neuropilSubSF);
 	save(caTSA_file_name,'session_ca')
+	fprintf('(caTSA)  saved file\n');
 end
 
 

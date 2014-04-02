@@ -36,7 +36,7 @@ switch(convert_name)
     	end
 
 	case('Early JaeSung mice')
-		% Before March 31 2014
+		% For data from before March 31 2014
 		% Scim trigger not recroderd due to wrong channel number in rig config
 		% Place down triggers after new trial trig so correct number gauranteed
 		im_data_dir =  fullfile(data_dir,'scanimage','summary');
