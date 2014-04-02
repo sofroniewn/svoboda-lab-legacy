@@ -28,7 +28,7 @@ else
 
 		% set paths for the function
 		% save_text_cluster(data_dir,'1',analyze_chan,ref_file_name,num_files,num_frames,num_pixels)
-		functionPath = '/groups/freeman/home/freemanj11/code/wgnr/imaging/preprocessing/image_registration/accessory_fns/compiled/save_text_cluster';
+		functionPath = '/groups/freeman/home/freemanj11/code/wgnr/compiled/save_text_cluster';
 		logPath = [directory '/logs_text/log_'];
 		logPath_local = fullfile(im_session.basic_info.data_dir,'logs_text');
 		if ~exist(logPath_local)

@@ -17,7 +17,7 @@ else
 	directory = ['/groups/svoboda/wdbp/',end_path];
 
 	% set paths for the function
-	functionPath = '/groups/freeman/home/freemanj11/code/wgnr/imaging/preprocessing/image_registration/accessory_fns/compiled/register_cluster_directory';
+	functionPath = '/groups/freeman/home/freemanj11/code/wgnr/compiled/register_cluster_directory';
 	logPath = [directory '/logs/log_'];
 	logPath_local = fullfile(im_session.basic_info.data_dir,'logs');
 	if ~exist(logPath_local)
