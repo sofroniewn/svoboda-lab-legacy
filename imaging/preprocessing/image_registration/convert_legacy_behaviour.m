@@ -53,7 +53,7 @@ switch(convert_name)
     		end
 
 			for ij = 1:numel(cur_files)-1
-    		    fprintf('(convert)  file %g/%g \n',ij,numel(cur_files)-1);
+    		    fprintf('(convert)  file %03g/%g  ',ij,numel(cur_files)-1);
 
     			f_name = fullfile(data_dir,cur_files(ij).name);
     			load(f_name);
@@ -63,6 +63,10 @@ switch(convert_name)
 				scim_trigs = ones(1,size(trial_matrix,2));
 				load(fullfile(im_data_dir,im_files(ij).name));
 				num_frames = im_summary.props.num_frames*im_summary.props.num_planes;
+				fprintf(' %03d ', im_summary.props.num_frames);
+				fprintf(' %.2f ',im_summary.props.num_frames/size(trial_matrix,2)*500);
+				fprintf(' %.2f',im_summary.props.frameRate);
+				fprintf('\n');
 				trig_times = linspace(1,size(trial_matrix,2),num_frames+1);
 				scim_trigs(round(trig_times)) = 0;
 				trial_matrix(14,:) = scim_trigs;
