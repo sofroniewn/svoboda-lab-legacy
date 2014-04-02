@@ -15,12 +15,14 @@ function session_ca = generate_session_ca(im_session,num_files,signalChannels,ne
 	if (length(unique(roiIds)) ~= length(roiIds))
 	    error('generateCalciumTimeSeriesArray::some roiIDs get repeated among roiArray objects passed; this is not allowed.  Aborting.');
 	end
-
-	rawRoiData = [];
-	antiRoiFluoVec = [];
-	neuropilData = [];
-	file_num = [];
-	frame_num = [];
+	
+	num_frames = sum(im_session.reg.nFrames(1:num_files));
+	rawRoiData = zeros(length(roiIds),num_frames);
+	antiRoiFluoVec = zeros(numFOVs,num_frames);;
+	neuropilData = zeros(length(roiIds),num_frames);;
+	file_num = zeros(1,num_frames);
+	frame_num = zeros(1,num_frames);
+	start_ind = 1;
 	% --- extract data
 	for ij = 1:num_files
 		
@@ -38,9 +40,9 @@ function session_ca = generate_session_ca(im_session,num_files,signalChannels,ne
 
 		% load in raw registered data
 		load(full_file_name);
-		Nframes = size(im_aligned{1,1},3);
-		file_num = cat(1,file_num,repmat(ij,Nframes,1));
-		frame_num = cat(1,frame_num,[1:Nframes]');
+		num_frame_file = size(im_aligned{1,1},3);
+		file_num(start_ind:start_ind+num_frame_file-1) = repmat(ij,1,num_frame_file);
+		frame_num(start_ind:start_ind+num_frame_file-1) = [1:num_frame_file];
 
 		% extract Roi, antiRoi, and neuropil data from aligned images
 		[rawRoiData_tmp antiRoiFluoVec_tmp neuropilData_tmp] = processRoiArray(roiArray, neuropilRoiArray, im_aligned, signalChannels);
@@ -52,16 +54,20 @@ function session_ca = generate_session_ca(im_session,num_files,signalChannels,ne
 		 	rawRoiData_tmp_mat = cat(1,rawRoiData_tmp_mat,rawRoiData_tmp{ik});
 		 	antiRoiFluoVec_tmp_mat = cat(1,antiRoiFluoVec_tmp_mat,antiRoiFluoVec_tmp{ik});
 		 	neuropilData_tmp_mat = cat(1,neuropilData_tmp_mat,neuropilData_tmp{ik});
+		 end
 
-		end
+	 	rawRoiData(:,start_ind:start_ind+num_frame_file-1) = rawRoiData_tmp_mat;
+	 	antiRoiFluoVec(:,start_ind:start_ind+num_frame_file-1) = antiRoiFluoVec_tmp_mat;
+	 	neuropilData (:,start_ind:start_ind+num_frame_file-1)= neuropilData_tmp_mat;
+		start_ind = start_ind+num_frame_file;
+	end
 
-	 	rawRoiData = cat(2,rawRoiData,rawRoiData_tmp_mat);
-	 	antiRoiFluoVec = cat(2,antiRoiFluoVec,antiRoiFluoVec_tmp_mat);
-	 	neuropilData = cat(2,neuropilData,neuropilData_tmp_mat);
+	if start_ind ~= num_frames+1
+		error('Wrong number of frames');
 	end
 	session_ca.im_session = im_session;	
-	session_ca.file_nums = file_num';
-	session_ca.frame_nums = frame_num';
+	session_ca.file_nums = file_num;
+	session_ca.frame_nums = frame_num;
 	session_ca.roiIds = roiIds';
 	session_ca.roiFOVidx = roiFOVidx';
 	session_ca.rawRoiData = rawRoiData;

@@ -12,9 +12,10 @@ end
 
 % --- extract data
 for ij = 1:num_files		
-	fprintf('(text)  file %g/%g \n',ij,num_files);
+	fprintf('(text)  file %g/%g ',ij,num_files);
 	
 	if imaging_on
+			fprintf(' images ');
 		% get file name of registered data
 		cur_file = fullfile(im_session.basic_info.data_dir,im_session.basic_info.cur_files(ij).name);
 		trial_name = cur_file(end-6:end-4);
@@ -34,6 +35,7 @@ for ij = 1:num_files
 	end
 
 	if behaviour_on
+		fprintf(' behaviour ');
 		trial_num_session = im_session.ref.behaviour_scim_trial_align(ij);
 		trial_data_raw = session.data{trial_num_session};
 		scim_frame_trig = session.data{trial_num_session}.processed_matrix(7,:);
@@ -44,6 +46,7 @@ for ij = 1:num_files
 		end
 		full_trial_data = cat(1,full_trial_data,trial_data);
 	end
+	fprintf('\n');
 end
 
 if imaging_on

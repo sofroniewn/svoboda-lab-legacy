@@ -5,7 +5,9 @@ global im_session;
 start_ind = strfind(im_session.basic_info.data_dir,'imreg');
 
 if isempty(start_ind)
-	error('DATA NOT ON CLUSTER')
+	evalScript = 'DATA NOT ON CLUSTER';
+	display(evalScript);
+	return;
 else	
 	% set variables
 	startTime = 1;

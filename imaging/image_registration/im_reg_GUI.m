@@ -83,7 +83,7 @@ set(handles.text_rois_name,'enable','off')
 set(handles.pushbutton_gen_catsa,'enable','off')
 set(handles.pushbutton_gen_text,'enable','off')
 set(handles.pushbutton_save_session,'enable','off')
-
+set(handles.checkbox_behaviour,'Value',1)
 set(handles.togglebutton_TCP,'Enable','off') 
 
 set(handles.text_status,'String','Status: offline')
@@ -1223,6 +1223,8 @@ if val == 1
     num_files = min(num_files,numel(session.data));
 end
 
+num_files = min(num_files,length(im_session.reg.nFrames));
+
 signalChannels = str2num(get(handles.edit_analyze_chan,'string'));
 overwrite = get(handles.checkbox_overwrite,'Value');
 file_name_tag = get(handles.edit_rois_name,'String');
@@ -1245,6 +1247,8 @@ if num_files > 0
     set(handles.text_status,'String',cur_status)
 
     pushbutton_save_session_Callback(handles.pushbutton_save_session, eventdata, handles);
+else
+    display('No files for CaTSA');
 end
 
 
@@ -1284,6 +1288,7 @@ end
 use_cluser = get(handles.checkbox_use_cluster,'Value');
 
 if use_cluser
+    num_files = min(num_files,length(im_session.reg.nFrames));
     evalScript = prepare_text_cluster(num_files,analyze_chan);
 else
     imaging_on = 0;

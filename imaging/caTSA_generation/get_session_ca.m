@@ -3,6 +3,7 @@ function session_ca = get_session_ca(caTSA_file_name,num_files,neuropilDilationR
 global im_session	
 % if overwrite is off and session ca file exists load it in
 if overwrite ~= 1 && exist(caTSA_file_name) == 2
+	fprintf('(caTSA)  load file\n');
 	load(caTSA_file_name);
 else
 	session_ca = generate_session_ca(im_session,num_files,signalChannels,neuropilDilationRange);
