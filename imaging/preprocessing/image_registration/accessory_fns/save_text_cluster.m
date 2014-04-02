@@ -26,7 +26,7 @@ function save_text_cluster(data_dir,plane_num,analyze_chan,ref_file_name,num_fil
 		error('Wrong number of frames');
 	end
 
-	fprintf('Saving plane %s \n',plane_num);
+	fprintf('Saving plane %s \n',num2str(plane_num));
     save_path_im = fullfile(save_path,['Text_images_plane_' sprintf('0%d',plane_num) '_' ref_file_name '.txt']);
 	% write to text
 	f = fopen(save_path_im,'w');

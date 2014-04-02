@@ -1,5 +1,8 @@
 function convert_legacy_behaviour(data_dir,convert_name,over_write)
 
+% convert_legacy_behaviour(fileparts(im_session.basic_info.data_dir),'Early JaeSung mice',0)
+% convert_legacy_behaviour(fileparts(im_session.basic_info.data_dir),'anm_0227254',0)
+
 switch(convert_name)
 	case('anm_0227254')
 		% Layer IV mouse recorded in 2013
@@ -66,7 +69,7 @@ switch(convert_name)
 				save(fullfile(data_dir,cur_files(ij).name),'trial_mat_names','trial_num','trial_matrix');
 			end
     	end
-
+    	fprintf('(convert) DONE\n');
 	otherwise 
 		display('No method for dealing with this legacy data type');
 	end
