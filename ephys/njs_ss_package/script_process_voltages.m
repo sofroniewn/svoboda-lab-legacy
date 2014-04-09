@@ -9,6 +9,7 @@ f_name = [base_dir '/ephys/raw/anm_221172_2014x02x21_run_09_trial_1.bin'];
 
 ch_common_noise = [3, 27:29, 32]; % Channels to be used for common noise subtratction
 [p d] = func_process_voltage(f_name,ch_common_noise);
+   
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -13,7 +13,7 @@ if setup == 1
     end
     set(axes_handle,'xlim',[.5 num_trials+.5])
     set(axes_handle,'xtick',[1:num_trials])
-    set(axes_handle,'ylim',[-15 15])
+    set(axes_handle,'ylim',[-20 20])
 else
     plot_handle = get(axes_handle,'Children');
     plot_handle = flipdim(plot_handle,1);

@@ -43,8 +43,8 @@ end
 if isempty(im_session.ref.roi_array{cur_plane}.guiHandles)~=1
 	if ishandle(im_session.ref.roi_array{cur_plane}.guiHandles(3))
 		close(im_session.ref.roi_array{cur_plane}.guiHandles(3));
-		im_session.ref.roi_array{cur_plane}.guiHandles = [];
 	end
+		im_session.ref.roi_array{cur_plane}.guiHandles = [];
 end
 
 im_session.ref.roi_array{cur_plane}.workingImageSettings.pixelRange = {['[' num2str(clim(1)) ' ' num2str(clim(2)) ']']};

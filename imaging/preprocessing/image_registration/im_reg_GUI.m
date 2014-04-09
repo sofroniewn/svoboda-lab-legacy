@@ -402,7 +402,7 @@ if FileName ~= 0
     if strcmp(ext,'.mat') == 1
       load(fullfile(PathName,FileName));
     elseif strcmp(ext,'.tif') == 1
-        [pathstr,name,ext] = fileparts(base_im_path);
+        [pathstr,name,ext] = fileparts(FileName);
         if exist(fullfile(PathName,['ref_images_' name '.mat'])) == 2 && overwrite == 0
             load(fullfile(PathName,['ref_images_' name '.mat']));
         else

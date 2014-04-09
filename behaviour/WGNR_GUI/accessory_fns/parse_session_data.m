@@ -45,7 +45,7 @@ for ij = start_trial:num_trials
     if session.trial_config.processed_dat.vals.trial_type(session.trial_info.inds(ij)) == 1 % Distance trial
         session.data{ij}.processed_matrix(4,:) = session.data{ij}.processed_matrix(2,:)/session.trial_config.processed_dat.vals.trial_dur(session.trial_info.inds(ij));
     else % Time trial
-        session.data{ij}.processed_matrix(4,:) = session.data{ij}.processed_matrix(1,:)/session.trial_config.processed_dat.vals.trial_dur(session.trial_info.inds(ij));
+        session.data{ij}.processed_matrix(4,:) = session.data{ij}.processed_matrix(1,:)/session.trial_config.processed_dat.vals.trial_timeout(session.trial_info.inds(ij));
     end
     session.data{ij}.processed_matrix(5,:) = session.rig_config.sample_freq*sqrt(session.data{ij}.trial_matrix(1,:).^2 + session.data{ij}.trial_matrix(2,:).^2);
     session.data{ij}.processed_matrix(5,:) = conv(session.data{ij}.processed_matrix(5,:),ones(1,250)/250,'same');
