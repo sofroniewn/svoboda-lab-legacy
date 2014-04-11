@@ -5,12 +5,13 @@
 % Parameters for WGNR GUI
 rig_config.rig_name = 'Laptop'; % BASE DIRECTORY
 rig_config.rig_room = 'JFRC'; % BASE DIRECTORY
-rig_config.base_dir = '/Users/sofroniewn/Documents/code/njs_library/behaviour/WGNR_GUI'; % BASE DIRECTORY
+rig_config.base_dir = '/Users/sofroniewn/github/wgnr/behaviour/WGNR_GUI'; % BASE DIRECTORY
 rig_config.comp_ip_address = '192.168.1.2'; % COMPUTER IP ADDRESS
 rig_config.globals_name = 'globals_WGNR.c'; % base globals file
 rig_config.treadmill_str = 'treadmill';
 rig_config.data_dir = '/Users/sofroniewn/Documents/DATA/WGNR_DATA'; % DATA DIRECTORY
 rig_config.TCP_IP_address = '127.0.0.1';
+rig_config.accesory_path = '.';
 
 
 % Parameters for globals file

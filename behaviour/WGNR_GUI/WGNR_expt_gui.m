@@ -22,7 +22,7 @@ function varargout = WGNR_expt_gui(varargin)
 
 % Edit the above text to modify the response to help WGNR_expt_gui
 
-% Last Modified by GUIDE v2.5 28-Feb-2014 12:49:33
+% Last Modified by GUIDE v2.5 10-Apr-2014 22:00:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -240,6 +240,7 @@ switch get(hObject,'value')
         set(handles.edit_animal_number,'Enable','on')
         set(handles.edit_date,'Enable','on')
         set(handles.load_trial_config,'Enable','on')
+        set(handles.checkbox_stream_behaviour,'Enable','on')
 
         % Disable water buttons
         set(handles.pushbutton_water,'Enable','off')
@@ -327,6 +328,8 @@ switch get(hObject,'value')
         set(handles.edit_animal_number,'Enable','off')
         set(handles.edit_date,'Enable','off')
         set(handles.load_trial_config,'Enable','off')
+        set(handles.checkbox_stream_behaviour,'Enable','off')
+
 
         % Create folder names
         str_date = get(handles.edit_date,'String');
@@ -356,7 +359,7 @@ switch get(hObject,'value')
             jtcp('write',handles.jTcpObj,{'Start run'});
         end
 
-
+        
         % Get globals file name
         fileIn = fullfile('.','globals',rig_config.globals_name);
         fileOut = fullfile('.','globals',[rig_config.globals_name(1:end-2) '_used.c']);
@@ -419,6 +422,24 @@ switch get(hObject,'value')
         else
         end
         
+        % If streaming behaviour to non local source 
+        if get(handles.checkbox_stream_behaviour,'Value')
+            stream_folder_name = fullfile(rig_config.accesory_path,['anm_0' str_animal_number],['20' str_date(1:2) '_' str_date(3:4) '_' str_date(5:6)],['run_' str_run_number],'behaviour');
+            stream_fname_base = fullfile(stream_folder_name,file_id_name);
+            if exist(stream_folder_name) ~= 7
+                mkdir(stream_folder_name);
+            end
+            stream_fname_globals = [stream_fname_base rig_config.globals_name];
+            handles.stream_fname_base = stream_fname_base;
+            copyfile(fileOut,stream_fname_globals);
+            save([stream_fname_base 'rig_config.mat'],'rig_config');
+            save([stream_fname_base 'trial_config.mat'],'trial_config');
+            save([stream_fname_base 'ps_sites.mat'],'ps_sites');
+        end
+
+
+
+
         % Setup timer
         handles.obj_t = timer('TimerFcn',{@update_function,handles});
         set(handles.obj_t,'ExecutionMode','fixedRate');
@@ -685,5 +706,10 @@ switch get(hObject,'value')
 end
 
 
+% --- Executes on button press in checkbox_stream_behaviour.
+function checkbox_stream_behaviour_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_stream_behaviour (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 
-
+% Hint: get(hObject,'Value') returns toggle state of checkbox_stream_behaviour

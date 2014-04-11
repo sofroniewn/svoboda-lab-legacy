@@ -77,11 +77,13 @@ if isempty(varLog) == 0 && update_display_on == 1
     else % new trial found at first ind
         trial_matrix = [trial_info.trial_mat trial_mat(:,1:ind-1)];
         trial_info.trial_mat = trial_mat(:,ind:end);
-        if checkbox_log_value == 1
+        if checkbox_log_value
             save([handles.fname_base sprintf('trial_%04d.mat',trial_num)],'trial_matrix','trial_mat_names','trial_num');
-        else
         end
-        if get(handles.togglebutton_TCP,'Value') == 1
+        if get(handles.checkbox_stream_behaviour,'Value');
+           save([handles.stream_fname_base sprintf('trial_%04d.mat',trial_num)],'trial_matrix','trial_mat_names','trial_num');
+        end
+        if get(handles.togglebutton_TCP,'Value')
             try 
                 jtcp('write',handles.jTcpObj,{'trial_data', trial_num, trial_matrix});
             catch

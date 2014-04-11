@@ -11,6 +11,7 @@ rig_config.globals_name = 'globals_WGNR.c'; % base globals file
 rig_config.treadmill_str = 'treadmill';
 rig_config.data_dir = 'C:\Users\sofroniewn\Documents\MATLAB\WGNR_DATA'; % DATA DIRECTORY
 rig_config.TCP_IP_address = [];
+rig_config.accesory_path = '.';
 
 
 % Parameters for globals file

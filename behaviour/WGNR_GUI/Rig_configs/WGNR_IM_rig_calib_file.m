@@ -11,6 +11,7 @@ rig_config.globals_name = 'globals_WGNR.c'; % base globals file
 rig_config.treadmill_str = 'treadmill4';
 rig_config.data_dir = 'E:\Documents and Settings\user\My Documents\WGNR_DATA'; % DATA DIRECTORY
 rig_config.TCP_IP_address = '10.102.22.49';
+rig_config.accesory_path = '.';
 
 
 % Parameters for globals file
