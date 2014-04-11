@@ -143,6 +143,7 @@ xlabel('z','FontSize',14)
 
 clear global im_session;
 global im_session;
+im_session = [];
 clear global session_ca;
 global session_ca;
 clear global session;
@@ -568,8 +569,14 @@ if value == 1
   set(handles.obj_t,'UserData',0);
     
   global im_session;
-  im_session.basic_info.cur_files = [];
-  set(handles.text_frac_registered,'String',sprintf('Registered 0/%d',numel(im_session.basic_info.cur_files)))
+
+  if ~isfield(im_session,'reg')
+    % Setup registration
+    setup_im_reg(handles);
+  end
+
+%  im_session.basic_info.cur_files = [];
+%  set(handles.text_frac_registered,'String',sprintf('Registered 0/%d',numel(im_session.basic_info.cur_files)))
 
   % set(handles.text_elapsed_time,'Enable','on')
    
@@ -581,29 +588,34 @@ start_flag = 1;
     % match scim behaviour trial numbers (assume one to one)
     %global behaviour_scim_trial_align;
     %behaviour_scim_trial_align = [1:numel(session.data)];
-    % initialize global variables for scim alignment
-    global prev_num_trigs_behaviour;
-    prev_num_trigs_behaviour = 0;
-    global extra_frame_behaviour;
-    extra_frame_behaviour = 0;
-    if get(handles.togglebutton_TCP,'value') == 0
-       set(handles.togglebutton_TCP,'value',1);
-       togglebutton_TCP_Callback(handles.togglebutton_TCP, eventdata, handles);
-       start_flag = get(handles.togglebutton_TCP,'value');
-    end
-    %global session;
-    %num_files = numel(im_session.basic_info.cur_files);
-    %num_behaviour = numel(session.data);
-    %if num_files > num_behaviour
-    %start_flag = 0;
-    %end
+    
+    % Check if behaviour mode on
+    global session;
+    if isempty(session.data)
+        set(handles.text_status,'String','Status: loading behaviour')
+        drawnow
+        base_path_behaviour = fullfile(handles.base_path, 'behaviour');
+        session = [];
+        session = load_session_data(base_path_behaviour);
+        session = parse_session_data(1,session);
+        % match scim behaviour trial numbers (assume one to one)
+        im_session.ref.behaviour_scim_trial_align = [1:numel(session.data)];
+
+        % initialize global variables for scim alignment
+        global remove_first;
+        remove_first = 0;
+        set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
+    end   
+   % if get(handles.togglebutton_TCP,'value') == 0
+   %    set(handles.togglebutton_TCP,'value',1);
+   %    togglebutton_TCP_Callback(handles.togglebutton_TCP, eventdata, handles);
+   %    start_flag = get(handles.togglebutton_TCP,'value');
+   % end
   end
     % Update handles structure
     guidata(hObject, handles);
     
   if start_flag == 1
-    % Setup registration
-    setup_im_reg(handles);
     %start_trial = 1;
     %align_chan = eval(get(handles.edit_align_channel,'string'));
     %save_opts.overwrite = get(handles.checkbox_overwrite,'Value');
