@@ -68,7 +68,7 @@ for ij = 1:numel(plot_list)
     plot_names{ij} = plot_list(ij).name;
 end
 set(handles.popupmenu_list_plots,'string',plot_names)
-set(handles.popupmenu_list_plots,'value',4)
+set(handles.popupmenu_list_plots,'value',5)
 
 handles.jTcpObj = [];
 
@@ -225,7 +225,7 @@ set(handles.text_frac_registered,'String',sprintf('Registered %d/%d',0,0))
 set(handles.text_status,'String','Status: offline')
 
 set(handles.edit_trial_num,'String',num2str(0))
-set(handles.popupmenu_list_plots,'Value',4)
+set(handles.popupmenu_list_plots,'Value',5)
 
 
 start_path = handles.datastr;

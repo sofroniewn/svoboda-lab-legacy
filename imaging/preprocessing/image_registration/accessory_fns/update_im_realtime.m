@@ -58,7 +58,7 @@ update_im = get(handles.checkbox_plot_images,'value');
 contents = cellstr(get(handles.popupmenu_list_plots,'String'));
 plot_str = contents{get(handles.popupmenu_list_plots,'Value')};
 
-if update_im == 1 && strcmp(plot_str,'plot_realtime_raw.m') == 1
+if update_im == 1 && (strcmp(plot_str,'plot_realtime_raw.m') == 1 || strcmp(plot_str,'plot_realtime_overlay.m'))
 	im_session.realtime.im_raw(:,:,:,im_session.realtime.ind) = im_raw;
 	im_session.realtime.ind = im_session.realtime.ind + 1;
 	if im_session.realtime.ind > size(im_session.realtime.im_raw,4)
