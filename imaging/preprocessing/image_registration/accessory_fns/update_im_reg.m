@@ -18,9 +18,9 @@ if get(handles.checkbox_behaviour,'Value') == 1
     base_path_behaviour = fullfile(handles.base_path, 'behaviour');
 	cur_bv_files = dir(fullfile(base_path_behaviour,'*_trial_*.mat'));
 		if numel(cur_bv_files)-1 == numel(session.data)
-	    	%    disp('No new files')
+	%    	disp('No new files')
 		else
-		    %    disp(['New files')
+	%	    disp('New files')
 		    start_trial = numel(session.data)+1;
     		for ij = start_trial:numel(cur_bv_files)-1
         		f_name = fullfile(base_path_behaviour,cur_bv_files(ij).name);
@@ -36,12 +36,11 @@ else
 	num_behaviour = Inf;
 end
 
-
 num_match = min(num_behaviour,numel(cur_files));
 
 if num_match > num_old_files
   %  disp('New files')
-	%im_session.basic_info.cur_files = cur_files(1:num_match);
+	im_session.basic_info.cur_files = cur_files;
     start_trial = num_old_files+1;
 	align_chan = eval(get(handles.edit_align_channel,'string'));
 	save_opts.overwrite = get(handles.checkbox_overwrite,'Value');

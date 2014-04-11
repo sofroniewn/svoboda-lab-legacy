@@ -99,19 +99,32 @@ for ij = start_trial:num_files
   	end
 
 	% save text file
-	if save_opts.text == 1 && isempty(im_aligned) ~=1
-		set(handles.text_status,'String','Status: saving text')
-		if get(handles.togglebutton_online_mode,'value') == 1
-    		time_elapsed = toc;
- 			time_elapsed_str = sprintf('Time online %.1f s',time_elapsed);
-    		set(handles.text_time,'String',time_elapsed_str)
-		end
-		drawnow
+	if save_opts.text == 1
 		type_name = 'text';
 		file_name = [base_name(1:replace_start-1) type_name  base_name(replace_end:end)];
 		full_file_name = fullfile(im_session.basic_info.data_dir,type_name,[file_name '.txt']);	
-		analyze_chan = str2double(get(handles.edit_analyze_chan,'String'));
-		save_im2text(im_aligned,trial_data,analyze_chan,full_file_name,1);
+		% if file does not exist or overwrite is on remake it
+		if exist(full_file_name) ~= 2 || save_opts.overwrite
+			% if im_algined is not already loaded - load it in
+			if isempty(im_aligned)
+				set(handles.text_status,'String','Status: loading aligned')
+				drawnow
+				type_name = 'registered';
+				file_name = [base_name(1:replace_start-1) type_name  base_name(replace_end:end)];
+				full_file_name_aligned = fullfile(im_session.basic_info.data_dir,type_name,[file_name '.mat']);	
+				load(full_file_name_aligned);
+			end
+			% now do the saving of the text
+			set(handles.text_status,'String','Status: saving text')
+			if get(handles.togglebutton_online_mode,'value') == 1
+   				time_elapsed = toc;
+ 				time_elapsed_str = sprintf('Time online %.1f s',time_elapsed);
+   				set(handles.text_time,'String',time_elapsed_str)
+   			end
+			drawnow
+			analyze_chan = str2double(get(handles.edit_analyze_chan,'String'));
+			save_im2text(im_aligned,trial_data,analyze_chan,full_file_name,1);
+		end
 	end
 
 	set(handles.text_status,'String','Status: updating')

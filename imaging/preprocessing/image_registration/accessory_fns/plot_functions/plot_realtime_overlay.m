@@ -3,6 +3,7 @@ function im_comb = plot_realtime_overlay(plot_axes,im_session,trial_num,chan_num
 axes(plot_axes);
 num_planes = length(plot_planes);
 plane_rep = ceil(sqrt(num_planes));
+global im_comb;
 im_comb = zeros(plane_rep*im_session.ref.im_props.height,plane_rep*im_session.ref.im_props.width,3);
 
 for ij = 1:num_planes
@@ -23,8 +24,11 @@ for ij = 1:num_planes
 	end
 end
 
+im_comb = (im_comb - clim(1))/clim(2);
+im_comb(im_comb>1) = 1;
+im_comb(im_comb<0) = 0;
+
 if plot_on == 1
-	im_comb = (im_comb - clim(1))/clim(2);
 	imshow(im_comb)	
 	set(gca,'xtick',[])
 	set(gca,'ytick',[])

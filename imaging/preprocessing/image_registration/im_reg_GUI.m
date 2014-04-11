@@ -675,7 +675,7 @@ if value == 1
   % Setup timer
   handles.obj_t_realtime = timer('TimerFcn',{@update_im_realtime,handles});
   set(handles.obj_t_realtime,'ExecutionMode','fixedSpacing');
-  set(handles.obj_t_realtime,'Period', .05);
+  set(handles.obj_t_realtime,'Period', .01);
   set(handles.obj_t_realtime,'BusyMode','drop');
   set(handles.obj_t_realtime,'ErrorFcn',@(obj,event)disp('Realtime timing Error'));
   set(handles.obj_t_realtime,'UserData',0);
@@ -995,9 +995,6 @@ folder_name = uigetdir(start_path);
 
 if folder_name ~= 0
   handles.text_path = folder_name;
-else
-  type_name = 'text';
-  handles.text_path = fullfile(im_session.basic_info.data_dir,type_name);
 end
 guidata(hObject, handles);
 
