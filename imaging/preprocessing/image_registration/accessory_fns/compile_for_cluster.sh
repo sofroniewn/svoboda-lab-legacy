@@ -1,5 +1,6 @@
 #!/bin/bash
 
+cd ../../../..
 rm -rf compiled
 mkdir compiled
 cd compiled
