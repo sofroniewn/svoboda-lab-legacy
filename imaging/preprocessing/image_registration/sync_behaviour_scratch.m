@@ -57,5 +57,10 @@ convert_legacy_behaviour(data_dir,convert_name,over_write)
 
 
 
+fullpath = '/Volumes/wdbp/imreg/sofroniewn/an234870/2014_03_22/run_01/scanimage/an234870_2014_03_22_main_002.tif';
+hdr = extern_scim_opentif(fullpath, 'header');
 
+tic;
+[im improps] = load_image('/Users/sofroniewn/Documents/DATA/WGNR_DATA/anm_0227254/2013_12_12/run_02/scanimage/an227254_2013_12_12_main_001.tif');
+toc
 

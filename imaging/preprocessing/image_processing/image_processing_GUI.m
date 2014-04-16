@@ -22,16 +22,16 @@ function varargout = image_processing_GUI(varargin)
 
 % Edit the above text to modify the response to help image_processing_GUI
 
-% Last Modified by GUIDE v2.5 15-Apr-2014 13:53:11
+% Last Modified by GUIDE v2.5 15-Apr-2014 20:39:46
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @image_processing_GUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @image_processing_GUI_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @image_processing_GUI_OpeningFcn, ...
+    'gui_OutputFcn',  @image_processing_GUI_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -67,10 +67,9 @@ handles.jTcpObj = [];
 
 % disable gui buttons that should not be used
 image_processing_gui_toggle_enable(handles,'off',[1 3 4 5 6])
-set(handles.text_align_chan,'enable','off') 
+set(handles.text_align_chan,'enable','off')
 set(handles.pushbutton_gen_catsa,'enable','off')
 set(handles.pushbutton_gen_text,'enable','off')
-set(handles.pushbutton_save_session,'enable','off')
 set(handles.checkbox_behaviour,'Value',1)
 set(handles.text_status,'String','Status: offline')
 
@@ -89,7 +88,7 @@ guidata(hObject, handles);
 % uiwait(handles.figure1);
 
 % --- Outputs from this function are returned to the command line.
-function varargout = image_processing_GUI_OutputFcn(hObject, eventdata, handles) 
+function varargout = image_processing_GUI_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -108,13 +107,13 @@ function pushbutton_data_dir_Callback(hObject, eventdata, handles)
 image_processing_gui_toggle_enable(handles,'off',[1 3 4 5 6])
 set(handles.pushbutton_gen_catsa,'enable','off')
 set(handles.pushbutton_gen_text,'enable','off')
-set(handles.pushbutton_save_session,'enable','off')
-set(handles.text_align_chan,'Enable','off') 
-set(handles.text_align_chan,'String',['Align channel ' num2str(0)]) 
+set(handles.text_align_chan,'Enable','off')
+set(handles.text_align_chan,'String',['Align channel ' num2str(0)])
 
 set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(0)]);
+set(handles.text_registered_trials,'String',['Registered trials ' num2str(0)]);
+set(handles.text_imaging_trials,'String',['Imaging trials ' num2str(0)]);
 
-set(handles.text_frac_registered,'String',sprintf('Registered %d/%d',0,0))
 set(handles.text_status,'String','Status: offline')
 
 
@@ -124,34 +123,35 @@ folder_name = uigetdir(start_path);
 if folder_name ~= 0
     handles.base_path = folder_name;
     handles.data_dir = fullfile(handles.base_path, 'scanimage');
-
+    
     clear global im_session
     global im_session;
     im_session = load_im_session_data(handles.data_dir);
     im_session.realtime.im_raw = [];
     im_session.realtime.ind = 0;
-
+    
     clear global session;
     global session;
     session = [];
     session.data = [];
-
+    
     clear global session_ca;
     global session_ca;
-
+    
     set(handles.text_anm,'Enable','on')
     set(handles.text_date,'Enable','on')
     set(handles.text_run,'Enable','on')
-    set(handles.text_frac_registered,'Enable','on')
+    set(handles.text_registered_trials,'Enable','on')
+    set(handles.text_imaging_trials,'Enable','on')
     
     set(handles.text_anm,'String',im_session.basic_info.anm_str)
     set(handles.text_date,'String',im_session.basic_info.date_str)
     set(handles.text_run,'String',im_session.basic_info.run_str)
-    set(handles.text_frac_registered,'String',sprintf('Registered 0/%d',numel(im_session.basic_info.cur_files)))
+    set(handles.text_imaging_trials,'String',['Imaging trials ' num2str(numel(im_session.basic_info.cur_files))]);
     
     type_name = 'text';
     handles.text_path = fullfile(im_session.basic_info.data_dir,type_name);
-
+    
     % LOAD EXISTING REF IMAGES
     ref_files = dir(fullfile(handles.data_dir,'ref_images_*.mat'));
     if numel(ref_files) > 0
@@ -167,7 +167,7 @@ if folder_name ~= 0
         display('No reference images found')
         set(handles.popupmenu_ref,'enable','off')
     end
-
+    
     start_val = 1;
     % LOAD EXISTING ROIs
     roi_files = dir(fullfile(handles.data_dir,'ROIs_*.mat'));
@@ -187,11 +187,11 @@ if folder_name ~= 0
         display('No rois found')
         set(handles.popupmenu_rois,'enable','off')
     end
-
-
-% Check if behaviour mode on
-  val = get(handles.checkbox_behaviour,'Value');
-  if val == 1
+    
+    
+    % Check if behaviour mode on
+    val = get(handles.checkbox_behaviour,'Value');
+    if val == 1
         set(handles.text_status,'String','Status: loading behaviour')
         drawnow
         base_path_behaviour = fullfile(handles.base_path, 'behaviour');
@@ -200,19 +200,19 @@ if folder_name ~= 0
         session = parse_session_data(1,session);
         % match scim behaviour trial numbers (assume one to one)
         im_session.behaviour_scim_trial_align = [1:numel(session.data)];
-
+        
         % initialize global variables for scim alignment
         global remove_first;
         remove_first = 0;
-        set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);  
+        set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
         set(handles.text_status,'String','Status: offline')
         drawnow
-  end
-
-
-
+    end
+    
+    
+    
     guidata(hObject, handles);
-
+    
 else
 end
 
@@ -248,34 +248,32 @@ FileName = ref_names{ref_val};
 
 overwrite = get(handles.checkbox_overwrite,'Value');
 
-    global im_session
-    load(fullfile(PathName,FileName));
-    name = FileName(12:end);
-    im_session.ref = ref;
-    im_session.ref.path_name = PathName;
-    im_session.ref.file_name = name;
+global im_session
+load(fullfile(PathName,FileName));
+name = FileName(12:end);
+ref = post_process_ref_fft(ref);
+im_session.ref = ref;
+im_session.ref.path_name = PathName;
+im_session.ref.file_name = name;
 
-    set(handles.text_num_planes,'String',sprintf('Num planes %d',im_session.ref.im_props.numPlanes))
-    set(handles.text_num_chan,'String',sprintf('Num channels %d',im_session.ref.im_props.nchans))
+set(handles.text_num_planes,'String',sprintf('Num planes %d',im_session.ref.im_props.numPlanes))
+set(handles.text_num_chan,'String',sprintf('Num channels %d',im_session.ref.im_props.nchans))
 
-    image_processing_gui_toggle_enable(handles,'on',[1 3 4 5 6])
-    if get(handles.checkbox_behaviour,'value') == 0
-       set(handles.text_num_behaviour,'enable','off')
-    end
-    
-    set(handles.text_align_chan,'Enable','on') 
-    set(handles.text_align_chan,'String',['Align channel ' num2str(im_session.ref.im_props.align_chan)]) 
+image_processing_gui_toggle_enable(handles,'on',[1 3 4 5 6])
+if get(handles.checkbox_behaviour,'value') == 0
+    set(handles.text_num_behaviour,'enable','off')
+end
 
-    set(handles.pushbutton_data_dir,'enable','on')
-    set(handles.pushbutton_cluster_path,'enable','on')
-    set(handles.pushbutton_gen_text,'enable','on')
-    set(handles.pushbutton_save_session,'enable','on')
-    
-    %set(handles.togglebutton_online_mode,'enable','off')
-    %set(handles.togglebutton_realtime_mode,'enable','off')
-    set(handles.text_time,'enable','off')
-    set(handles.text_status,'String','Status: offline')
-    drawnow
+set(handles.text_align_chan,'Enable','on')
+set(handles.text_align_chan,'String',['Align channel ' num2str(im_session.ref.im_props.align_chan)])
+
+set(handles.pushbutton_data_dir,'enable','on')
+set(handles.pushbutton_cluster_path,'enable','on')
+set(handles.pushbutton_gen_text,'enable','on')
+
+set(handles.text_time,'enable','off')
+set(handles.text_status,'String','Status: offline')
+drawnow
 
 
 % --- Executes on selection change in popupmenu_rois.
@@ -319,7 +317,7 @@ function checkbox_save_text_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of checkbox_save_text
 
-%set(handles.togglebutton_online_mode,'enable','off')
+%set(handles.togglebutton_register,'enable','off')
 %set(handles.togglebutton_realtime_mode,'enable','off')
 
 
@@ -331,7 +329,7 @@ function checkbox_save_aligned_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of checkbox_save_aligned
 
-%set(handles.togglebutton_online_mode,'enable','off')
+%set(handles.togglebutton_register,'enable','off')
 %set(handles.togglebutton_realtime_mode,'enable','off')
 
 
@@ -343,7 +341,7 @@ function checkbox_overwrite_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of checkbox_overwrite
 
-%set(handles.togglebutton_online_mode,'enable','off')
+%set(handles.togglebutton_register,'enable','off')
 %set(handles.togglebutton_realtime_mode,'enable','off')
 
 % --- Executes on button press in pushbutton_cluster_path.
@@ -351,7 +349,7 @@ function pushbutton_cluster_path_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_cluster_path (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-set(handles.togglebutton_online_mode,'enable','off')
+set(handles.togglebutton_register,'enable','off')
 set(handles.togglebutton_realtime_mode,'enable','off')
 
 
@@ -359,7 +357,7 @@ start_path = handles.datastr;
 folder_name = uigetdir(start_path);
 
 if folder_name ~= 0
-  handles.text_path = folder_name;
+    handles.text_path = folder_name;
 end
 guidata(hObject, handles);
 
@@ -372,7 +370,7 @@ function edit_analyze_chan_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of edit_analyze_chan as text
 %        str2double(get(hObject,'String')) returns contents of edit_analyze_chan as a double
 
-%set(handles.togglebutton_online_mode,'enable','off')
+%set(handles.togglebutton_register,'enable','off')
 %set(handles.togglebutton_realtime_mode,'enable','off')
 
 
@@ -405,7 +403,7 @@ function checkbox_behaviour_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of checkbox_behaviour
 
 if get(handles.checkbox_behaviour,'value') == 0
-   set(handles.text_num_behaviour,'enable','off')
+    set(handles.text_num_behaviour,'enable','off')
 else
     set(handles.text_num_behaviour,'enable','on')
 end
@@ -425,10 +423,9 @@ function checkbox_use_cluster_Callback(hObject, eventdata, handles)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-% --- Executes on button press in pushbutton_register_im.
-function pushbutton_register_im_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton_register_im (see GCBO)
+% --- Executes on button press in togglebutton_register.
+function togglebutton_register_Callback(hObject, eventdata, handles)
+% hObject    handle to togglebutton_register (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -436,172 +433,87 @@ use_cluser = get(handles.checkbox_use_cluster,'Value');
 
 if use_cluser
     evalScript = prepare_register_cluster;
+    set(handles.togglebutton_register,'value',0);
 else
-
-save_opts.overwrite = get(handles.checkbox_overwrite,'Value');
-save_opts.aligned = get(handles.checkbox_save_aligned,'Value');
-save_opts.text = get(handles.checkbox_save_text,'Value');
-
-global im_session;
-
-align_chan = im_session.ref.im_props.align_chan;
-start_trial = 1;
-
-set(handles.pushbutton_gen_text,'enable','off')
-set(handles.pushbutton_save_session,'enable','off')
     
-image_processing_gui_toggle_enable(handles,'off',[1 2])
-set(handles.pushbutton_data_dir,'enable','off')
-drawnow
-
-num_files_im = numel(im_session.basic_info.cur_files);
-num_files = numel(im_session.basic_info.cur_files);
-% Check if behaviour mode on
-val = get(handles.checkbox_behaviour,'Value');
-if val == 1
-    set(handles.text_status,'String','Status: loading behaviour')
-    drawnow
-    base_path_behaviour = fullfile(handles.base_path, 'behaviour');
-    global session;
-    session = [];
-    session = load_session_data(base_path_behaviour);
-    session = parse_session_data(1,session);
-
-    num_files = min(num_files_im,numel(session.data));
-    % match scim behaviour trial numbers (assume one to one)
-    im_session.behaviour_scim_trial_align = [1:numel(session.data)];
+    value = get(hObject,'Value');
     
-    % initialize global variables for scim alignment
-    global remove_first;
-    remove_first = 0;
-    set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
-    set(handles.text_status,'String','Status: waiting')
-    drawnow
-end
-
-% Setup registration
-setup_im_reg(handles);
-% Register directory
-register_directory_fast(start_trial,num_files,num_files_im,align_chan,save_opts,handles)
-
-image_processing_gui_toggle_enable(handles,'on',[1 2])
-
-set(handles.text_time,'enable','off')
-set(handles.pushbutton_data_dir,'enable','on')
-set(handles.pushbutton_gen_text,'enable','on')
-set(handles.pushbutton_save_session,'enable','on')
-set(handles.text_status,'String','Status: offline')
-end
-
-% --- Executes on button press in togglebutton_online_mode.
-function togglebutton_online_mode_Callback(hObject, eventdata, handles)
-% hObject    handle to togglebutton_online_mode (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-value = get(hObject,'Value');
-
-if value == 1
-  tic;
-  image_processing_gui_toggle_enable(handles,'off',[1 2])
-  set(handles.pushbutton_data_dir,'enable','off')
-  set(handles.togglebutton_online_mode,'enable','on')
-  set(handles.text_status,'enable','on')
-  set(handles.text_frac_registered,'enable','on')
-  set(handles.text_time,'Enable','on')
-  set(handles.text_status,'String','Status: waiting')
-  set(handles.pushbutton_gen_text,'enable','off')
-  set(handles.pushbutton_save_session,'enable','off')
+    if value == 1
+        tic;
+        image_processing_gui_toggle_enable(handles,'off',[1 2])
+        set(handles.pushbutton_data_dir,'enable','off')
+        set(handles.togglebutton_register,'enable','on')
+        set(handles.text_status,'enable','on')
+        set(handles.text_registered_trials,'enable','on')
+        set(handles.text_time,'Enable','on')
+        set(handles.text_status,'String','Status: waiting')
+        set(handles.pushbutton_gen_text,'enable','off')
+        set(handles.pushbutton_gen_catsa,'enable','off')
+        
+        % Setup timer
+        handles.obj_t = timer('TimerFcn',{@update_im_processing,handles});
+        set(handles.obj_t,'ExecutionMode','fixedSpacing');
+        set(handles.obj_t,'Period', .5);
+        set(handles.obj_t,'BusyMode','drop');
+        set(handles.obj_t,'ErrorFcn',@(obj,event)disp('Timing Error'));
+        set(handles.obj_t,'UserData',0);
+        
+        global im_session;
+        
+        if ~isfield(im_session,'reg')
+            % Setup registration
+            setup_im_reg(handles);
+        end
+        
+        
+        % Check if behaviour mode on
+        if get(handles.checkbox_behaviour,'Value');
+            % match scim behaviour trial numbers (assume one to one)
+            %global behaviour_scim_trial_align;
+            %behaviour_scim_trial_align = [1:numel(session.data)];
+            
+            % Check if behaviour mode on
+            global session;
+            if isempty(session.data)
+                set(handles.text_status,'String','Status: loading behaviour')
+                drawnow
+                base_path_behaviour = fullfile(handles.base_path, 'behaviour');
+                session = [];
+                session = load_session_data(base_path_behaviour);
+                session = parse_session_data(1,session);
+                % match scim behaviour trial numbers (assume one to one)
+                im_session.behaviour_scim_trial_align = [1:numel(session.data)];
+                
+                % initialize global variables for scim alignment
+                global remove_first;
+                remove_first = 0;
+                set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
+            end
+        end
+        
+        % Update handles structure
+        guidata(hObject, handles);
+        start(handles.obj_t)        
     
-  % Setup timer
-  handles.obj_t = timer('TimerFcn',{@update_im_processing,handles});
-  set(handles.obj_t,'ExecutionMode','fixedSpacing');
-  set(handles.obj_t,'Period', .5);
-  set(handles.obj_t,'BusyMode','drop');
-  set(handles.obj_t,'ErrorFcn',@(obj,event)disp('Timing Error'));
-  set(handles.obj_t,'UserData',0);
-    
-  global im_session;
-
-  if ~isfield(im_session,'reg')
-    % Setup registration
-    setup_im_reg(handles);
-  end
-
-%  im_session.basic_info.cur_files = [];
-%  set(handles.text_frac_registered,'String',sprintf('Registered 0/%d',numel(im_session.basic_info.cur_files)))
-
-  % set(handles.text_elapsed_time,'Enable','on')
-   
-start_flag = 1;
-
-% Check if behaviour mode on
-  val = get(handles.checkbox_behaviour,'Value');
-  if val == 1
-    % match scim behaviour trial numbers (assume one to one)
-    %global behaviour_scim_trial_align;
-    %behaviour_scim_trial_align = [1:numel(session.data)];
-    
-    % Check if behaviour mode on
-    global session;
-    if isempty(session.data)
-        set(handles.text_status,'String','Status: loading behaviour')
-        drawnow
-        base_path_behaviour = fullfile(handles.base_path, 'behaviour');
-        session = [];
-        session = load_session_data(base_path_behaviour);
-        session = parse_session_data(1,session);
-        % match scim behaviour trial numbers (assume one to one)
-        im_session.behaviour_scim_trial_align = [1:numel(session.data)];
-
-        % initialize global variables for scim alignment
-        global remove_first;
-        remove_first = 0;
-        set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
-    end   
-   % if get(handles.togglebutton_TCP,'value') == 0
-   %    set(handles.togglebutton_TCP,'value',1);
-   %    togglebutton_TCP_Callback(handles.togglebutton_TCP, eventdata, handles);
-   %    start_flag = get(handles.togglebutton_TCP,'value');
-   % end
-  end
-
-    % Update handles structure
-    guidata(hObject, handles);
-    
-  if start_flag == 1
-    %start_trial = 1;
-    %align_chan = eval(get(handles.edit_align_channel,'string'));
-    %save_opts.overwrite = get(handles.checkbox_overwrite,'Value');
-    %save_opts.aligned = get(handles.checkbox_save_aligned,'Value');
-    %save_opts.text = get(handles.checkbox_save_text,'Value');
-    %global im_session;
-    %num_files = numel(im_session.basic_info.cur_files);
-    %register_directory_fast(start_trial,num_files,num_files,align_chan,save_opts,handles)
-    % Start Timer
-    start(handles.obj_t)
-  else
-    set(handles.togglebutton_online_mode,'value',0);
-    togglebutton_online_mode_Callback(handles.togglebutton_online_mode, eventdata, handles)
-  end
-
-else
-    stop(handles.obj_t);
-    delete(handles.obj_t);
-    
-    image_processing_gui_toggle_enable(handles,'on',[1 2])
-    set(handles.pushbutton_data_dir,'enable','on')
-
-    time_elapsed_str = sprintf('Time online %.1f s',0);
-    set(handles.text_time,'String',time_elapsed_str)
-    set(handles.text_time,'Enable','off')
-    set(handles.text_status,'String','Status: offline')
-    set(handles.pushbutton_gen_text,'enable','on')
-    set(handles.pushbutton_save_session,'enable','on')
-%   set(handles.pushbutton_gen_catsa,'enable','on')
+    else
+        stop(handles.obj_t);
+        delete(handles.obj_t);
+        
+        image_processing_gui_toggle_enable(handles,'on',[1 2])
+        set(handles.pushbutton_data_dir,'enable','on')
+        
+        time_elapsed_str = sprintf('Time online %.1f s',0);
+        set(handles.text_time,'String',time_elapsed_str)
+        set(handles.text_time,'Enable','off')
+        set(handles.text_status,'String','Status: offline')
+        set(handles.pushbutton_gen_text,'enable','on')
+        global im_session
+        if isfield(im_session.ref,'roi_array')
+            set(handles.pushbutton_gen_catsa,'enable','on')
+        end
+    end
     
 end
-
 
 % --- Executes on button press in pushbutton_gen_catsa.
 function pushbutton_gen_catsa_Callback(hObject, eventdata, handles)
@@ -615,9 +527,9 @@ neuropilSubSF = -1;
 global im_session;
 num_files = numel(im_session.basic_info.cur_files);
 % Check if behaviour mode on
-val = get(handles.checkbox_behaviour,'Value');
-if val == 1
-    global session;
+behaviour_on = get(handles.checkbox_behaviour,'Value');
+global session;
+if behaviour_on == 1
     num_files = min(num_files,numel(session.data));
 end
 
@@ -625,7 +537,15 @@ num_files = min(num_files,length(im_session.reg.nFrames));
 
 signalChannels = str2num(get(handles.edit_analyze_chan,'string'));
 overwrite = get(handles.checkbox_overwrite,'Value');
-file_name_tag = get(handles.edit_rois_name,'String');
+
+roi_names =  get(handles.popupmenu_rois,'string');
+roi_val =  get(handles.popupmenu_rois,'value');
+roi_file_names = roi_names{roi_val};
+file_name_tag = roi_file_names(6:end);
+roi_tag_end = strfind(file_name_tag,'_');
+file_name_tag = file_name_tag(1:roi_tag_end-1);
+
+
 global session_ca;
 session_ca = [];
 if num_files > 0
@@ -633,18 +553,27 @@ if num_files > 0
     set(handles.text_status,'String','Status: extracting CaTSA')
     drawnow
     save_path = fileparts(im_session.basic_info.data_dir);
-    file_name_tag = get(handles.edit_rois_name,'String');
     session_path = fullfile(save_path,'session');
-
+    
     if exist(session_path) ~= 7
         mkdir(session_path);
     end
-
+    
     caTSA_file_name = fullfile(session_path,['session_ca_data_' file_name_tag '.mat']);
     session_ca = get_session_ca(caTSA_file_name,num_files,neuropilDilationRange,signalChannels,neuropilSubSF,file_name_tag,overwrite);
+    
+    save_path = fileparts(im_session.basic_info.data_dir);
+    session_path = fullfile(save_path,'session');
+    if exist(session_path) ~= 7
+        mkdir(session_path);
+    end
+    
+    overwrite = get(handles.checkbox_overwrite,'Value');
+    set(handles.text_status,'String','Status: saving session')
+    drawnow
+    save_common_data_format(session_path,file_name_tag,overwrite,num_files,behaviour_on,session,im_session,session_ca);
     set(handles.text_status,'String',cur_status)
-
-    pushbutton_save_session_Callback(handles.pushbutton_save_session, eventdata, handles);
+    
 else
     display('No files for CaTSA');
 end
@@ -667,7 +596,6 @@ end
 analyze_chan = str2num(get(handles.edit_analyze_chan,'string'));
 
 save_path = fileparts(im_session.basic_info.data_dir);
-file_name_tag = get(handles.edit_rois_name,'String');
 save_path = fullfile(save_path,'session');
 
 if exist(save_path) ~= 7
@@ -698,31 +626,3 @@ if num_files > 0
     save_session_im_text(save_path,num_files,analyze_chan,imaging_on,behaviour_on);
     set(handles.text_status,'String',cur_status)
 end
-
-% --- Executes on button press in pushbutton_save_session.
-function pushbutton_save_session_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton_save_session (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-global im_session;
-global session_ca;
-global session;
-num_files = min(numel(im_session.basic_info.cur_files),numel(session.data));
-behaviour_on = get(handles.checkbox_behaviour,'Value');
-
-save_path = fileparts(im_session.basic_info.data_dir);
-file_name_tag = get(handles.edit_rois_name,'String');
-session_path = fullfile(save_path,'session');
-
-if exist(session_path) ~= 7
-    mkdir(session_path);
-end
-
-overwrite = get(handles.checkbox_overwrite,'Value');
-cur_status = get(handles.text_status,'String');
-set(handles.text_status,'String','Status: saving session')
-drawnow
-save_common_data_format(session_path,file_name_tag,overwrite,num_files,behaviour_on,session,im_session,session_ca);
-set(handles.text_status,'String',cur_status)

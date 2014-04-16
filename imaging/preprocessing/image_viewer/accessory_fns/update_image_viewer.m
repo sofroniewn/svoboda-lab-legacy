@@ -6,7 +6,8 @@ cur_files = dir(fullfile(im_session.basic_info.data_dir,'*_main_*.tif'));
 if numel(cur_files) <= numel(im_session.basic_info.cur_files)
 %    	disp('No new files')
 else
-%	    disp('New files')	im_session.basic_info.cur_files = cur_files;
+%	    disp('New files')	
+	im_session.basic_info.cur_files = cur_files;
 	set(handles.text_imaging_trials,'String',['Imaging trials ' num2str(numel(cur_files))]);
 end
 
@@ -14,20 +15,20 @@ end
 global session;
 base_path_behaviour = fullfile(handles.base_path, 'behaviour');
 cur_bv_files = dir(fullfile(base_path_behaviour,'*_trial_*.mat'));
-	if numel(cur_bv_files)-1 <= numel(session.data)
+if numel(cur_bv_files)-1 <= numel(session.data)
 %    	disp('No new files')
-	else
+else
 %	    disp('New files')
-	    start_trial = numel(session.data)+1;
-   		for ij = start_trial:numel(cur_bv_files)-1
-       		f_name = fullfile(base_path_behaviour,cur_bv_files(ij).name);
-  			session.data{ij} = load(f_name);
-    		session.data{ij}.f_name = f_name;
-			im_session.ref.behaviour_scim_trial_align = [im_session.ref.behaviour_scim_trial_align, ij];
-   		end
-    	parse_session_data(start_trial,[]);
-		set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
-	end
+    start_trial = numel(session.data)+1;
+	for ij = start_trial:numel(cur_bv_files)-1
+   		f_name = fullfile(base_path_behaviour,cur_bv_files(ij).name);
+  		session.data{ij} = load(f_name);
+    	session.data{ij}.f_name = f_name;
+		im_session.behaviour_scim_trial_align = [im_session.behaviour_scim_trial_align, ij];
+   	end
+    parse_session_data(start_trial,[]);
+	set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
+end
 
 
 % Check registered directory
@@ -52,8 +53,12 @@ for ij = num_old_files + 1: numel(cur_files_reg)
 	file_name = [base_name(1:replace_start-1) type_name  base_name(replace_end:end)];
 	summary_file_name = fullfile(im_session.basic_info.data_dir,type_name,[file_name '.mat']);
 	
+	try
 	load(summary_file_name);
-	
+	catch
+		display('Failed to read new summary')
+		return
+	end
 	num_planes = im_session.ref.im_props.numPlanes;
 	num_chan = im_session.ref.im_props.nchans;
 

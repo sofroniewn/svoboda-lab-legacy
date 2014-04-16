@@ -379,7 +379,7 @@ if FileName ~= 0
     if strcmp(name(1:11),'ref_images_')
         name = name(12:end);
     end
-
+    ref = post_process_ref_fft(ref);
     im_session.ref = ref;
     im_session.ref.path_name = PathName;
     im_session.ref.file_name = name;

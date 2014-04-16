@@ -23,6 +23,7 @@ function register_cluster_directory(data_dir,file_num)
 	ref_files = dir(fullfile(data_dir,'ref_images_*.mat'));
     load(fullfile(data_dir,ref_files(1).name));
 	
+	ref = post_process_ref_fft(ref);
 	num_planes = ref.im_props.numPlanes;
 	num_chan = ref.im_props.nchans;
 	align_chan = ref.im_props.align_chan;
@@ -39,8 +40,8 @@ function register_cluster_directory(data_dir,file_num)
 		plane = mod(ij-1,num_planes)+1;
 		act_frame = floor((ij-1)/num_planes) + 1;
 		cur_im = im_align(:,:,ij);
-		ref_im = ref.base_images{plane};
-		[shifts_raw(ij,:) tmp]= register_image(cur_im,ref_im);
+		ref_im = ref.post_fft{plane};
+		[shifts_raw(ij,:) tmp]= register_image_fast(cur_im,ref_im);
 	end
 
 	fprintf('Do shifts %s \n',file_num);

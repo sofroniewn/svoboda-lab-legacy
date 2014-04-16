@@ -1,5 +1,11 @@
 function [im im_adj im_summary] = register_file(cur_file,base_name,ref,align_chan,scim_trial)
 
+	if isfield(ref,'post_fft')
+		fast_reg_flag = 1;
+	else
+		fast_reg_flag = 0;
+	end
+
 	num_planes = ref.im_props.numPlanes;
 	num_chan = ref.im_props.nchans;
 
@@ -15,8 +21,13 @@ function [im im_adj im_summary] = register_file(cur_file,base_name,ref,align_cha
 		plane = mod(ij-1,num_planes)+1;
 		act_frame = floor((ij-1)/num_planes) + 1;
 		cur_im = im_align(:,:,ij);
-		ref_im = ref.base_images{plane};
-		[shifts_raw(ij,:) tmp]= register_image(cur_im,ref_im);
+		if fast_reg_flag
+			ref_im = ref.post_fft{plane};
+			[shifts_raw(ij,:) tmp]= register_image_fast(cur_im,ref_im);			
+		else
+			ref_im = ref.base_images{plane};
+			[shifts_raw(ij,:) tmp]= register_image(cur_im,ref_im);
+		end
 	end
 
 	% shift images 

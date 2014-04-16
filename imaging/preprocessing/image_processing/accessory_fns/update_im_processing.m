@@ -1,16 +1,12 @@
 function update_im_processing(obj,event,handles)
 
+% Check number of imaging files
 global im_session;
-
 cur_files = dir(fullfile(im_session.basic_info.data_dir,'*_main_*.tif'));
-if isfield(im_session,'reg')
-	num_old_files = length(im_session.reg.nFrames);
-else
-	num_old_files = 0;
+if numel(cur_files) > numel(im_session.basic_info.cur_files)
+	im_session.basic_info.cur_files = cur_files;
+	set(handles.text_imaging_trials,'String',['Imaging trials ' num2str(numel(cur_files))]);
 end
-
-set(handles.text_frac_registered,'String',sprintf('Registered %d/%d',num_old_files,numel(cur_files)))
-
 
 % extract behaviour information if necessary
 if get(handles.checkbox_behaviour,'Value') == 1
@@ -26,7 +22,7 @@ if get(handles.checkbox_behaviour,'Value') == 1
         		f_name = fullfile(base_path_behaviour,cur_bv_files(ij).name);
        			session.data{ij} = load(f_name);
         		session.data{ij}.f_name = f_name;
-				im_session.ref.behaviour_scim_trial_align = [im_session.ref.behaviour_scim_trial_align, ij];
+				im_session.behaviour_scim_trial_align = [im_session.behaviour_scim_trial_align, ij];
     		end
 	    	parse_session_data(start_trial,[]);
 			set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
@@ -36,21 +32,24 @@ else
 	num_behaviour = Inf;
 end
 
+if isfield(im_session,'reg')
+	num_old_files = length(im_session.reg.nFrames);
+else
+	num_old_files = 0;
+end
 num_match = min(num_behaviour,numel(cur_files));
 
-if num_match > num_old_files
-  %  disp('New files')
-	im_session.basic_info.cur_files = cur_files;
-    start_trial = num_old_files+1;
-	align_chan = im_session.ref.im_props.align_chan;
-	save_opts.overwrite = get(handles.checkbox_overwrite,'Value');
-	save_opts.aligned = get(handles.checkbox_save_aligned,'Value');
-	save_opts.text = get(handles.checkbox_save_text,'Value');
-	register_directory_fast(start_trial,num_match,numel(cur_files),align_chan,save_opts,handles)	
+for start_trial = num_old_files+1:num_match
+	time_elapsed = toc;
+    time_elapsed_str = sprintf('Time online %.1f s',time_elapsed);
+    set(handles.text_time,'String',time_elapsed_str)
+	drawnow
+	register_directory_fast(start_trial,handles)	
+	set(handles.text_registered_trials,'String',['Registered trials ' num2str(start_trial)])
 end
-
-   time_elapsed = toc;
-   time_elapsed_str = sprintf('Time online %.1f s',time_elapsed);
-   set(handles.text_time,'String',time_elapsed_str)
+	time_elapsed = toc;
+    time_elapsed_str = sprintf('Time online %.1f s',time_elapsed);
+    set(handles.text_time,'String',time_elapsed_str)
+	drawnow
 
 end
