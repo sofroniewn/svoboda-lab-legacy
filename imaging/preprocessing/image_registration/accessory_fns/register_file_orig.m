@@ -1,9 +1,9 @@
 function [im im_adj im_summary] = register_file(cur_file,base_name,ref,align_chan,scim_trial)
 
 	if isfield(ref,'post_fft')
-		fast_reg_flag = 1;
+		fast_reg_flag = 1
 	else
-		fast_reg_flag = 0;
+		fast_reg_flag = 0
 	end
 	
 	num_planes = ref.im_props.numPlanes;
@@ -13,7 +13,8 @@ display('Loading image')
 tic
 	% load image
 	[im_raw improps] = load_image(cur_file);
-	num_frames = size(im_raw,3)/num_chan;
+	im_align = im_raw(:,:,align_chan:num_chan:end);
+	num_frames = size(im_align,3);
 toc
 
 display('Computing shifts')
@@ -23,7 +24,7 @@ tic
 	for ij = 1:num_frames
 		plane = mod(ij-1,num_planes)+1;
 		act_frame = floor((ij-1)/num_planes) + 1;
-		cur_im = im_raw(:,:,align_chan + (ij-1)*num_chan);
+		cur_im = im_align(:,:,ij);
 		if fast_reg_flag
 			ref_im = ref.post_fft{plane};
 			[shifts_raw(ij,:) tmp]= register_image_fast(cur_im,ref_im);			
@@ -37,8 +38,7 @@ toc
 display('Shifting images')
 tic
 	% shift images 
-	im_adj_raw = zeros(size(im_raw),'uint16');
-	im_raw = uint16(im_raw);
+	im_adj_raw = zeros(size(im_raw),'single');
 	for ij = 1:size(im_raw,3)
 		ind = floor((ij-1)/num_chan)+1;
 		im_adj_raw(:,:,ij) = func_im_shift(im_raw(:,:,ij),shifts_raw(ind,:));
@@ -47,7 +47,6 @@ toc
 
 display('Resorting data')
 tic
-
 	% resort data
 	im = cell(num_planes,num_chan);
 	im_adj = cell(num_planes,num_chan);
@@ -55,11 +54,17 @@ tic
 	mean_raw = cell(num_planes,num_chan);
 	shifts = cell(num_planes,1);
 	for ij = 1:num_chan
+		im_tmp = im_raw(:,:,ij:num_chan:end);
+		im_adj_tmp = im_adj_raw(:,:,ij:num_chan:end);
 		for ik = 1:num_planes
-			im{ik,ij} = im_raw(:,:,(ik+(ij-1)*num_chan):num_planes*num_chan:end);
-			im_adj{ik,ij} = im_adj_raw(:,:,(ik+(ij-1)*num_chan):num_planes*num_chan:end);
-			mean_raw{ik,ij} = uint16(mean(im{ik,ij},3));
-			mean_aligned{ik,ij} = uint16(mean(im_adj{ik,ij},3));
+			im{ik,ij} = im_tmp(:,:,ik:num_planes:end);
+			im_adj{ik,ij} = im_adj_tmp(:,:,ik:num_planes:end);
+			mean_raw{ik,ij} = mean(im{ik,ij},3);
+			mean_aligned{ik,ij} = mean(im_adj{ik,ij},3);
+			im{ik,ij} = uint16(im{ik,ij});
+			im_adj{ik,ij} = uint16(im_adj{ik,ij});
+			mean_raw{ik,ij} = uint16(mean_raw{ik,ij});
+			mean_aligned{ik,ij} = uint16(mean_aligned{ik,ij});
 			shifts{ik} = shifts_raw(ik:num_planes:end,:);
 		end
 	end

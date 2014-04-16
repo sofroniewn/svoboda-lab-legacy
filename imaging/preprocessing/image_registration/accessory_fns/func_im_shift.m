@@ -1,7 +1,7 @@
 function im_adj = func_im_shift(im,corr_offset)
 
 %%
-im_adj = zeros(size(im));
+im_adj = zeros(size(im),'uint16');
 size_im_x = size(im,1);
 size_im_y = size(im,2);
 corr_offset = -corr_offset;
