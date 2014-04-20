@@ -21,7 +21,7 @@ z = zeros(1,num_pixels*num_planes,'uint16');
 
 % parse the info
 for iPlane = 1:num_planes
-    im_tmp = uint16(im_aligned{iPlane,analyze_chan});
+    im_tmp = im_aligned{iPlane,analyze_chan};
     im_tmp = permute(im_tmp,[3 1 2]);    
     im_tmp = reshape(im_tmp,tSize,num_pixels);
     dat(:,(iPlane-1)*num_pixels+1:(iPlane)*num_pixels) = im_tmp;

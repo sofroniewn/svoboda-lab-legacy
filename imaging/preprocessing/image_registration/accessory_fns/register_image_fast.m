@@ -1,3 +1,3 @@
-function [shift corr_2] = register_image_fast(cur_im,ref_im)
+function shift = register_image_fast(cur_im,ref_im)
 
-	[shift corr_2] = gcorr_fast(cur_im, ref_im, size(cur_im,1));
+	[shift corr_2] = gcorr_mod_fast(cur_im, ref_im);

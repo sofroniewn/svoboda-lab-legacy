@@ -424,6 +424,8 @@ value = get(hObject,'Value');
 set(handles.uitable_plotting,'Data',handles.trial_config.plot_options.dat{value});
 set(handles.edit_plot_options_name,'String',contents(value));
 
+pushbutton_plot_data_Callback(handles.pushbutton_plot_data, eventdata, handles)
+
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu_plot_options_CreateFcn(hObject, eventdata, handles)
