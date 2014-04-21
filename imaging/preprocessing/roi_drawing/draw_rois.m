@@ -23,7 +23,7 @@ else
 	end
 end
 
-if isfield(im_session,'reg')
+if ~isempty(im_session.reg.align_mean) %isfield(im_session,'reg')
 	if isempty(im_session.ref.roi_array{ij}.permanentAccessoryImages)
 		for ij = 1:im_session.ref.im_props.numPlanes
 			for ik = 1:im_session.ref.im_props.nchans

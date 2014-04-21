@@ -19,10 +19,8 @@ for ij = 1:num_planes
 		end
 		im_session.ref.roi_array{plot_planes(ij)}.workingImageSettings.pixelRange = {['[' num2str(clim(1)) ' ' num2str(clim(2)) ']']};
 		im_use = generateImage(im_session.ref.roi_array{plot_planes(ij)}, 1, 1, 0);
-	else
-		im_use = repmat(im_session.ref.base_images{plot_planes(ij)},[1,1,3]);
+		im_comb(start_y:start_y+im_session.ref.im_props.height-1,start_x:start_x+im_session.ref.im_props.width-1,:) = im_use;
 	end
-	im_comb(start_y:start_y+im_session.ref.im_props.height-1,start_x:start_x+im_session.ref.im_props.width-1,:) = im_use;
 end
 
 if plot_on == 1

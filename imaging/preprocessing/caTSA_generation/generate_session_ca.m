@@ -1,8 +1,11 @@
-function session_ca = generate_session_ca(im_session,num_files,signalChannels,neuropilDilationRange)
+function session_ca = generate_session_ca(im_session,num_files,signalChannels,neuropilDilationRange,handles)
  	%% -- Setup
 	numFOVs = im_session.ref.im_props.numPlanes;
+	num_chan = im_session.ref.im_props.nchans;
 	roiArray = im_session.ref.roi_array;
-	
+	num_x_pixels = im_session.ref.im_props.width;
+	num_y_pixels = im_session.ref.im_props.height;
+
   	roiIds = [];
   	roiFOVidx = [];
 	for ik=1:numFOVs
@@ -25,22 +28,43 @@ function session_ca = generate_session_ca(im_session,num_files,signalChannels,ne
 	start_ind = 1;
 	% --- extract data
 	for ij = 1:num_files
-		
+		if ~isempty(handles)
+			drawnow
+			if ~get(handles.togglebutton_gen_catsa,'Value');
+				error('Break')
+			end
+		end
 		fprintf('(caTSA)  file %g/%g \n',ij,num_files);
 		% get file name of registered data
 		cur_file = fullfile(im_session.basic_info.data_dir,im_session.basic_info.cur_files(ij).name);
 		trial_name = cur_file(end-6:end-4);
 		[pathstr, base_name, ext] = fileparts(cur_file);
-		% define file name
+		
+		% define data name
 		replace_start = strfind(base_name,'main');
 		replace_end = replace_start+4;
-		type_name = 'registered';
-		file_name = [base_name(1:replace_start-1) type_name  base_name(replace_end:end)];
-		full_file_name = fullfile(im_session.basic_info.data_dir,type_name,[file_name '.mat']);	
+		trial_str = base_name(replace_end:end);
+		base_name = base_name(1:replace_start-1);
 
-		% load in raw registered data
-		load(full_file_name);
-		num_frame_file = size(im_aligned{1,1},3);
+		type_name = 'summary';
+		file_name = [base_name type_name trial_str];
+		summary_file_name = fullfile(im_session.basic_info.data_dir,type_name,[file_name '.mat']);
+		load(summary_file_name);
+		num_frame_file = im_summary.props.num_frames;
+
+		type_name = 'registered';
+		im_aligned = cell(numFOVs,num_chan);
+		for iPlane = 1:numFOVs
+			for iChan = 1:num_chan
+				file_name = [base_name type_name trial_str '_p' sprintf('%02d',iPlane) '_c' sprintf('%02d',iChan) '.bin'];
+				registered_file_name = fullfile(im_session.basic_info.data_dir,type_name,file_name);	
+				fid = fopen(registered_file_name,'r');
+				key_values = fread(fid,[num_frame_file+4,num_x_pixels*num_y_pixels],'uint16');
+				fclose(fid);
+				im_aligned{iPlane,iChan} = key_value_pair2image(key_values,num_x_pixels,num_y_pixels);
+			end
+		end
+		
 		file_num(start_ind:start_ind+num_frame_file-1) = repmat(ij,1,num_frame_file);
 		frame_num(start_ind:start_ind+num_frame_file-1) = [1:num_frame_file];
 

@@ -22,7 +22,7 @@ function varargout = image_processing_GUI(varargin)
 
 % Edit the above text to modify the response to help image_processing_GUI
 
-% Last Modified by GUIDE v2.5 15-Apr-2014 20:39:46
+% Last Modified by GUIDE v2.5 21-Apr-2014 12:42:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -68,8 +68,8 @@ handles.jTcpObj = [];
 % disable gui buttons that should not be used
 image_processing_gui_toggle_enable(handles,'off',[1 3 4 5 6])
 set(handles.text_align_chan,'enable','off')
-set(handles.pushbutton_gen_catsa,'enable','off')
-set(handles.pushbutton_gen_text,'enable','off')
+set(handles.togglebutton_gen_catsa,'enable','off')
+set(handles.togglebutton_gen_text,'enable','off')
 set(handles.checkbox_behaviour,'Value',1)
 set(handles.text_status,'String','Status: offline')
 
@@ -104,23 +104,23 @@ function pushbutton_data_dir_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % disable gui buttons that should not be used
-image_processing_gui_toggle_enable(handles,'off',[1 3 4 5 6])
-set(handles.pushbutton_gen_catsa,'enable','off')
-set(handles.pushbutton_gen_text,'enable','off')
-set(handles.text_align_chan,'Enable','off')
-set(handles.text_align_chan,'String',['Align channel ' num2str(0)])
-
-set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(0)]);
-set(handles.text_registered_trials,'String',['Registered trials ' num2str(0)]);
-set(handles.text_imaging_trials,'String',['Imaging trials ' num2str(0)]);
-
-set(handles.text_status,'String','Status: offline')
-
 
 start_path = handles.datastr;
 folder_name = uigetdir(start_path);
 
 if folder_name ~= 0
+    image_processing_gui_toggle_enable(handles,'off',[1 3 4 5 6])
+    set(handles.togglebutton_gen_catsa,'enable','off')
+    set(handles.togglebutton_gen_text,'enable','off')
+    set(handles.text_align_chan,'Enable','off')
+    set(handles.text_align_chan,'String',['Align channel ' num2str(0)])
+    
+    set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(0)]);
+    set(handles.text_registered_trials,'String',['Registered trials ' num2str(0)]);
+    set(handles.text_imaging_trials,'String',['Imaging trials ' num2str(0)]);
+    
+    set(handles.text_status,'String','Status: offline')
+    
     handles.base_path = folder_name;
     handles.data_dir = fullfile(handles.base_path, 'scanimage');
     
@@ -175,7 +175,7 @@ if folder_name ~= 0
         set(handles.popupmenu_rois,'enable','on')
         roi_names = cell(numel(roi_files),1);
         for ij = 1:numel(roi_files)
-            roi_names{ij} = roi_files(ij).name;
+            roi_names{ij} = roi_files(ij).name(1:end-4);
             if ~isempty(strfind(roi_files(ij).name,'ROIs_cells'))
                 start_val = ij;
             end
@@ -212,11 +212,8 @@ if folder_name ~= 0
     
     
     guidata(hObject, handles);
-    
-else
 end
 
-guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu_ref_CreateFcn(hObject, eventdata, handles)
@@ -269,7 +266,7 @@ set(handles.text_align_chan,'String',['Align channel ' num2str(im_session.ref.im
 
 set(handles.pushbutton_data_dir,'enable','on')
 set(handles.pushbutton_cluster_path,'enable','on')
-set(handles.pushbutton_gen_text,'enable','on')
+set(handles.togglebutton_gen_text,'enable','on')
 
 set(handles.text_time,'enable','off')
 set(handles.text_status,'String','Status: offline')
@@ -288,11 +285,11 @@ function popupmenu_rois_Callback(hObject, eventdata, handles)
 PathName = handles.data_dir;
 roi_names = get(handles.popupmenu_rois,'string');
 roi_val =  get(handles.popupmenu_rois,'value');
-FileName = roi_names{roi_val};
+FileName = [roi_names{roi_val} '.mat'];
 load(fullfile(PathName,FileName));
 global im_session
 im_session.ref.roi_array = roi_array;
-set(handles.pushbutton_gen_catsa,'enable','on')
+set(handles.togglebutton_gen_catsa,'enable','on')
 drawnow
 
 
@@ -447,8 +444,8 @@ else
         set(handles.text_registered_trials,'enable','on')
         set(handles.text_time,'Enable','on')
         set(handles.text_status,'String','Status: waiting')
-        set(handles.pushbutton_gen_text,'enable','off')
-        set(handles.pushbutton_gen_catsa,'enable','off')
+        set(handles.togglebutton_gen_text,'enable','off')
+        set(handles.togglebutton_gen_catsa,'enable','off')
         
         % Setup timer
         handles.obj_t = timer('TimerFcn',{@update_im_processing,handles});
@@ -493,8 +490,8 @@ else
         
         % Update handles structure
         guidata(hObject, handles);
-        start(handles.obj_t)        
-    
+        start(handles.obj_t)
+        
     else
         stop(handles.obj_t);
         delete(handles.obj_t);
@@ -506,123 +503,211 @@ else
         set(handles.text_time,'String',time_elapsed_str)
         set(handles.text_time,'Enable','off')
         set(handles.text_status,'String','Status: offline')
-        set(handles.pushbutton_gen_text,'enable','on')
+        set(handles.togglebutton_gen_text,'enable','on')
         global im_session
         if isfield(im_session.ref,'roi_array')
-            set(handles.pushbutton_gen_catsa,'enable','on')
+            set(handles.togglebutton_gen_catsa,'enable','on')
         end
     end
     
 end
 
-% --- Executes on button press in pushbutton_gen_catsa.
-function pushbutton_gen_catsa_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton_gen_catsa (see GCBO)
+% --- Executes on button press in togglebutton_gen_catsa.
+function togglebutton_gen_catsa_Callback(hObject, eventdata, handles)
+% hObject    handle to togglebutton_gen_catsa (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-neuropilDilationRange = [3 8];
-neuropilSubSF = -1;
-
+value = get(hObject,'Value');
 global im_session;
-num_files = numel(im_session.basic_info.cur_files);
-% Check if behaviour mode on
-behaviour_on = get(handles.checkbox_behaviour,'Value');
-global session;
-if behaviour_on == 1
-    num_files = min(num_files,numel(session.data));
-end
 
-num_files = min(num_files,length(im_session.reg.nFrames));
-
-signalChannels = str2num(get(handles.edit_analyze_chan,'string'));
-overwrite = get(handles.checkbox_overwrite,'Value');
-
-roi_names =  get(handles.popupmenu_rois,'string');
-roi_val =  get(handles.popupmenu_rois,'value');
-roi_file_names = roi_names{roi_val};
-file_name_tag = roi_file_names(6:end);
-roi_tag_end = strfind(file_name_tag,'_');
-file_name_tag = file_name_tag(1:roi_tag_end-1);
-
-
-global session_ca;
-session_ca = [];
-if num_files > 0
-    cur_status = get(handles.text_status,'String');
-    set(handles.text_status,'String','Status: extracting CaTSA')
-    drawnow
-    save_path = fileparts(im_session.basic_info.data_dir);
-    session_path = fullfile(save_path,'session');
+if value && isfield(im_session,'reg')
     
-    if exist(session_path) ~= 7
-        mkdir(session_path);
-    end
+    neuropilDilationRange = [3 8];
+    neuropilSubSF = -1;
     
-    caTSA_file_name = fullfile(session_path,['session_ca_data_' file_name_tag '.mat']);
-    session_ca = get_session_ca(caTSA_file_name,num_files,neuropilDilationRange,signalChannels,neuropilSubSF,file_name_tag,overwrite);
-    
-    save_path = fileparts(im_session.basic_info.data_dir);
-    session_path = fullfile(save_path,'session');
-    if exist(session_path) ~= 7
-        mkdir(session_path);
-    end
-    
-    overwrite = get(handles.checkbox_overwrite,'Value');
-    set(handles.text_status,'String','Status: saving session')
-    drawnow
-    save_common_data_format(session_path,file_name_tag,overwrite,num_files,behaviour_on,session,im_session,session_ca);
-    set(handles.text_status,'String',cur_status)
-    
-else
-    display('No files for CaTSA');
-end
-
-
-% --- Executes on button press in pushbutton_gen_text.
-function pushbutton_gen_text_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton_gen_text (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-global im_session;
-num_files = numel(im_session.basic_info.cur_files);
-% Check if behaviour mode on
-behaviour_on = get(handles.checkbox_behaviour,'Value');
-if behaviour_on
+    num_files = numel(im_session.basic_info.cur_files);
+    % Check if behaviour mode on
+    behaviour_on = get(handles.checkbox_behaviour,'Value');
     global session;
-    num_files = min(num_files,numel(session.data));
-end
-analyze_chan = str2num(get(handles.edit_analyze_chan,'string'));
-
-save_path = fileparts(im_session.basic_info.data_dir);
-save_path = fullfile(save_path,'session');
-
-if exist(save_path) ~= 7
-    mkdir(save_path);
-end
-
-save_path_im = fullfile(save_path,['Text_images_' im_session.ref.file_name '.txt']);
-overwrite = get(handles.checkbox_overwrite,'Value');
-
-if overwrite ~= 1 && exist(save_path_im) == 2
-    imaging_on = 0;
-else
-    imaging_on = 1;
-end
-
-use_cluser = get(handles.checkbox_use_cluster,'Value');
-
-if use_cluser
+    if behaviour_on == 1
+        num_files = min(num_files,numel(session.data));
+    end
+    
     num_files = min(num_files,length(im_session.reg.nFrames));
-    evalScript = prepare_text_cluster(num_files,analyze_chan);
-    imaging_on = 0;
+    
+    signalChannels = str2num(get(handles.edit_analyze_chan,'string'));
+    overwrite = get(handles.checkbox_overwrite,'Value');
+    
+    roi_names =  get(handles.popupmenu_rois,'string');
+    roi_val =  get(handles.popupmenu_rois,'value');
+    roi_file_names = roi_names{roi_val};
+    file_name_tag = roi_file_names(6:end);
+    
+    global session_ca;
+    session_ca = [];
+    if num_files > 0
+        try
+            image_processing_gui_toggle_enable(handles,'off',[1 2])
+            set(handles.pushbutton_data_dir,'enable','off')
+            set(handles.togglebutton_register,'enable','off')
+            set(handles.text_status,'enable','on')
+            set(handles.text_registered_trials,'enable','on')
+            set(handles.togglebutton_gen_text,'enable','off')
+            
+            set(handles.text_status,'String','Status: extracting CaTSA')
+            drawnow
+            save_path = fileparts(im_session.basic_info.data_dir);
+            session_path = fullfile(save_path,'session');
+            
+            if exist(session_path) ~= 7
+                mkdir(session_path);
+            end
+            
+            caTSA_file_name = fullfile(session_path,['session_ca_data_' file_name_tag '.mat']);
+            session_ca = get_session_ca(caTSA_file_name,num_files,neuropilDilationRange,signalChannels,neuropilSubSF,file_name_tag,overwrite,handles);
+            
+            save_path = fileparts(im_session.basic_info.data_dir);
+            session_path = fullfile(save_path,'session');
+            if exist(session_path) ~= 7
+                mkdir(session_path);
+            end
+            
+            overwrite = get(handles.checkbox_overwrite,'Value');
+            set(handles.text_status,'String','Status: saving session')
+            drawnow
+            save_common_data_format(session_path,file_name_tag,overwrite,num_files,behaviour_on,session,im_session,session_ca);
+            set(handles.text_status,'String','Status: waiting')
+            image_processing_gui_toggle_enable(handles,'on',[1 2])
+            set(handles.pushbutton_data_dir,'enable','on')
+            set(handles.togglebutton_gen_text,'enable','on')
+            set(hObject,'Value',0);
+            drawnow
+        catch
+            set(handles.text_status,'String','Status: canceled')
+            image_processing_gui_toggle_enable(handles,'on',[1 2])
+            set(handles.pushbutton_data_dir,'enable','on')
+            set(handles.togglebutton_gen_text,'enable','on')
+            set(hObject,'Value',0);
+            drawnow
+        end
+        
+    else
+        set(hObject,'Value',0);
+        display('No files for CaTSA');
+    end
+    
+else
+    if ~isfield(im_session,'reg')
+        fprintf('(text)  first register images\n');
+    end
+    set(hObject,'Value',0);
+    set(handles.text_status,'String','Status: waiting')
+    image_processing_gui_toggle_enable(handles,'on',[1 2])
+    set(handles.pushbutton_data_dir,'enable','on')
+    drawnow
 end
 
-if num_files > 0
-    cur_status = get(handles.text_status,'String');
-    set(handles.text_status,'String','Status: extracting text')
+
+% --- Executes on button press in togglebutton_gen_text.
+function togglebutton_gen_text_Callback(hObject, eventdata, handles)
+% hObject    handle to togglebutton_gen_text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+value = get(hObject,'Value');
+global im_session;
+imaging_on = 1;
+
+if value && isfield(im_session,'reg')
+    
+    num_files = numel(im_session.basic_info.cur_files);
+    % Check if behaviour mode on
+    behaviour_on = get(handles.checkbox_behaviour,'Value');
+    if behaviour_on
+        global session;
+        num_files = min(num_files,numel(session.data));
+    end
+    analyze_chan = str2num(get(handles.edit_analyze_chan,'string'));
+    
+    save_path = fileparts(im_session.basic_info.data_dir);
+    save_path = fullfile(save_path,'session');
+    
+    if exist(save_path) ~= 7
+        mkdir(save_path);
+    end
+    
+    save_path_im = fullfile(save_path,['Text_images_p01_c01.txt']);
+    overwrite = get(handles.checkbox_overwrite,'Value');
+    if overwrite ~= 1 && exist(save_path_im) == 2
+            fprintf('(text)  EXISTS\n');
+    else    
+        down_sample = str2double(get(handles.edit_downsample,'String'));
+        use_cluser = get(handles.checkbox_use_cluster,'Value');
+        
+        if use_cluser
+            num_files = min(num_files,length(im_session.reg.nFrames));
+            evalScript = prepare_text_cluster(num_files,analyze_chan,down_sample);
+            imaging_on = 0;
+        end
+        
+        image_processing_gui_toggle_enable(handles,'off',[1 2])
+        set(handles.pushbutton_data_dir,'enable','off')
+        set(handles.togglebutton_register,'enable','off')
+        set(handles.text_status,'enable','on')
+        set(handles.text_registered_trials,'enable','on')
+        set(handles.togglebutton_gen_catsa,'enable','off')
+        
+        try
+            if num_files > 0
+                cur_status = get(handles.text_status,'String');
+                set(handles.text_status,'String','Status: extracting text')
+                drawnow
+                save_session_im_text(save_path,num_files,analyze_chan,down_sample,imaging_on,behaviour_on,handles);
+                set(handles.text_status,'String',cur_status)
+            end
+            set(handles.text_status,'String','Status: waiting')
+            
+        catch
+            fprintf('(text)  CANCELED\n');
+            set(handles.text_status,'String','Status: canceled')
+        end
+    end
+    image_processing_gui_toggle_enable(handles,'on',[1 2])
+    set(handles.pushbutton_data_dir,'enable','on')
+    set(handles.togglebutton_gen_catsa,'enable','on')
+    set(hObject,'Value',0);
     drawnow
-    save_session_im_text(save_path,num_files,analyze_chan,imaging_on,behaviour_on);
-    set(handles.text_status,'String',cur_status)
+    
+else
+    if ~isfield(im_session,'reg')
+        fprintf('(text)  first register images\n');
+    end
+    set(hObject,'Value',0);
+    set(handles.text_status,'String','Status: waiting')
+    image_processing_gui_toggle_enable(handles,'on',[1 2])
+    set(handles.pushbutton_data_dir,'enable','on')
+    drawnow
+end
+
+
+function edit_downsample_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_downsample (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_downsample as text
+%        str2double(get(hObject,'String')) returns contents of edit_downsample as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_downsample_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_downsample (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end

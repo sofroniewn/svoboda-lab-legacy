@@ -1,4 +1,4 @@
-function evalScript = prepare_text_cluster(num_files,analyze_chan)
+function evalScript = prepare_text_cluster(num_files,analyze_chan,down_sample)
 
 global im_session;
 
@@ -19,13 +19,19 @@ else
 	ref_file_name = im_session.ref.file_name;
 
 	if ~isempty(im_session.reg.nFrames)
-		num_frames = sum(im_session.reg.nFrames(1:num_files));
+		if down_sample > 1
+			frame_nums = im_session.reg.nFrames(1:num_files);
+			frame_nums = ceil(frame_nums/down_sample);
+			num_frames = sum(frame_nums);
+		else
+			num_frames = sum(im_session.reg.nFrames(1:num_files));
+		end
 		num_frames = num2str(num_frames);
 		num_files = num2str(num_files);
 		num_pixels = im_session.ref.im_props.height*im_session.ref.im_props.width;
 		num_pixels = num2str(num_pixels);
 		analyze_chan = num2str(analyze_chan);
-
+		down_sample = num2str(down_sample);
 		% set paths for the function
 		% save_text_cluster(data_dir,'1',analyze_chan,ref_file_name,num_files,num_frames,num_pixels)
 		functionPath = '/groups/freeman/home/freemanj11/code/wgnr/compiled/save_text_cluster';
@@ -36,7 +42,7 @@ else
 		end
 
 		% create and evaluate the script
-		evalScript = sprintf('qsub -t %g-%g -pe batch 1 -N ''register'' -j y -o /dev/null -b y -cwd -V ''%s %s ${SGE_TASK_ID} > %s${SGE_TASK_ID}.log %s %s %s %s %s''',startTime, endTime, functionPath, directory, logPath, analyze_chan, ref_file_name, num_files, num_frames, num_pixels);
+		evalScript = sprintf('qsub -t %g-%g -pe batch 1 -N ''register'' -j y -o /dev/null -b y -cwd -V ''%s %s ${SGE_TASK_ID} > %s${SGE_TASK_ID}.log %s %s %s %s %s''',startTime, endTime, functionPath, directory, logPath, analyze_chan, down_sample, ref_file_name, num_files, num_frames, num_pixels);
 		display(evalScript)
 
 	else

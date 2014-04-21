@@ -32,24 +32,26 @@ else
 	num_behaviour = Inf;
 end
 
-if isfield(im_session,'reg')
-	num_old_files = length(im_session.reg.nFrames);
-else
-	num_old_files = 0;
-end
+num_old_files = length(im_session.reg.nFrames);
 num_match = min(num_behaviour,numel(cur_files));
 
-for start_trial = num_old_files+1:num_match
+for trial_num = num_old_files+1:num_match
+	drawnow
+	if ~get(handles.togglebutton_register,'Value')
+		return
+	end
 	time_elapsed = toc;
     time_elapsed_str = sprintf('Time online %.1f s',time_elapsed);
     set(handles.text_time,'String',time_elapsed_str)
+	set(handles.text_status,'String','Status: registering')
 	drawnow
-	register_directory_fast(start_trial,handles)	
-	set(handles.text_registered_trials,'String',['Registered trials ' num2str(start_trial)])
+	register_directory_fast(trial_num,handles)
+	set(handles.text_registered_trials,'String',['Registered trials ' num2str(trial_num)])
 end
 	time_elapsed = toc;
     time_elapsed_str = sprintf('Time online %.1f s',time_elapsed);
     set(handles.text_time,'String',time_elapsed_str)
+	set(handles.text_status,'String','Status: waiting')
 	drawnow
 
 end

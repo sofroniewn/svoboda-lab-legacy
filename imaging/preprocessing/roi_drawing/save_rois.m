@@ -23,7 +23,7 @@ for ij = 1:num_planes
 	end
 end
 
-save(fullfile(im_session.ref.path_name,['ROIs_' file_name_tag '_' im_session.ref.file_name '.mat']),'roi_array')
+save(fullfile(im_session.ref.path_name,['ROIs_' file_name_tag '.mat']),'roi_array')
 
 display('ROIs saved')
 end

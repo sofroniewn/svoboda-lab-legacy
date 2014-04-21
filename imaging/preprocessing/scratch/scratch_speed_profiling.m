@@ -21,7 +21,7 @@ toc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 global im_session;
 align_chan = 1;
-ij = 1;
+trial_num = 1;
 base_name = '';
 cur_file = fullpath;
 ref = im_session.ref;
@@ -30,16 +30,63 @@ tic
 [im im_aligned im_summary] = register_file(cur_file,base_name,ref,align_chan,ij);	
 toc
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	num_planes = ref.im_props.numPlanes;
-	num_chan = ref.im_props.nchans;
 
-	% load image
-	[im_raw improps] = load_image(cur_file);
-	num_frames = size(im_raw,3)/num_chan;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	post_fft = ref.post_fft;
+    % load images
+    tic;
+    opt.data_type = 'uint16';
+    [im_raw improps] = load_image_fast(fullpath,opt);
+    %toc
+
+    % register files 
+    %tic;
+    [im_shifted shifts] = register_file(im_raw,ref);
+	%toc
+
+
+    % summarize images
+    %tic;
+    im_summary = sumarize_images(improps,im_raw,im_shifted,shifts,trial_num);
+	toc
+
+	
+analyze_chan = 1;
+analyze_plane = 1;
+num_planes = improps.numPlanes;
+num_chan = improps.nchans;
+
+
+key_values = image2key_value_pair(im_shifted,analyze_plane,num_planes,analyze_chan,num_chan);
+
+
+base_name = 'an227254_2013_12_12_main';
+trial_str = '_001'
+data_dir = im_session.basic_info.data_dir;
+
+tic
+save_registered_data(data_dir,base_name,im_shifted,num_planes,num_chan)
+toc
+
+text_dir = '.'
+down_sample = 8;
+trial_data = [];
+
+save_registered_on = 0;
+save_text_on = 1;
+save_registered_data(data_dir,base_name,trial_str,im_shifted,num_planes,num_chan,text_dir,down_sample,trial_data,save_registered_on,save_text_on);
+
+%%% 
+N = round(123*rand)+1;
+n = round(12*rand)+1;
+
+N =102
+n =10
+AA = [1:N];
+AA = AA(1:n:end);
+length(AA) - ceil(N/n)
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -298,6 +345,8 @@ f = fopen('test9.bin','w');
 fwrite(f,[test_dat],'uint16');
 toc
 fclose(f)
+
+
 
 
 

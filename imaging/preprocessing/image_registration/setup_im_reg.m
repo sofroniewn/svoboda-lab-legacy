@@ -22,13 +22,6 @@ function setup_im_reg(handles)
 		mkdir(folder_name);
 	end
 
-	% Directory for parsed_behaviour
-	type_name = 'parsed_behaviour';
-	folder_name = fullfile(im_session.basic_info.data_dir,type_name);
-	if exist(folder_name) ~= 7
-		mkdir(folder_name);
-	end
-
 	% If overwrite is not on go through summary data session and reload 
 	% already generated data
 	% Initialize registration

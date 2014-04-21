@@ -56,7 +56,7 @@ for ij = num_old_files + 1: numel(cur_files_reg)
 	try
 	load(summary_file_name);
 	catch
-		display('Failed to read new summary')
+	%	display('Failed to read new summary')
 		return
 	end
 	num_planes = im_session.ref.im_props.numPlanes;
