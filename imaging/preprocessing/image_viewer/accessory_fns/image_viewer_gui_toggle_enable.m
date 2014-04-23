@@ -30,6 +30,7 @@ if any(ismember(type,5))
 set(handles.edit_display_chan,'enable',enable_str)
 set(handles.text_display_chan,'enable',enable_str)
 set(handles.popupmenu_list_plots,'enable',enable_str)
+set(handles.popupmenu_spark_regressors,'enable',enable_str)
 set(handles.checkbox_plot_images,'enable',enable_str)
 set(handles.slider_look_up_table,'enable',enable_str)
 set(handles.edit_look_up_table,'enable',enable_str)
@@ -50,6 +51,7 @@ end
 
 
 if any(ismember(type,7))
+set(handles.pushbutton_set_output_dir,'enable',enable_str)
 set(handles.pushbutton_draw_rois,'enable',enable_str)
 set(handles.pushbutton_save_rois,'enable',enable_str)
 set(handles.pushbutton_import_rois,'enable',enable_str)

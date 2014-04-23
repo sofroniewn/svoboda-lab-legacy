@@ -120,7 +120,8 @@ if folder_name ~= 0
     set(handles.text_imaging_trials,'String',['Imaging trials ' num2str(0)]);
     
     set(handles.text_status,'String','Status: offline')
-    
+    drawnow
+
     handles.base_path = folder_name;
     handles.data_dir = fullfile(handles.base_path, 'scanimage');
     
@@ -193,7 +194,11 @@ if folder_name ~= 0
     val = get(handles.checkbox_behaviour,'Value');
     if val == 1
         set(handles.text_status,'String','Status: loading behaviour')
-        drawnow
+          image_processing_gui_toggle_enable(handles,'off',[1 2])
+            set(handles.pushbutton_data_dir,'enable','off')
+            set(handles.togglebutton_gen_text,'enable','off')
+            set(handles.togglebutton_gen_catsa,'enable','off')
+         drawnow
         base_path_behaviour = fullfile(handles.base_path, 'behaviour');
         session = [];
         session = load_session_data(base_path_behaviour);
@@ -206,6 +211,10 @@ if folder_name ~= 0
         remove_first = 0;
         set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
         set(handles.text_status,'String','Status: offline')
+        image_processing_gui_toggle_enable(handles,'on',[1 2])
+            set(handles.pushbutton_data_dir,'enable','on')
+            set(handles.togglebutton_gen_text,'enable','on')
+            set(handles.togglebutton_gen_catsa,'enable','on')
         drawnow
     end
     
@@ -346,9 +355,6 @@ function pushbutton_cluster_path_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_cluster_path (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-set(handles.togglebutton_register,'enable','off')
-set(handles.togglebutton_realtime_mode,'enable','off')
-
 
 start_path = handles.datastr;
 folder_name = uigetdir(start_path);
@@ -673,6 +679,9 @@ if value && isfield(im_session,'reg')
             set(handles.text_status,'String','Status: canceled')
         end
     end
+    
+    prepare_spark(save_path,behaviour_on,overwrite)
+
     image_processing_gui_toggle_enable(handles,'on',[1 2])
     set(handles.pushbutton_data_dir,'enable','on')
     set(handles.togglebutton_gen_catsa,'enable','on')

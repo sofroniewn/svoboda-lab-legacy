@@ -8,15 +8,23 @@ function [regMat,vals] = buildReg_spark(full_trial_data,stimType)
 % second file (for tuning analysis)    ..._s contains values each of the regressors correspons to
 % 
 
+regMat = [];
+
 switch stimType
-	case 'cor_pos'
-		regress_var = full_trial_data(12,:);
+	case 'corPos'
 		vals = [0:2:30];
-		keep_ind = 1 - full_trial_data(3,:);
-		regMat = binReg_spark(regress_var,vals,keep_ind);
+		if ~isempty(full_trial_data)
+			regress_var = full_trial_data(:,12);
+			keep_ind = 1 - full_trial_data(:,3);
+			regMat = binReg_spark(regress_var,vals,keep_ind);
+		end
 	case 'speed'
-		regress_var = full_trial_data(7,:);
-		vals = [0:2:40];
-		keep_ind = 1 - full_trial_data(3,:);
-		regMat = binReg_spark(regress_var,vals,keep_ind);
+		vals = [0:5:35];
+		if ~isempty(full_trial_data)
+			regress_var = full_trial_data(:,7);
+			keep_ind = 1 - full_trial_data(:,3);
+			regMat = binReg_spark(regress_var,vals,keep_ind);
+		end
+	otherwise
+		error('Unrecognized stim type for spark regression')
 end

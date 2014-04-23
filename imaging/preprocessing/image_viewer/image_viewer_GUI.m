@@ -22,7 +22,7 @@ function varargout = image_viewer_GUI(varargin)
 
 % Edit the above text to modify the response to help image_viewer_GUI
 
-% Last Modified by GUIDE v2.5 15-Apr-2014 12:33:55
+% Last Modified by GUIDE v2.5 23-Apr-2014 00:16:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -81,6 +81,20 @@ global session;
 session = [];
 session.data = [];
 
+% Setup spark analysis output
+[stim_types val_array] = setupReg_spark;
+set(handles.popupmenu_spark_regressors,'string',stim_types)
+ref_val = 1;
+set(handles.popupmenu_spark_regressors,'value',ref_val)
+set(handles.popupmenu_spark_regressors,'UserData',ref_val);
+
+im_session.spark_output.mean = [];
+im_session.spark_output.localcorr = [];
+im_session.spark_output.regressor.names = stim_types;
+im_session.spark_output.regressor.stats = cell(numel(stim_types),1);
+im_session.spark_output.regressor.tune = cell(numel(stim_types),1);
+im_session.spark_output.regressor.vals = val_array;
+im_session.spark_output.regressor.cur_ind = ref_val;
 
 % Disable buttons
 image_viewer_gui_toggle_enable(handles,'off',[1 3 4 5 6 7])
@@ -209,6 +223,9 @@ set(handles.slider_trial_num,'Value',0);
 ref_val = get(handles.popupmenu_list_plots,'UserData');
 set(handles.popupmenu_list_plots,'Value',ref_val)
 
+ref_val = get(handles.popupmenu_spark_regressors,'UserData');
+set(handles.popupmenu_spark_regressors,'Value',ref_val)
+
 % Prepare global variables
 clear global im_session
 global im_session; 
@@ -216,6 +233,7 @@ clear global session;
 global session;
 session = [];
 session.data = [];
+im_session.spark_output.mean = [];
 
 start_path = handles.datastr;
 folder_name = uigetdir(start_path);
@@ -223,11 +241,22 @@ folder_name = uigetdir(start_path);
 if folder_name ~= 0
     handles.base_path = folder_name;
     handles.data_dir = fullfile(handles.base_path, 'scanimage');
+    
+    handles.output_dir = fullfile(handles.base_path, 'session');
 
     % Load in im_session
     im_session = load_im_session_data(handles.data_dir);
     im_session.realtime.im_raw = [];
     im_session.realtime.ind = 0;
+
+[stim_types val_array] = setupReg_spark;
+im_session.spark_output.mean = [];
+im_session.spark_output.localcorr = [];
+im_session.spark_output.regressor.names = stim_types;
+im_session.spark_output.regressor.stats = cell(numel(stim_types),1);
+im_session.spark_output.regressor.tune = cell(numel(stim_types),1);
+im_session.spark_output.regressor.vals = val_array;
+im_session.spark_output.regressor.cur_ind = get(handles.popupmenu_spark_regressors,'UserData');
 
     set(handles.text_anm,'Enable','on')
     set(handles.text_date,'Enable','on')
@@ -260,6 +289,9 @@ if folder_name ~= 0
     session = load_session_data(base_path_behaviour);
     session = parse_session_data(1,session);
     set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
+
+    % Load in spark
+    load_spark_maps(handles.output_dir,1);
 end
 
 guidata(hObject, handles);
@@ -873,6 +905,50 @@ function edit_rois_name_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton_set_output_dir.
+function pushbutton_set_output_dir_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_set_output_dir (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+start_path = handles.output_dir;
+folder_name = uigetdir(start_path);
+
+if folder_name ~= 0
+    handles.output_dir = folder_name;
+    load_spark_maps(handles.output_dir,1);
+end
+guidata(hObject, handles);
+
+
+% --- Executes on selection change in popupmenu_spark_regressors.
+function popupmenu_spark_regressors_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenu_spark_regressors (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu_spark_regressors contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenu_spark_regressors
+
+cur_ind = get(hObject,'Value');
+global im_session
+im_session.spark_output.regressor.cur_ind = cur_ind;
+plot_im_gui(handles,1);
+
+
+% --- Executes during object creation, after setting all properties.
+function popupmenu_spark_regressors_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu_spark_regressors (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
