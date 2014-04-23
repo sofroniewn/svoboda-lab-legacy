@@ -22,7 +22,7 @@ function varargout = image_viewer_GUI(varargin)
 
 % Edit the above text to modify the response to help image_viewer_GUI
 
-% Last Modified by GUIDE v2.5 23-Apr-2014 00:16:39
+% Last Modified by GUIDE v2.5 23-Apr-2014 10:23:57
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -953,3 +953,54 @@ function popupmenu_spark_regressors_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --------------------------------------------------------------------
+function uitoggletool4_ClickedCallback(hObject, eventdata, handles)
+% hObject    handle to uitoggletool4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+switch get(hObject,'State')
+    case 'off'
+        colorbar('off')
+    case 'on'
+     %    set(gca,'clim',[min(vals),max(vals)])
+    plot_names =  get(handles.popupmenu_list_plots,'string');
+    plot_val =  get(handles.popupmenu_list_plots,'value');
+    plot_function = plot_names{plot_val};
+    
+    cbar_axes = colorbar;
+    if strcmp(plot_function,'plot_spark_regression_tune.m')
+        global im_session;
+        num_ticks = 6;
+        cur_ind = im_session.spark_output.regressor.cur_ind;
+        vals = im_session.spark_output.regressor.vals{cur_ind};
+
+        tick_vals = linspace(0,256,num_ticks);
+        tick_labels = linspace(min(vals),max(vals),num_ticks);
+        set(cbar_axes,'Ytick',tick_vals+.5)
+        set(cbar_axes,'Yticklabel',tick_labels)
+
+    end
+end
+% 
+% if strcmp(get(hObject,'State'),'off')
+%     451
+%     set(hObject,'State','on')
+% else
+%     342
+%     set(hObject,'State','off')
+% end
+%     set(hObject,'State','off')
+% 
+% get(hObject,'State')
+%     guidata(hObject, handles);
+% 
+% %,'Value'
+% colorbar
+
+
+
+
+

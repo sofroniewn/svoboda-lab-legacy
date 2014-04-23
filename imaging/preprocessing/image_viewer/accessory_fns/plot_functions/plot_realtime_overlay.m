@@ -1,6 +1,8 @@
 function im_comb = plot_realtime_overlay(plot_axes,im_session,trial_num,chan_num,plot_planes,clim,plot_on)
 
 axes(plot_axes);
+colormap(gca,'gray');
+
 num_planes = length(plot_planes);
 plane_rep = ceil(sqrt(num_planes));
 global im_comb;
