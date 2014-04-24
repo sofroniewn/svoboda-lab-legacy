@@ -14,7 +14,7 @@ for ij = 1:num_frames
     plane = mod(ij-1,num_planes)+1;
     cur_im = im_raw(:,:,align_chan + (ij-1)*num_chan);
     ref_im = ref.post_fft{plane};
-    shifts(ij,:)= register_image_fast(cur_im,ref_im);
+    [shifts(ij,:) corr_vals] = register_image_fast(cur_im,ref_im);
 end
 %toc
 

@@ -512,17 +512,16 @@ value = get(hObject,'Value');
 if value == 1
   tic;
   image_viewer_gui_toggle_enable(handles,'off',[1 2])
-  set(handles.slider_trial_num,'enable','on')
-  set(handles.edit_trial_num,'enable','on')
+%  set(handles.slider_trial_num,'enable','on')
+%  set(handles.edit_trial_num,'enable','on')
+  set(handles.pushbutton_set_output_dir,'enable','off')
   set(handles.pushbutton_data_dir,'enable','off')
   set(handles.togglebutton_realtime_mode,'enable','on')
-  set(handles.text_anm,'Enable','on')
-  set(handles.text_date,'Enable','on')
-  set(handles.text_run,'Enable','on')
-  set(handles.text_status,'enable','on')
-  set(handles.text_imaging_trials,'enable','on')
-  set(handles.text_time,'Enable','on')
-  set(handles.text_status,'String','Status: realtime')
+%   set(handles.text_anm,'Enable','on')
+%   set(handles.text_date,'Enable','on')
+%   set(handles.text_run,'Enable','on')
+%   set(handles.text_imaging_trials,'enable','on')
+   set(handles.text_time,'Enable','on')
 
   % Setup timer
   handles.obj_t_realtime = timer('TimerFcn',{@update_im_realtime,handles});
@@ -581,6 +580,7 @@ else
     image_viewer_gui_toggle_enable(handles,'on',[1 2])
     set(handles.pushbutton_load_ref,'enable','on')
     set(handles.pushbutton_data_dir,'enable','on')
+    set(handles.pushbutton_set_output_dir,'enable','on')
 
    time_elapsed_str = sprintf('Time online %.1f s',0);
    set(handles.text_time,'String',time_elapsed_str)
