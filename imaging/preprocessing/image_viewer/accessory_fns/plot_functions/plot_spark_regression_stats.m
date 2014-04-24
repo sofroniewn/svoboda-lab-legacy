@@ -1,4 +1,4 @@
-function im_comb = plot_spark_regression_stats(plot_axes,im_session,trial_num,chan_num,plot_planes,clim,plot_on)
+function [im_comb clim] = plot_spark_regression_stats(plot_axes,cbar_axes,im_session,trial_num,chan_num,plot_planes,clim,plot_on)
 
 axes(plot_axes);
 colormap(gca,'gray');
@@ -20,11 +20,17 @@ for ij = 1:num_planes
 end
 end
 
+clim = clim/10000;
+
+if ~isempty(cbar_axes)
+end
+
 
 if plot_on == 1
-	imagesc(im_comb,clim/10000)
+	imagesc(im_comb,clim)
 	set(gca,'xtick',[])
 	set(gca,'ytick',[])
+    axis equal
 end
 
 end

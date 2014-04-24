@@ -201,8 +201,10 @@ if folder_name ~= 0
          drawnow
         base_path_behaviour = fullfile(handles.base_path, 'behaviour');
         session = [];
-        session = load_session_data(base_path_behaviour);
-        session = parse_session_data(1,session);
+          cur_file = dir(fullfile(handles.base_path,'behaviour','*_rig_config.mat'));
+          if numel(cur_file)>0
+            session = load_session_data(base_path_behaviour);
+            session = parse_session_data(1,session);
         % match scim behaviour trial numbers (assume one to one)
         im_session.behaviour_scim_trial_align = [1:numel(session.data)];
         
@@ -210,6 +212,10 @@ if folder_name ~= 0
         global remove_first;
         remove_first = 0;
         set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
+          else
+           set(handles.text_num_behaviour,'String',['Behaviour trials ' 'none']);
+           set(handles.checkbox_behaviour,'Value',0);
+          end     
         set(handles.text_status,'String','Status: offline')
         image_processing_gui_toggle_enable(handles,'on',[1 2])
             set(handles.pushbutton_data_dir,'enable','on')

@@ -1,4 +1,4 @@
-function im_comb = plot_ROIS(plot_axes,im_session,trial_num,chan_num,plot_planes,clim,plot_on)
+function [im_comb clim] = plot_ROIS(plot_axes,cbar_axes,im_session,trial_num,chan_num,plot_planes,clim,plot_on)
 
 axes(plot_axes);
 colormap(gca,'gray');
@@ -29,6 +29,7 @@ if plot_on == 1
 	imagesc(im_comb,clim)	
 	set(gca,'xtick',[])
 	set(gca,'ytick',[])
+    axis equal
 end
 
 end

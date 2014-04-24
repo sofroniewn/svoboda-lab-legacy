@@ -1,4 +1,4 @@
-function im_comb = plot_realtime_overlay(plot_axes,im_session,trial_num,chan_num,plot_planes,clim,plot_on)
+function [im_comb clim] = plot_realtime_overlay(plot_axes,cbar_axes,im_session,trial_num,chan_num,plot_planes,clim,plot_on)
 
 axes(plot_axes);
 colormap(gca,'gray');
@@ -31,9 +31,10 @@ im_comb(im_comb>1) = 1;
 im_comb(im_comb<0) = 0;
 
 if plot_on == 1
-	imshow(im_comb)	
+	imagesc(im_comb,clim)	
 	set(gca,'xtick',[])
 	set(gca,'ytick',[])
+    axis equal
 end
 
 end

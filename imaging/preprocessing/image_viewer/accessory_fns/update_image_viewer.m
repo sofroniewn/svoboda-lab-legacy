@@ -55,6 +55,10 @@ for ij = num_old_files + 1: numel(cur_files_reg)
 	
 	try
 	load(summary_file_name);
+	if ~exist('im_summary')
+	%	display('Failed to read new summary')
+		return
+	end
 	catch
 	%	display('Failed to read new summary')
 		return

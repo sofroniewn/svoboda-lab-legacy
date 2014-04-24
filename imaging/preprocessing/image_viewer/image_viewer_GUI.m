@@ -103,6 +103,7 @@ image_viewer_gui_toggle_enable(handles,'off',[1 3 4 5 6 7])
 axes(handles.axes_images)
 set(handles.axes_images,'HandleVisibility','on')
 imshow(zeros(512,512))
+handles.cbar_axes = [];
 
 size_lateral_displacements = 20;
 edges_lateral_displacements= [-size_lateral_displacements:size_lateral_displacements];
@@ -131,7 +132,7 @@ ylim([0 1])
 set(gca,'ytick',[])
 set(gca,'xtick',[-size_lateral_displacements:size_lateral_displacements/2:size_lateral_displacements])
 set(gca,'box','off')
-ylabel('x','FontSize',14)
+ylabel('x')
 
 axes(handles.axes_y_hist)
 set(handles.axes_y_hist,'HandleVisibility','on')
@@ -140,7 +141,7 @@ xlim([0 1])
 set(gca,'xtick',[])
 set(gca,'ytick',[-size_lateral_displacements:size_lateral_displacements/2:size_lateral_displacements])
 set(gca,'box','off')
-xlabel('y','FontSize',14)
+xlabel('y')
 
 axes(handles.axes_z_hist)
 set(handles.axes_z_hist,'HandleVisibility','on')
@@ -149,7 +150,7 @@ xlim([0 1])
 set(gca,'xtick',[])
 set(gca,'ytick',[-size_axial_displacements:size_axial_displacements/2:size_axial_displacements])
 set(gca,'box','off')
-xlabel('z','FontSize',14)
+xlabel('z')
 
 
 % Update handles structure
@@ -178,9 +179,10 @@ function popupmenu_list_plots_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns popupmenu_list_plots contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupmenu_list_plots
 
-plot_im_gui(handles,1);
-
-
+[im_data clim] = plot_im_gui(handles,0);
+im_plot = get(handles.axes_images,'Children');
+set(handles.axes_images,'clim',clim)
+set(im_plot,'CData',im_data)
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu_list_plots_CreateFcn(hObject, eventdata, handles)
@@ -280,18 +282,22 @@ im_session.spark_output.regressor.cur_ind = get(handles.popupmenu_spark_regresso
     if numel(ref_files) > 0
         handles.ref_images_startup = ref_files(1).name;
         pushbutton_load_ref_Callback(hObject, eventdata, handles)
+        % Load in spark
+        load_spark_maps(handles.output_dir,1);
     else
         handles.ref_images_startup = [];
     end
 
     % Load in behaviour
-    base_path_behaviour = fullfile(handles.base_path, 'behaviour');
-    session = load_session_data(base_path_behaviour);
-    session = parse_session_data(1,session);
-    set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
-
-    % Load in spark
-    load_spark_maps(handles.output_dir,1);
+    cur_file = dir(fullfile(handles.base_path,'behaviour','*_rig_config.mat'));
+    if numel(cur_file)>0
+        base_path_behaviour = fullfile(handles.base_path, 'behaviour');
+        session = load_session_data(base_path_behaviour);
+        session = parse_session_data(1,session);
+        set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
+    else
+        set(handles.text_num_behaviour,'String',['Behaviour trials ' 'off']);       
+    end
 end
 
 guidata(hObject, handles);
@@ -556,8 +562,9 @@ if value == 1
   plot_str = contents{get(handles.popupmenu_list_plots,'Value')};
 
   if update_im == 1 && strcmp(plot_str,'plot_realtime_raw.m') == 1
-    im_data = plot_im_gui(handles,0);
+    [im_data clim] = plot_im_gui(handles,0);
     im_plot = get(handles.axes_images,'Children');
+    set(handles.axes_images,'clim',clim)
     set(im_plot,'CData',im_data)
   end
 
@@ -616,7 +623,10 @@ if c_lim_2 < c_lim_1 + 1
 end
 
 set(handles.edit_look_up_table,'String',num2str(c_lim_2));
-plot_im_gui(handles,1);
+[im_data clim] = plot_im_gui(handles,0);
+im_plot = get(handles.axes_images,'Children');
+set(handles.axes_images,'clim',clim)
+set(im_plot,'CData',im_data)
 
 % --- Executes during object creation, after setting all properties.
 function slider_look_up_table_CreateFcn(hObject, eventdata, handles)
@@ -705,8 +715,10 @@ end
 
 set(handles.edit_look_up_table_black,'String',num2str(c_lim_1));
 
-plot_im_gui(handles,1);
-
+[im_data clim] = plot_im_gui(handles,0);
+im_plot = get(handles.axes_images,'Children');
+set(handles.axes_images,'clim',clim)
+set(im_plot,'CData',im_data)
 
 % --- Executes during object creation, after setting all properties.
 function slider_look_up_table_black_CreateFcn(hObject, eventdata, handles)
@@ -762,7 +774,12 @@ if isempty(im_session.reg.nFrames)
 end
 set(handles.slider_trial_num,'Value',val);
 set(handles.edit_trial_num,'String',num2str(val));
-plot_im_gui(handles,1);
+
+[im_data clim] = plot_im_gui(handles,0);
+im_plot = get(handles.axes_images,'Children');
+set(handles.axes_images,'clim',clim)
+set(im_plot,'CData',im_data)
+
 
 % --- Executes during object creation, after setting all properties.
 function slider_trial_num_CreateFcn(hObject, eventdata, handles)
@@ -939,8 +956,11 @@ function popupmenu_spark_regressors_Callback(hObject, eventdata, handles)
 cur_ind = get(hObject,'Value');
 global im_session
 im_session.spark_output.regressor.cur_ind = cur_ind;
-plot_im_gui(handles,1);
 
+[im_data clim] = plot_im_gui(handles,0);
+im_plot = get(handles.axes_images,'Children');
+set(handles.axes_images,'clim',clim)
+set(im_plot,'CData',im_data)
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu_spark_regressors_CreateFcn(hObject, eventdata, handles)
@@ -964,42 +984,31 @@ function uitoggletool4_ClickedCallback(hObject, eventdata, handles)
 switch get(hObject,'State')
     case 'off'
         colorbar('off')
+        handles.cbar_axes = [];
     case 'on'
      %    set(gca,'clim',[min(vals),max(vals)])
     plot_names =  get(handles.popupmenu_list_plots,'string');
     plot_val =  get(handles.popupmenu_list_plots,'value');
     plot_function = plot_names{plot_val};
     
-    cbar_axes = colorbar;
+    handles.cbar_axes = colorbar;
+
     if strcmp(plot_function,'plot_spark_regression_tune.m')
+        colormap('jet')
         global im_session;
         num_ticks = 6;
         cur_ind = im_session.spark_output.regressor.cur_ind;
         vals = im_session.spark_output.regressor.vals{cur_ind};
-
-        tick_vals = linspace(0,256,num_ticks);
+        %c_range = get(handles.cbar_axes,'Ylim');        
+        %tick_vals = linspace(c_range(1),c_range(2),num_ticks);
         tick_labels = linspace(min(vals),max(vals),num_ticks);
-        set(cbar_axes,'Ytick',tick_vals+.5)
-        set(cbar_axes,'Yticklabel',tick_labels)
-
+        set(handles.cbar_axes,'Ytick',tick_labels)
+        set(handles.cbar_axes,'Yticklabel',tick_labels)
+        %set(handles.cbar_axes,'Ylim',[min(vals) max(vals)])
+    else
+        colormap('gray')
     end
 end
-% 
-% if strcmp(get(hObject,'State'),'off')
-%     451
-%     set(hObject,'State','on')
-% else
-%     342
-%     set(hObject,'State','off')
-% end
-%     set(hObject,'State','off')
-% 
-% get(hObject,'State')
-%     guidata(hObject, handles);
-% 
-% %,'Value'
-% colorbar
-
 
 
 
