@@ -23,8 +23,8 @@ else
 	end
 end
 
-if ~isempty(im_session.reg.align_mean) %isfield(im_session,'reg')
-	if isempty(im_session.ref.roi_array{ij}.permanentAccessoryImages)
+if isempty(im_session.ref.roi_array{ij}.permanentAccessoryImages)
+	if ~isempty(im_session.reg.align_mean) %isfield(im_session,'reg')
 		for ij = 1:im_session.ref.im_props.numPlanes
 			for ik = 1:im_session.ref.im_props.nchans
 				AccessoryIm = max(single(im_session.reg.align_mean(:,:,ij,ik,:)),[],5);
@@ -36,6 +36,32 @@ if ~isempty(im_session.reg.align_mean) %isfield(im_session,'reg')
 			AccessoryIm = squeeze(single(im_session.reg.align_mean(:,:,ij,align_chan,:)));
 			im_session.ref.roi_array{ij}.addAccessoryImage(AccessoryIm, 'Trial averages');
 			im_session.ref.roi_array{ij}.masterImage = single(im_session.ref.base_images{ij});
+		end
+	end
+	if ~isempty(im_session.spark_output.mean) %isfield(im_session,'reg')
+		for ij = 1:im_session.ref.im_props.numPlanes
+			for ik = 1:im_session.ref.im_props.nchans
+				AccessoryIm = single(im_session.spark_output.mean{ij,ik});
+				im_session.ref.roi_array{ij}.addAccessoryImage(AccessoryIm, ['Spark mean chan']);
+			end
+		end
+	end
+	if ~isempty(im_session.spark_output.localcorr) %isfield(im_session,'reg')
+		for ij = 1:im_session.ref.im_props.numPlanes
+			for ik = 1:im_session.ref.im_props.nchans
+				AccessoryIm = single(im_session.spark_output.localcorr{ij,ik})*1000;
+				im_session.ref.roi_array{ij}.addAccessoryImage(AccessoryIm, ['Spark local corr']);
+			end
+		end
+	end
+	for ih = 1:numel(im_session.spark_output.regressor.stats)
+		if ~isempty(im_session.spark_output.regressor.stats{ih}) %isfield(im_session,'reg')
+			for ij = 1:im_session.ref.im_props.numPlanes
+				for ik = 1:im_session.ref.im_props.nchans
+					AccessoryIm = single(im_session.spark_output.regressor.stats{ih}{ij,ik})*10000;
+					im_session.ref.roi_array{ij}.addAccessoryImage(AccessoryIm, ['Spark regression ' im_session.spark_output.regressor.names{ih}]);
+				end
+			end
 		end
 	end
 end

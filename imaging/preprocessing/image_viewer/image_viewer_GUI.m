@@ -422,16 +422,14 @@ if FileName ~= 0
     im_session.ref.path_name = PathName;
     im_session.ref.file_name = name;
 
-    roi_file_names = dir(fullfile(PathName,['ROIs_*_' name '.mat']));
+    roi_file_names = dir(fullfile(PathName,['ROIs_*.mat']));
     if numel(roi_file_names) > 0 
-        if exist(fullfile(PathName,['ROIs_cells_' name '.mat'])) == 2
-            load(fullfile(PathName,['ROIs_cells_' name '.mat']));
+        if exist(fullfile(PathName,['ROIs_cells.mat'])) == 2
+            load(fullfile(PathName,['ROIs_cells.mat']));
             set(handles.edit_rois_name,'String','cells');
         else
             load(fullfile(PathName,roi_file_names(1).name))
-            file_name_tag = roi_file_names(1).name(6:end);
-            roi_tag_end = strfind(file_name_tag,'_');
-            file_name_tag = file_name_tag(1:roi_tag_end-1);
+            file_name_tag = roi_file_names(1).name(6:end-4);
             set(handles.edit_rois_name,'String',file_name_tag);
         end
         im_session.ref.roi_array = roi_array;
@@ -898,9 +896,7 @@ start_path = fullfile(handles.data_dir,'ROIs_*.mat');
 if FileName ~= 0
     global im_session;
     load(fullfile(PathName,FileName));
-    file_name_tag = FileName(6:end);
-    roi_tag_end = strfind(file_name_tag,'_');
-    file_name_tag = file_name_tag(1:roi_tag_end-1);
+    file_name_tag = FileName(6:end-4);
     set(handles.edit_rois_name,'String',file_name_tag);
     im_session.ref.roi_array = roi_array;
     plot_im_gui(handles,1);
