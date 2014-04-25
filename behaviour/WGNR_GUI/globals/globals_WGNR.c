@@ -483,8 +483,8 @@ void tick_func(void) {
                 inter_trial_trig = 1;
                 inter_trial_time = inter_trial_time + 1/sample_freq;
                 /* send left and right walls to target positions */
-                l_lat_pos = l_lat_pos + .008*(l_lat_pos_target - l_lat_pos);
-                r_lat_pos = r_lat_pos + .008*(r_lat_pos_target - r_lat_pos);
+                l_lat_pos = l_lat_pos + .03*(l_lat_pos_target - l_lat_pos);
+                r_lat_pos = r_lat_pos + .03*(r_lat_pos_target - r_lat_pos);
             } else {
                 /* During trial */
                 inter_trial_trig = 0;
@@ -945,6 +945,9 @@ void init_func(void) {
     } else {
         cur_trial_num = trial_num_sequence_length - 1;
     }*/
+    
+    cor_pos = trial_ol_values[0][0];
+            
     l_lat_pos = max_wall_pos;
     r_lat_pos = max_wall_pos;
     

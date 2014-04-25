@@ -5,57 +5,57 @@
 
 /******************************************/
 /* TRIAL PARAMETERS SET FROM MATLAB */
-const unsigned trial_num_types = 8; /* Number of trial types */
-const unsigned trial_num_turns = 3; /* Max number of trial turns */
+const unsigned trial_num_types = 2; /* Number of trial types */
+const unsigned trial_num_turns = 6; /* Max number of trial turns */
 const unsigned trial_num_gain = 1; /* Max number of trial gain changes */
 const unsigned trial_num_open_loop = 2; /* Max number of trial corridor open loop changes */
 const unsigned trial_num_cor_widths = 2; /* Max number of trial corridor width changes */
 const unsigned trial_num_water_drops = 1; /* Max number of water drops per trial */
-const unsigned trial_random_order = 1; /* 1 if in random order, 0 if in sequence */
-const unsigned trial_num_sequence_length = 0; /* 0 if random, otherwise length of sequence */
-const unsigned trial_num_sequence[1] = {1}; /* 1 if random, sequence */
-const unsigned trial_num_repeats[1] = {1}; /* 1 if random, num repeats */
+const unsigned trial_random_order = 0; /* 1 if in random order, 0 if in sequence */
+const unsigned trial_num_sequence_length = 2; /* 0 if random, otherwise length of sequence */
+const unsigned trial_num_sequence[2] = {1, 2}; /* 1 if random, sequence */
+const unsigned trial_num_repeats[2] = {20, 20}; /* 1 if random, num repeats */
 
 const unsigned laser_calibration_mode = 0;
 
-const unsigned trial_type[8] = {1, 1, 1, 1, 1, 1, 1, 1}; /* Trial type, 1 for distance, 0 for time */
-const double trial_duration[8] = {100, 100, 100, 100, 100, 100, 100, 100}; /* Trial duration, (cm) for distance, (s) for time */
-const double trial_timeout[8] = {12, 12, 12, 12, 12, 12, 12, 12}; /* Trial timeout (s) */
-const double trial_iti[8] = {1, 1, 1, 1, 1, 1, 1, 1}; /* Intertrial interval (s) */
-const unsigned trial_left_wall[8] = {1, 1, 1, 1, 1, 1, 1, 1}; /* 1 if left wall on, 0 if left wall off */
-const unsigned trial_right_wall[8] = {1, 1, 1, 1, 1, 1, 1, 1}; /* 1 if right wall on, 0 if right wall off */
-const unsigned trial_cor_reset[8] = {1, 1, 1, 1, 1, 1, 1, 1}; /* 1 for reset walls at beginning of trial, 0 otherwise */
-const double trial_ol_positions[8][2] = {{0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}}; /* Change positions in corridor width */
-const double trial_ol_values[8][2] = {{15, 15}, {15, 15}, {15, 15}, {15, 15}, {15, 15}, {15, 15}, {15, 15}, {15, 15}}; /* Corridor width (mm) */
-const double trial_cor_width_positions[8][2] = {{0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}}; /* Change positions in corridor width */
-const double trial_cor_width[8][2] = {{30, 30}, {30, 30}, {30, 30}, {30, 30}, {30, 30}, {30, 30}, {30, 30}, {30, 30}}; /* Corridor width (mm) */
-const double trial_turn_positions[8][4] = {{0, .2, .9, 1}, {0, .2, .9, 1}, {0, .2, .9, 1}, {0, .2, .9, 1}, {0, .2, .9, 1}, {0, .2, .9, 1}, {0, .2, .9, 1}, {0, .2, .9, 1}}; /* Turn positions within trial */
-const double trial_turn_values[8][3] = {{0, -11.3, 0}, {0, 11.3, 0}, {0, -11.3, 0}, {0, 11.3, 0}, {0, -11.3, 0}, {0, 11.3, 0}, {0, -11.3, 0}, {0, 11.3, 0}}; /* Turn angles if closed loop, wall positions if open loop */
-const double trial_gain_positions[8][2] = {{0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}}; /* Gain changes within trial */
-const double trial_gain_values[8][1] = {{1}, {1}, {1}, {1}, {1}, {1}, {1}, {1}}; /* Gain values within trial */
-const double trial_test_period[8][2] = {{0, .8}, {0, .8}, {0, .8}, {0, .8}, {0, .8}, {0, .8}, {0, .8}, {0, .8}}; /* Trial test period */
-const unsigned trial_water_enabled[8] = {1, 1, 1, 1, 1, 1, 1, 1}; /* Water enabled on trial */
-const double trial_water_pos[8][1] = {{0.85}, {0.85}, {0.85}, {0.85}, {0.85}, {0.85}, {0.85}, {0.85}}; /* Trial water period */
-const double trial_water_range_min[8][1] = {{5}, {5}, {5}, {5}, {5}, {5}, {5}, {5}}; /* Trial corridor range for water */
-const double trial_water_range_max[8][1] = {{25}, {25}, {25}, {25}, {25}, {25}, {25}, {25}}; /* Trial corridor range for water */
-const unsigned trial_water_range_type[8] = {0, 0, 0, 0, 0, 0, 0, 0}; /* If 0 then range of wall distance (mm), if 1 then range of fraction of corridor with, if 2 then range of lateral run position */
-const double trial_water_drop_size[8][1] = {{100}, {100}, {100}, {100}, {100}, {100}, {100}, {100}}; /* Trial corridor range for water */
+const unsigned trial_type[2] = {1, 1}; /* Trial type, 1 for distance, 0 for time */
+const double trial_duration[2] = {160, 160}; /* Trial duration, (cm) for distance, (s) for time */
+const double trial_timeout[2] = {30, 30}; /* Trial timeout (s) */
+const double trial_iti[2] = {0.2, 0.2}; /* Intertrial interval (s) */
+const unsigned trial_left_wall[2] = {1, 1}; /* 1 if left wall on, 0 if left wall off */
+const unsigned trial_right_wall[2] = {1, 1}; /* 1 if right wall on, 0 if right wall off */
+const unsigned trial_cor_reset[2] = {1, 1}; /* 1 for reset walls at beginning of trial, 0 otherwise */
+const double trial_ol_positions[2][2] = {{0, 1}, {0, 1}}; /* Change positions in corridor width */
+const double trial_ol_values[2][2] = {{10, 10}, {10, 10}}; /* Corridor width (mm) */
+const double trial_cor_width_positions[2][2] = {{0, 1}, {0, 1}}; /* Change positions in corridor width */
+const double trial_cor_width[2][2] = {{10, 10}, {10, 10}}; /* Corridor width (mm) */
+const double trial_turn_positions[2][7] = {{0, .125, .25, .375, .5, 1, 1}, {0, .375, .5, .625, .75, .875, 1}}; /* Turn positions within trial */
+const double trial_turn_values[2][6] = {{ -10, +10, -10, +10, 0, 0}, {+10, 0, +10, 0, +10, 0}}; /* Turn angles if closed loop, wall positions if open loop */
+const double trial_gain_positions[2][2] = {{0, 1}, {0, 1}}; /* Gain changes within trial */
+const double trial_gain_values[2][1] = {{1}, {1}}; /* Gain values within trial */
+const double trial_test_period[2][2] = {{.25, .75}, {.25, .75}}; /* Trial test period */
+const unsigned trial_water_enabled[2] = {1, 1}; /* Water enabled on trial */
+const double trial_water_pos[2][1] = {{0.95}, {0.95}}; /* Trial water period */
+const double trial_water_range_min[2][1] = {{2}, {2}}; /* Trial corridor range for water */
+const double trial_water_range_max[2][1] = {{8}, {8}}; /* Trial corridor range for water */
+const unsigned trial_water_range_type[2] = {0, 0}; /* If 0 then range of wall distance (mm), if 1 then range of fraction of corridor with, if 2 then range of lateral run position */
+const double trial_water_drop_size[2][1] = {{100}, {100}}; /* Trial corridor range for water */
 
-const unsigned trial_masking_flash[8] = {0, 0, 0, 0, 0, 0, 0, 0}; /* 0 if off, 1 if blue, 2 if yellow */
-const double trial_mf_period[8][2] = {{0, .75}, {0, .75}, {0, .75}, {0, .75}, {0, .75}, {0, .75}, {0, .75}, {0, .75}}; /* Trial masking flash period */
-const unsigned trial_mf_pulse_dur[8] = {1, 1, 1, 1, 1, 1, 1, 1}; /* Trial masking flash pulse duration, if 0 then off ,1 = 2ms, 2 = 4ms etc */
-const unsigned trial_mf_pulse_iti[8] = {0, 0, 0, 0, 0, 0, 0, 0}; /* Trial masking flash iti, if 0 then continuous pulses,1 = 2ms, 2 = 4ms etc */
+const unsigned trial_masking_flash[2] = {0, 0}; /* 0 if off, 1 if blue, 2 if yellow */
+const double trial_mf_period[2][2] = {{0, .75}, {0, .75}}; /* Trial masking flash period */
+const unsigned trial_mf_pulse_dur[2] = {1, 1}; /* Trial masking flash pulse duration, if 0 then off ,1 = 2ms, 2 = 4ms etc */
+const unsigned trial_mf_pulse_iti[2] = {0, 0}; /* Trial masking flash iti, if 0 then continuous pulses,1 = 2ms, 2 = 4ms etc */
 
-const unsigned trial_photostim[8] = {0, 0, 2, 2, 2, 2, 2, 2}; /* 0 if off, 1 if blue, 2 if yellow */
-const double trial_ps_period[8][2] = {{0, .8}, {0, .8}, {0, .8}, {0, .8}, {0, .8}, {0, .8}, {0, .8}, {0, .8}}; /* Trial ps period */
-const unsigned trial_ps_pulse_dur[8] = {1, 1, 1, 1, 1, 1, 1, 1}; /* Trial ps pulse duration, if 0 then off pulses,1 = 2ms, 2 = 4ms etc */
-const unsigned trial_ps_pulse_iti[8] = {0, 0, 0, 0, 0, 0, 0, 0}; /* Trial ps iti, if 0 then continuous pulses,1 = 2ms, 2 = 4ms etc */
-const unsigned trial_ps_num_sites[8] = {10, 10, 10, 10, 5, 5, 5, 5}; /* Trial ps number of siter */
-const double trial_ps_peak_power[8] = {0, 0, 5, 5, 5, 5, 5, 5}; /* Peak laser power */
-const unsigned trial_ps_stop_threshold[8] = {0, 0, 0, 0, 0, 0, 0, 0}; /* 1 if stop photostimulation when mouse stopped */
-const unsigned trial_ps_closed_loop[8] = {0, 0, 0, 0, 0, 0, 0, 0}; /* 1 if closed loop to corridor position */
-const double trial_ps_x_pos[8][10] = {{3.6, 3.3, 3.6, 3.9, 3.6, -3.6, -3.9, -3.6, -3.3, -3.6}, {3.6, 3.3, 3.6, 3.9, 3.6, -3.6, -3.9, -3.6, -3.3, -3.6}, {3.6, 3.3, 3.6, 3.9, 3.6, -3.6, -3.9, -3.6, -3.3, -3.6}, {3.6, 3.3, 3.6, 3.9, 3.6, -3.6, -3.9, -3.6, -3.3, -3.6}, {-3.6, -3.9, -3.6, -3.3, -3.6, 0, 0, 0, 0, 0}, {-3.6, -3.9, -3.6, -3.3, -3.6, 0, 0, 0, 0, 0}, {3.6, 3.3, 3.6, 3.9, 3.6, 0, 0, 0, 0, 0}, {3.6, 3.3, 3.6, 3.9, 3.6, 0, 0, 0, 0, 0}}; /* Trial ps site */
-const double trial_ps_y_pos[8][10] = {{-1.3, -1.3, -1.6, -1.3, -1, -1.3, -1.3, -1.6, -1.3, -1}, {-1.3, -1.3, -1.6, -1.3, -1, -1.3, -1.3, -1.6, -1.3, -1}, {-1.3, -1.3, -1.6, -1.3, -1, -1.3, -1.3, -1.6, -1.3, -1}, {-1.3, -1.3, -1.6, -1.3, -1, -1.3, -1.3, -1.6, -1.3, -1}, {-1.3, -1.3, -1.6, -1.3, -1, 0, 0, 0, 0, 0}, {-1.3, -1.3, -1.6, -1.3, -1, 0, 0, 0, 0, 0}, {-1.3, -1.3, -1.6, -1.3, -1, 0, 0, 0, 0, 0}, {-1.3, -1.3, -1.6, -1.3, -1, 0, 0, 0, 0, 0}}; /* Trial ps site */
+const unsigned trial_photostim[2] = {0, 0}; /* 0 if off, 1 if blue, 2 if yellow */
+const double trial_ps_period[2][2] = {{.25, .75}, {.25, .75}}; /* Trial ps period */
+const unsigned trial_ps_pulse_dur[2] = {1, 1}; /* Trial ps pulse duration, if 0 then off pulses,1 = 2ms, 2 = 4ms etc */
+const unsigned trial_ps_pulse_iti[2] = {0, 0}; /* Trial ps iti, if 0 then continuous pulses,1 = 2ms, 2 = 4ms etc */
+const unsigned trial_ps_num_sites[2] = {1, 1}; /* Trial ps number of siter */
+const double trial_ps_peak_power[2] = {0.1, 0.1}; /* Peak laser power */
+const unsigned trial_ps_stop_threshold[2] = {1, 1}; /* 1 if stop photostimulation when mouse stopped */
+const unsigned trial_ps_closed_loop[2] = {0, 0}; /* 1 if closed loop to corridor position */
+const double trial_ps_x_pos[2][1] = {{3.6}, {3.6}}; /* Trial ps site */
+const double trial_ps_y_pos[2][1] = {{-1.3}, {-1.3}}; /* Trial ps site */
 
 /******************************************/
 /* DEFINE EXTERNAL AND INTERNAL FUNCTIONS */
@@ -89,7 +89,7 @@ void stop_state(void);
 /* Analog input channels */
 const unsigned ball_tracker_clock_ai_chan = 0; /* Clock signal from ball tracker */
 const unsigned cam_ai_chan[4] = {1, 2, 3, 4}; /* AI channels from camerea, x0, y0, x1, y1 */
-const unsigned scan_image_frame_clock_chan = 2; /* Frame clock from scan image */
+const unsigned scan_image_frame_clock_chan = 5; /* Frame clock from scan image */
 const unsigned lick_in_chan = 6; /* Lick signal*/
 const unsigned scim_logging_chan = 7; /* Lick signal*/
 
@@ -483,8 +483,8 @@ void tick_func(void) {
                 inter_trial_trig = 1;
                 inter_trial_time = inter_trial_time + 1/sample_freq;
                 /* send left and right walls to target positions */
-                l_lat_pos = l_lat_pos + .008*(l_lat_pos_target - l_lat_pos);
-                r_lat_pos = r_lat_pos + .008*(r_lat_pos_target - r_lat_pos);
+                l_lat_pos = l_lat_pos + .03*(l_lat_pos_target - l_lat_pos);
+                r_lat_pos = r_lat_pos + .03*(r_lat_pos_target - r_lat_pos);
             } else {
                 /* During trial */
                 inter_trial_trig = 0;
@@ -945,6 +945,9 @@ void init_func(void) {
     } else {
         cur_trial_num = trial_num_sequence_length - 1;
     }*/
+    
+    cor_pos = trial_ol_values[0][0];
+            
     l_lat_pos = max_wall_pos;
     r_lat_pos = max_wall_pos;
     

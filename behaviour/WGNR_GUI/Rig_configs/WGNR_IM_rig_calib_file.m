@@ -5,13 +5,13 @@
 % Parameters for WGNR GUI
 rig_config.rig_name = 'Imaging_rig'; % BASE DIRECTORY
 rig_config.rig_room = 'JFRC_2W.333'; % BASE DIRECTORY
-rig_config.base_dir = 'E:\Documents and Settings\user\My Documents\MATLAB\code\njs_library\behaviour\WGNR_GUI'; % BASE DIRECTORY
+rig_config.base_dir = 'E:\Documents and Settings\user\My Documents\MATLAB\code\wgnr\behaviour\WGNR_GUI'; % BASE DIRECTORY
 rig_config.comp_ip_address = '10.102.22.40'; % COMPUTER IP ADDRESS
 rig_config.globals_name = 'globals_WGNR.c'; % base globals file
 rig_config.treadmill_str = 'treadmill4';
 rig_config.data_dir = 'E:\Documents and Settings\user\My Documents\WGNR_DATA'; % DATA DIRECTORY
 rig_config.TCP_IP_address = '10.102.22.49';
-rig_config.accesory_path = '.';
+rig_config.accesory_path = 'W:\Nick\WGNR_DATA';
 
 
 % Parameters for globals file
