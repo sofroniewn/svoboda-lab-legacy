@@ -30,5 +30,5 @@ function setup_im_reg(handles)
 	im_session.reg.startFrame = [];
 	im_session.reg.raw_mean = [];
 	im_session.reg.align_mean = [];
-
+	im_session.reg.behaviour_scim_trial_align = [];
 end

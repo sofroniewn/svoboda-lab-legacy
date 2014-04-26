@@ -121,7 +121,7 @@ if folder_name ~= 0
     
     set(handles.text_status,'String','Status: offline')
     drawnow
-
+    
     handles.base_path = folder_name;
     handles.data_dir = fullfile(handles.base_path, 'scanimage');
     
@@ -194,33 +194,33 @@ if folder_name ~= 0
     val = get(handles.checkbox_behaviour,'Value');
     if val == 1
         set(handles.text_status,'String','Status: loading behaviour')
-          image_processing_gui_toggle_enable(handles,'off',[1 2])
-            set(handles.pushbutton_data_dir,'enable','off')
-            set(handles.togglebutton_gen_text,'enable','off')
-            set(handles.togglebutton_gen_catsa,'enable','off')
-         drawnow
+        image_processing_gui_toggle_enable(handles,'off',[1 2])
+        set(handles.pushbutton_data_dir,'enable','off')
+        set(handles.togglebutton_gen_text,'enable','off')
+        set(handles.togglebutton_gen_catsa,'enable','off')
+        drawnow
         base_path_behaviour = fullfile(handles.base_path, 'behaviour');
         session = [];
-          cur_file = dir(fullfile(handles.base_path,'behaviour','*_rig_config.mat'));
-          if numel(cur_file)>0
+        cur_file = dir(fullfile(handles.base_path,'behaviour','*_rig_config.mat'));
+        if numel(cur_file)>0
             session = load_session_data(base_path_behaviour);
             session = parse_session_data(1,session);
-        % match scim behaviour trial numbers (assume one to one)
-        im_session.behaviour_scim_trial_align = [1:numel(session.data)];
-        
-        % initialize global variables for scim alignment
-        global remove_first;
-        remove_first = 0;
-        set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
-          else
-           set(handles.text_num_behaviour,'String',['Behaviour trials ' 'none']);
-           set(handles.checkbox_behaviour,'Value',0);
-          end     
+            % match scim behaviour trial numbers (assume one to one)
+            im_session.reg.behaviour_scim_trial_align = [1:numel(session.data)];
+            
+            % initialize global variables for scim alignment
+            global remove_first;
+            remove_first = 0;
+            set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
+        else
+            set(handles.text_num_behaviour,'String',['Behaviour trials ' 'none']);
+            set(handles.checkbox_behaviour,'Value',0);
+        end
         set(handles.text_status,'String','Status: offline')
         image_processing_gui_toggle_enable(handles,'on',[1 2])
-            set(handles.pushbutton_data_dir,'enable','on')
-            set(handles.togglebutton_gen_text,'enable','on')
-            set(handles.togglebutton_gen_catsa,'enable','on')
+        set(handles.pushbutton_data_dir,'enable','on')
+        set(handles.togglebutton_gen_text,'enable','on')
+        set(handles.togglebutton_gen_catsa,'enable','on')
         drawnow
     end
     
@@ -473,33 +473,7 @@ else
             % Setup registration
             setup_im_reg(handles);
         end
-        
-        
-        % Check if behaviour mode on
-        if get(handles.checkbox_behaviour,'Value');
-            % match scim behaviour trial numbers (assume one to one)
-            %global behaviour_scim_trial_align;
-            %behaviour_scim_trial_align = [1:numel(session.data)];
-            
-            % Check if behaviour mode on
-            global session;
-            if isempty(session.data)
-                set(handles.text_status,'String','Status: loading behaviour')
-                drawnow
-                base_path_behaviour = fullfile(handles.base_path, 'behaviour');
-                session = [];
-                session = load_session_data(base_path_behaviour);
-                session = parse_session_data(1,session);
-                % match scim behaviour trial numbers (assume one to one)
-                im_session.behaviour_scim_trial_align = [1:numel(session.data)];
-                
-                % initialize global variables for scim alignment
-                global remove_first;
-                remove_first = 0;
-                set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
-            end
-        end
-        
+
         % Update handles structure
         guidata(hObject, handles);
         start(handles.obj_t)
@@ -652,8 +626,8 @@ if value && isfield(im_session,'reg')
     save_path_im = fullfile(save_path,['Text_images_p01_c01.txt']);
     overwrite = get(handles.checkbox_overwrite,'Value');
     if overwrite ~= 1 && exist(save_path_im) == 2
-            fprintf('(text)  EXISTS\n');
-    else    
+        fprintf('(text)  EXISTS\n');
+    else
         down_sample = str2double(get(handles.edit_downsample,'String'));
         use_cluser = get(handles.checkbox_use_cluster,'Value');
         
@@ -687,7 +661,7 @@ if value && isfield(im_session,'reg')
     end
     
     prepare_spark(save_path,behaviour_on,overwrite)
-
+    
     image_processing_gui_toggle_enable(handles,'on',[1 2])
     set(handles.pushbutton_data_dir,'enable','on')
     set(handles.togglebutton_gen_catsa,'enable','on')

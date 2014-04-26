@@ -76,10 +76,6 @@ set(handles.popupmenu_list_plots,'UserData',ref_val);
 % Prepare global variables
 clear global im_session;
 global im_session;
-clear global session;
-global session;
-session = [];
-session.data = [];
 
 % Setup spark analysis output
 [stim_types val_array] = setupReg_spark;
@@ -231,10 +227,6 @@ set(handles.popupmenu_spark_regressors,'Value',ref_val)
 % Prepare global variables
 clear global im_session
 global im_session; 
-clear global session;
-global session;
-session = [];
-session.data = [];
 im_session.spark_output.mean = [];
 
 start_path = handles.datastr;
@@ -251,14 +243,14 @@ if folder_name ~= 0
     im_session.realtime.im_raw = [];
     im_session.realtime.ind = 0;
 
-[stim_types val_array] = setupReg_spark;
-im_session.spark_output.mean = [];
-im_session.spark_output.localcorr = [];
-im_session.spark_output.regressor.names = stim_types;
-im_session.spark_output.regressor.stats = cell(numel(stim_types),1);
-im_session.spark_output.regressor.tune = cell(numel(stim_types),1);
-im_session.spark_output.regressor.vals = val_array;
-im_session.spark_output.regressor.cur_ind = get(handles.popupmenu_spark_regressors,'UserData');
+    [stim_types val_array] = setupReg_spark;
+    im_session.spark_output.mean = [];
+    im_session.spark_output.localcorr = [];
+    im_session.spark_output.regressor.names = stim_types;
+    im_session.spark_output.regressor.stats = cell(numel(stim_types),1);
+    im_session.spark_output.regressor.tune = cell(numel(stim_types),1);
+    im_session.spark_output.regressor.vals = val_array;
+    im_session.spark_output.regressor.cur_ind = get(handles.popupmenu_spark_regressors,'UserData');
 
     set(handles.text_anm,'Enable','on')
     set(handles.text_date,'Enable','on')
@@ -288,15 +280,15 @@ im_session.spark_output.regressor.cur_ind = get(handles.popupmenu_spark_regresso
         handles.ref_images_startup = [];
     end
 
-    % Load in behaviour
+    % Update behaviour trials
     cur_file = dir(fullfile(handles.base_path,'behaviour','*_rig_config.mat'));
     if numel(cur_file)>0
-        base_path_behaviour = fullfile(handles.base_path, 'behaviour');
-        session = load_session_data(base_path_behaviour);
-        session = parse_session_data(1,session);
-        set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
+        cur_bv_files = dir(fullfile(base_path_behaviour,'*_trial_*.mat'));
+        set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(cur_bv_files)-1)]);
+        set(handles.text_num_behaviour,'UserData',numel(cur_bv_files)-1)
     else
-        set(handles.text_num_behaviour,'String',['Behaviour trials ' 'off']);       
+        set(handles.text_num_behaviour,'String',['Behaviour trials ' 'off']);
+        set(handles.text_num_behaviour,'UserData',-1)     
     end
 end
 
@@ -480,6 +472,7 @@ if value == 1
   set(handles.obj_t,'UserData',0);
   % Update handles structure
   guidata(hObject, handles);
+
 
   start(handles.obj_t)
 
