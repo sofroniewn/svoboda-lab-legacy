@@ -1,4 +1,4 @@
-function [ch_data] = func_parse_matclust(ch_data,i_trial,s,TimeStamps)
+function [ch_data] = func_parse_matclust(ch_data,i_trial,s,p,TimeStamps,total_time)
 %%
 disp(['--------------------------------------------']);
 disp(['parse for matclust file']);
@@ -40,13 +40,14 @@ if n_spk>1
     spiketimes_tmp = double(TimeStamps(s.spikes_all(:,2)));
     trials_tmp = double(zeros(n_spk,1)+i_trial);
     iCh_tmp = double(detection_ch);
+   
     spike_amp = s.spike_amp;
     spike_amp(spike_amp>.15*10^(-3)) = .15*10^(-3);
     spike_amp(spike_amp<-.6*10^(-3)) = -.6*10^(-3);
     spike_amp = -spike_amp;
 
     % save data for matclust
-    params_tmp = cat(2, params_tmp, (trials_tmp*6 + spiketimes_tmp));
+    params_tmp = cat(2, params_tmp, (total_time + spiketimes_tmp));
     params_tmp = cat(2, params_tmp, double(detection_ch));
     params_tmp = cat(2, params_tmp, spike_amp);
     %params_tmp = cat(2, params_tmp, s.spike_width);

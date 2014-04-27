@@ -20,6 +20,7 @@ function [ch_MUA commonNoise] = func_denoise(TimeStamps, ch_MUA, ch_noise)
             ch_MUA(:,i_ch) = ch_MUA(:,i_ch) - commonNoise*b(2);
         end
     else
+        commonNoise = zeros(length(TimeStamps),1);
     end
     disp(['--------------------------------------------']);
 

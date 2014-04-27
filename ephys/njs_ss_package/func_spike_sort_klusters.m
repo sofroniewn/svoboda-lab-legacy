@@ -1,13 +1,13 @@
-function [ch_data] = func_spike_sort(base_dir, file_list, cluster_name, ch_common_noise, ch_spikes, over_write, over_write_spikes, over_write_cluster)
+function [ch_data] = func_spike_sort_klusters(base_dir, file_list, cluster_name, ch_common_noise, ch_spikes, over_write, over_write_spikes, over_write_cluster)
 %%
 disp(['--------------------------------------------']);
 lite = 1;
 ch_data = [];
-total_time = 0;
-f_name_cluster = fullfile(base_dir,'ephys','sorted',[cluster_name '.mat']);
+total_inds = 0;
+f_name_cluster = fullfile(base_dir,'ephys','sorted',cluster_name);
 
-if over_write_cluster == 0 && exist(f_name_cluster) == 2
-    disp(['LOAD MATCLUST FILE']);
+if over_write_cluster == 0 && exist([f_name_cluster '.mat']) == 2
+    disp(['LOAD KLUSTERS FILE']);
     load(f_name_cluster);
 else
     if exist(fullfile(base_dir,'ephys','processed'))~=7
@@ -39,29 +39,35 @@ else
             save(f_name_spikes,'s');
         end
         
-        disp(['PREPARE MATCLUST FILE']);
-        [ch_data] = func_parse_matclust(ch_data,i_trial,s,p,d.TimeStamps,total_time);
-        total_time = total_time + d.TimeStamps(end) + d.TimeStamps(1);
+        disp(['PREPARE KLUSTERS FILE']);
+        [ch_data] = func_parse_klusters(ch_data,i_trial,s,p,d.TimeStamps,total_inds);
+        total_inds = total_inds + length(d.TimeStamps);
         disp(['--------------------------------------------']);
     end
     
-    [COEFF,SCORE]   = princomp(ch_data.customvar.waveform(:,20-10:20+20));
-    spike_PCA = SCORE(:,1:6);
-    ch_data.params = cat(2, ch_data.params, spike_PCA); 
-    disp(['SAVE MATCLUST FILE']);
-    % add labels
-    for i_tmp = 1:size(s.spike_amp,2)
-        ch_data.paramnames = cat(1, ch_data.paramnames, ['Amp#',num2str(i_tmp)]);
-    end
-%     for i_tmp = 1:size(s.spike_width,2)
-%         ch_data.paramnames = cat(1, ch_data.paramnames, ['Width#',num2str(i_tmp)]);
-%     end
-    for i_tmp = 1:size(spike_PCA,2)
-        ch_data.paramnames = cat(1, ch_data.paramnames, ['PCA#',num2str(i_tmp)]);
-    end
-    save(f_name_cluster,'ch_data','file_list');
+    disp(['SAVE KLUSTERS FILE']);
+
+    %fid = fopen([f_name_cluster '.spk' '.1'],'w');
+    %fwrite(fid,ch_data.spk,'int16');
+    %fclose(fid);
+    
+    fid = fopen([f_name_cluster '.fet' '.1'],'w');
+    fprintf(fid,['%i\n'],size(ch_data.fet,2));
+    fmt = repmat('%i ',1,size(ch_data.fet,2)-1);
+    fprintf(fid,[fmt '%i\n'],ch_data.fet);
+    fclose(fid);
+
+    %fid = fopen([f_name_cluster '.res' '.1'],'w');
+    %fprintf(fid,'%i\n',ch_data.res);
+    %fclose(fid);
+    
+    %ch_data = ch_data.sync;
+    %save([f_name_cluster '.mat'],'ch_data');
+
 end
 disp(['--------------------------------------------']);
+
+
 
 
 

@@ -11,18 +11,19 @@ ch_spikes = [1:2, 4:26, 30:31];
 base_dir = '/Users/sofroniewn/Documents/DATA/WGNR_DATA/anm_0221172/2014_02_21/run_09';
 base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_225493/2013_12_12/run_06';
 f_name_flag = '*_trial*.bin';
-file_nums = [1:1000];
+file_nums = [1:10];
 over_write = 0;
 over_write_spikes = 0;
 over_write_cluster = 0;
-cluster_name = 'matclust_data_B.mat';
+cluster_name = 'klusters_data';
 
 file_list = func_list_files(base_dir,f_name_flag,file_nums);
 
-func_concat_raw_voltages(base_dir,file_list);
+%func_concat_raw_voltages(base_dir,file_list);
 
 
-[ch_data] = func_spike_sort(base_dir,file_list,cluster_name,ch_common_noise,ch_spikes,over_write,over_write_spikes,over_write_cluster);
+%[ch_data] = func_spike_sort(base_dir,file_list,cluster_name,ch_common_noise,ch_spikes,over_write,over_write_spikes,over_write_cluster);
+[ch_data] = func_spike_sort_klusters(base_dir,file_list,cluster_name,ch_common_noise,ch_spikes,over_write,over_write_spikes,over_write_cluster);
 
 %% Start matclust
 cd('/Users/sofroniewn/Documents/code/external/matclust_v1.2')
@@ -77,4 +78,54 @@ plot_spike_raster_groups(7,sorted_spikes,groups,group_ids,col_mat);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%
+cd('/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_225493/2013_12_12/run_06/ephys/concat/NEW_TEST')
+
+f = fopen('old.spk');
+A = fread(f,Inf,'int16');
+A(1:10)
+length(A)
+
+f = fopen('old_res.txt');
+B = fscanf(f,'%i');
+B(1:10)
+
+n_dat = length(A);
+n_spks = length(B);
+n_chan = 17;
+n_samp = 32;
+
+C = reshape(A,[n_chan,n_samp,n_spks]);
+
+f2 = fopen('new.spk','w');
+fwrite(f2,A,'int16');
+
+
+f2 = fopen('new.bin','r');
+D = fread(f2,Inf,'int16');
+
+
+f = fopen('new_res.res','w');
+fprintf(f,'%i\n',B)
+
+whos
+A(1:10)
+
+f_name_cluster = 'test'
+spk = rand(100,1);
+
+    fid = fopen([f_name_cluster '.spk'])
+    fwrite(fid,spk,'uint32')
+    fclose(fid)
+    fid = fopen([f_name_cluster '.res'])
+    fprintf(fid,res,'uint32')
+    fclose(fid)
+
+
+
+
+
+
+
 
