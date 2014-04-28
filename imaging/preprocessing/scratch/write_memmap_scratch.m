@@ -1,20 +1,17 @@
 
 filename = '/Users/sofroniewn/Documents/DATA/WGNR_DATA/anm_0227254/2013_12_12/run_02/scanimage/memmap.dat';
 
-t = memmapfile(filename, 'Writable', true, 'Format', 'int16');
+t = memmapfile(filename, 'Writable', true, 'Format', 'uint16');
 
 new_volume = rand(512,512,4);
 new_volume = new_volume*200;
 new_volume = new_volume(:);
 volume_id = 1;
 
-t.Data = int16(cat(1,volume_id,new_volume));
-
-
-t.Data = int16(cat(1,ij,200*rand(512*512*4,1))); ij = ij+1;
+t.Data = uint16(cat(1,volume_id,new_volume));
 
 ij = 1;
-t.Data = int16(cat(1,ij,0*rand(512*512*4,1))); ij = ij+1;
+t.Data = uint16(cat(1,ij,200*rand(512*512*4,1))); ij = ij+1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

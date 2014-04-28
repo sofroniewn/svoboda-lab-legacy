@@ -1,7 +1,7 @@
 function [im_comb clim] = plot_ref_images(plot_axes,cbar_axes,im_session,trial_num,chan_num,plot_planes,clim,plot_on)
 
-axes(plot_axes);
-colormap(gca,'gray');
+	axes(plot_axes);
+	colormap(gca,'gray');
 
 num_planes = length(plot_planes);
 plane_rep = ceil(sqrt(num_planes));

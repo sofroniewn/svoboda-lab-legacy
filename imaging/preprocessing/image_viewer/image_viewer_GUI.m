@@ -68,7 +68,7 @@ for ij = 1:numel(plot_list)
     plot_names{ij} = plot_list(ij).name;
 end
 set(handles.popupmenu_list_plots,'string',plot_names)
-ref_val = 5;
+ref_val = 6;
 set(handles.popupmenu_list_plots,'value',ref_val)
 set(handles.popupmenu_list_plots,'UserData',ref_val);
 
@@ -243,6 +243,7 @@ if folder_name ~= 0
     % Load in im_session
     im_session = load_im_session_data(handles.data_dir);
     im_session.realtime.im_raw = [];
+    im_session.realtime.im_adj = [];
     im_session.realtime.ind = 0;
 
     [stim_types val_array] = setupReg_spark;
@@ -397,21 +398,21 @@ if FileName ~= 0
     if strcmp(ext,'.mat') == 1
       load(fullfile(PathName,FileName));
         if ~strcmp(PathName,fullfile(handles.base_path,'scanimage'))
-            save(fullfile(handles.base_path,'scanimage',FileName,'ref'));
+            save(fullfile(handles.base_path,'scanimage',FileName),'ref');
         end
     elseif strcmp(ext,'.tif') == 1
         [pathstr,name,ext] = fileparts(FileName);
         if exist(fullfile(PathName,['ref_images_' name '.mat'])) == 2 && overwrite == 0
             load(fullfile(PathName,['ref_images_' name '.mat']));
             if ~strcmp(PathName,fullfile(handles.base_path,'scanimage'))
-                 save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat'],'ref'));
+                 save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat']),'ref');
             end
         else
             align_chan = str2num(get(handles.edit_align_channel,'string'));
             ref = generate_reference(fullfile(PathName,FileName),align_chan,1);
             if ~strcmp(PathName,fullfile(handles.base_path,'scanimage'))
                 [pathstr,name,ext] = fileparts(FileName);
-                save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat'],'ref'));
+                save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat']),'ref');
             end
         end
     else
@@ -538,13 +539,15 @@ if value == 1
   % setup memory map
   filename = fullfile(handles.data_dir,'memmap.dat');
   % Create the communications file if it is not already there.
-  [f, msg] = fopen(filename, 'wb');
-  if f ~= -1
-      fwrite(f, zeros(im_session.ref.im_props.height*im_session.ref.im_props.width*im_session.ref.im_props.numPlanes+1,1,'uint16'), 'uint16');
-      fclose(f);
-  else
-      error('MATLAB:demo:send:cannotOpenFile', ...
-            'Cannot open file "%s": %s.', filename, msg);
+  if exist(filename)~= 2
+      [f, msg] = fopen(filename, 'wb');
+      if f ~= -1
+          fwrite(f, zeros(im_session.ref.im_props.height*im_session.ref.im_props.width*im_session.ref.im_props.numPlanes+1,1,'uint16'), 'uint16');
+          fclose(f);
+      else
+          error('MATLAB:demo:send:cannotOpenFile', ...
+              'Cannot open file "%s": %s.', filename, msg);
+      end
   end
   
   global mmap_data;
@@ -553,7 +556,8 @@ if value == 1
   global old_mmap_frame_num
   old_mmap_frame_num = 0;
 
-  im_session.realtime.im_raw = zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,im_session.ref.im_props.numPlanes,10);
+  im_session.realtime.im_raw = zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,im_session.ref.im_props.numPlanes,10,'uint16');
+  im_session.realtime.im_adj = zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,im_session.ref.im_props.numPlanes,10,'uint16');
   im_session.realtime.ind = 1;
   im_session.realtime.start = 0;
   
