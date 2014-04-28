@@ -22,7 +22,7 @@ function varargout = image_viewer_GUI(varargin)
 
 % Edit the above text to modify the response to help image_viewer_GUI
 
-% Last Modified by GUIDE v2.5 27-Apr-2014 21:42:44
+% Last Modified by GUIDE v2.5 23-Apr-2014 10:23:57
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,6 +55,7 @@ function image_viewer_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for image_viewer_GUI
 set(hObject,'HandleVisibility','on')
 handles.output = hObject;
+
 handles.datastr = pwd;
 
 p = mfilename('fullpath');
@@ -163,10 +164,7 @@ function varargout = image_viewer_GUI_OutputFcn(hObject, eventdata, handles)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
-cur_pos = get(handles.figure1,'Position');
-cur_pos(1) = 7;
-cur_pos(2) = 138;
-set(handles.figure1,'Position',cur_pos)
+
 
 % --- Executes on selection change in popupmenu_list_plots.
 function popupmenu_list_plots_Callback(hObject, eventdata, handles)
@@ -396,23 +394,13 @@ if FileName ~= 0
     [pathstr,name,ext] = fileparts(FileName);
     if strcmp(ext,'.mat') == 1
       load(fullfile(PathName,FileName));
-        if ~strcmp(PathName,fullfile(handles.base_path,'scanimage'))
-            save(fullfile(handles.base_path,'scanimage',FileName,'ref'));
-        end
     elseif strcmp(ext,'.tif') == 1
         [pathstr,name,ext] = fileparts(FileName);
         if exist(fullfile(PathName,['ref_images_' name '.mat'])) == 2 && overwrite == 0
             load(fullfile(PathName,['ref_images_' name '.mat']));
-            if ~strcmp(PathName,fullfile(handles.base_path,'scanimage'))
-                 save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat'],'ref'));
-            end
         else
             align_chan = str2num(get(handles.edit_align_channel,'string'));
             ref = generate_reference(fullfile(PathName,FileName),align_chan,1);
-            if ~strcmp(PathName,fullfile(handles.base_path,'scanimage'))
-                [pathstr,name,ext] = fileparts(FileName);
-                save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat'],'ref'));
-            end
         end
     else
       error('Wrong file type for reference')
@@ -540,7 +528,7 @@ if value == 1
   % Create the communications file if it is not already there.
   [f, msg] = fopen(filename, 'wb');
   if f ~= -1
-      fwrite(f, zeros(im_session.ref.im_props.height*im_session.ref.im_props.width*im_session.ref.im_props.numPlanes+1,1,'uint16'), 'uint16');
+      fwrite(f, zeros(im_session.ref.im_props.height*im_session.ref.im_props.width*im_session.ref.im_props.numPlanes+1,1,'int16'), 'int16');
       fclose(f);
   else
       error('MATLAB:demo:send:cannotOpenFile', ...
@@ -549,7 +537,7 @@ if value == 1
   
   global mmap_data;
   mmap_data = memmapfile(filename, 'Writable', true, ...
-        'Format', 'uint16');
+        'Format', 'int16');
   global old_mmap_frame_num
   old_mmap_frame_num = 0;
 
@@ -1008,3 +996,7 @@ switch get(hObject,'State')
         colormap('gray')
     end
 end
+
+
+
+

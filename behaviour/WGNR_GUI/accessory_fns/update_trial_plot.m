@@ -10,7 +10,20 @@ else
     start_trial = numel(session.data)+1;
     for ij = start_trial:numel(cur_files)-1
         f_name = fullfile(handles.data_dir,cur_files(ij).name);
-        session.data{ij} = load(f_name);
+        try 
+            trial_mat_names = [];
+            trial_matrix = [];
+            trial_num = [];
+            load(f_name);
+            if isempty(trial_mat_names) || isempty(trial_matrix) || isempty(trial_num)
+                return
+            end
+        catch
+            return
+        end
+        session.data{ij}.trial_mat_names = trial_mat_names;
+        session.data{ij}.trial_matrix = trial_matrix;
+        session.data{ij}.trial_num = trial_num;
         session.data{ij}.f_name = f_name;
     end
     parse_session_data(start_trial,[]);

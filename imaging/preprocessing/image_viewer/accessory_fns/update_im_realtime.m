@@ -37,8 +37,6 @@ if update_im == 1 && (strcmp(plot_str,'plot_realtime_raw.m') == 1 || strcmp(plot
             %im_adj(:,:,ij) = func_im_shift(cur_im,shift_plane);
         end
         
-        
-        
         corr_vals = mean(corr_2(handles.edges_lateral_displacements+im_session.ref.im_props.height,handles.edges_lateral_displacements+im_session.ref.im_props.width,:),3);
         shift_vals = mean(shifts,2);
         shift_vals(shift_vals < handles.edges_lateral_displacements(1)) = handles.edges_lateral_displacements(1);
