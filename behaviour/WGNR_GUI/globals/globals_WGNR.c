@@ -476,6 +476,9 @@ void tick_func(void) {
                 mf_period_counter = 0;
                 ps_period_counter = 0;
                 ps_spots_counter = 0;
+
+                x_mirror_pos = trial_ps_x_pos[cur_trial_num][0];
+                y_mirror_pos = trial_ps_y_pos[cur_trial_num][0];
             }
             
             /* Check if in iti */
@@ -747,7 +750,7 @@ void tick_func(void) {
                 }
                 ps_period_counter++;
             } else {
-                laser_shutter = 1;
+                laser_power = 0;
             }
             
             
