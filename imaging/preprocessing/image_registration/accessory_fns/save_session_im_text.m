@@ -55,7 +55,7 @@ for ij = 1:num_files
     
     if behaviour_on
         fprintf(' behaviour ');
-        trial_num_session = im_session.behaviour_scim_trial_align(ij);
+        trial_num_session = im_session.reg.behaviour_scim_trial_align(ij);
         trial_data_raw = session.data{trial_num_session};
         scim_frame_trig = session.data{trial_num_session}.processed_matrix(7,:);
         [trial_data data_variable_names] = parse_behaviour2im(trial_data_raw,trial_num_session,scim_frame_trig);

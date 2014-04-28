@@ -54,7 +54,7 @@ im_session.reg.startFrame = cat(1,im_session.reg.startFrame, im_summary.props.fi
 % extract behaviour information if necessary
 if behaviour_on
     trial_num_im_session = trial_num;
-    trial_num_session = im_session.behaviour_scim_trial_align(trial_num);
+    trial_num_session = im_session.reg.behaviour_scim_trial_align(trial_num);
     fprintf('(scim_align) loading file %g \n',trial_num);
     %%% ALIGN
     global remove_first;

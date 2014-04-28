@@ -14,7 +14,7 @@ end
 % Check behaviour directory
 cur_file = dir(fullfile(handles.base_path,'behaviour','*_rig_config.mat'));
 if numel(cur_file)>0
-    cur_bv_files = dir(fullfile(base_path_behaviour,'*_trial_*.mat'));
+    cur_bv_files = dir(fullfile(handles.base_path,'behaviour','*_trial_*.mat'));
     val = get(handles.text_num_behaviour,'UserData');
     if numel(cur_bv_files)-1 > val
         set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(cur_bv_files)-1)]);
@@ -76,7 +76,7 @@ for ij = num_old_files + 1: numel(cur_files_reg)
     %if behaviour_val == 1
     %	trial_num_im_session = ij;
     %	if get(handles.togglebutton_online_mode,'value') == 0
-    %		trial_num_session = im_session.ref.behaviour_scim_trial_align(ij);
+    %		trial_num_session = im_session.reg.behaviour_scim_trial_align(ij);
     %	else
     %		trial_num_session = ij;
     %	end

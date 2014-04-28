@@ -7,7 +7,7 @@ m = size(A,2);
 
 B = fliplr(B);
 B = flipud(B);
-corr_2 = ifft2(fft2(A).*fft2(B);
+corr_2 = ifft2(fft2(A).*fft2(B));
 [max_cc, imax] = max(corr_2(:));
 [rloc, cloc] = ind2sub(size(corr_2),imax);
 

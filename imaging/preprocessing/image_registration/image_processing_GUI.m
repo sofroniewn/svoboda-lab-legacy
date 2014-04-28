@@ -73,14 +73,6 @@ set(handles.togglebutton_gen_text,'enable','off')
 set(handles.checkbox_behaviour,'Value',1)
 set(handles.text_status,'String','Status: offline')
 
-clear global im_session;
-global im_session;
-im_session = [];
-clear global session_ca;
-global session_ca;
-clear global session;
-global session;
-
 % Update handles structure
 guidata(hObject, handles);
 
@@ -128,14 +120,15 @@ if folder_name ~= 0
     clear global im_session
     global im_session;
     im_session = load_im_session_data(handles.data_dir);
-    im_session.realtime.im_raw = [];
-    im_session.realtime.ind = 0;
-    
+
     clear global session;
     global session;
     session = [];
     session.data = [];
     
+    clear global remove_first;
+    remove_first = 0;
+
     clear global session_ca;
     global session_ca;
     
@@ -200,21 +193,15 @@ if folder_name ~= 0
         set(handles.togglebutton_gen_catsa,'enable','off')
         drawnow
         base_path_behaviour = fullfile(handles.base_path, 'behaviour');
-        session = [];
         cur_file = dir(fullfile(handles.base_path,'behaviour','*_rig_config.mat'));
         if numel(cur_file)>0
             session = load_session_data(base_path_behaviour);
             session = parse_session_data(1,session);
             % match scim behaviour trial numbers (assume one to one)
             im_session.reg.behaviour_scim_trial_align = [1:numel(session.data)];
-            
-            % initialize global variables for scim alignment
-            global remove_first;
-            remove_first = 0;
             set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
         else
             set(handles.text_num_behaviour,'String',['Behaviour trials ' 'none']);
-            set(handles.checkbox_behaviour,'Value',0);
         end
         set(handles.text_status,'String','Status: offline')
         image_processing_gui_toggle_enable(handles,'on',[1 2])
@@ -467,13 +454,6 @@ else
         set(handles.obj_t,'ErrorFcn',@(obj,event)disp('Timing Error'));
         set(handles.obj_t,'UserData',0);
         
-        global im_session;
-        
-        if ~isfield(im_session,'reg')
-            % Setup registration
-            setup_im_reg(handles);
-        end
-
         % Update handles structure
         guidata(hObject, handles);
         start(handles.obj_t)

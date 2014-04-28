@@ -96,7 +96,7 @@ xlim([0 d.TimeStamps(end)*1.1])
 
 
 %% INDIVIDUAL CHANNEL FILETERED / DENOISED
-ch_id = 1;
+ch_id = 7;
 figure(33)
 clf(33)
 set(gcf,'Position',screen_position_across)
@@ -114,7 +114,7 @@ xlim([0 d.TimeStamps(end)*1.1])
 
 
 %% INDIVIDUAL CHANNEL RAW VOLTAGES
-ch_id = 1;
+ch_id = 17;
 figure(31)
 clf(31)
 set(gcf,'Position',screen_position_across)
@@ -151,12 +151,13 @@ set(gca,'position',[ 0.05    0.050    0.90    0.90])
 
 commonNoise = trimmean(d.VoltageTraceInV_allCh,.5,2);
 XX = d.VoltageTraceInV_allCh;
+laser_power = 10^(-3)*d.allOther_allCh(:,1);
 
         i_post_stim = 1:length(d.TimeStamps);
-        X = [ones(size(commonNoise(i_post_stim),1),1) commonNoise(i_post_stim)];
+        X = [ones(size(commonNoise(i_post_stim),1),1) commonNoise(i_post_stim) laser_power(i_post_stim)];
         for i_ch = 1:size(XX,2)
             b = regress(XX(i_post_stim,i_ch),X);
-            XX(:,i_ch) = XX(:,i_ch) - commonNoise*b(2);
+            XX(:,i_ch) = XX(:,i_ch) - commonNoise*b(2) - laser_power*b(3);
         end
 
 

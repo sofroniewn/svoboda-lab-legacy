@@ -57,7 +57,7 @@ else
 end
 
 num_old_files = length(im_session.reg.nFrames);
-num_match = min(num_behaviour,numel(cur_files));
+num_match = min(num_behaviour,numel(cur_files))-1;
 
 for trial_num = num_old_files+1:num_match
     drawnow

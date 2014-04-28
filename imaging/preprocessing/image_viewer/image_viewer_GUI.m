@@ -283,7 +283,7 @@ if folder_name ~= 0
     % Update behaviour trials
     cur_file = dir(fullfile(handles.base_path,'behaviour','*_rig_config.mat'));
     if numel(cur_file)>0
-        cur_bv_files = dir(fullfile(base_path_behaviour,'*_trial_*.mat'));
+        cur_bv_files = dir(fullfile(handles.base_path,'behaviour','*_trial_*.mat'));
         set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(cur_bv_files)-1)]);
         set(handles.text_num_behaviour,'UserData',numel(cur_bv_files)-1)
     else
@@ -426,8 +426,6 @@ if FileName ~= 0
         end
         im_session.ref.roi_array = roi_array;
     end
-
-    setup_im_reg(handles);
 
     set(handles.text_registered_trials,'String',['Registered trials ' num2str(0)]);
     set(handles.text_num_planes,'String',sprintf('Num planes %d',im_session.ref.im_props.numPlanes))
