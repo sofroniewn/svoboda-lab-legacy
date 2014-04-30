@@ -43,6 +43,7 @@ set(handles.edit_trial_num,'enable',enable_str)
 set(handles.text_display_trial,'enable',enable_str)
 set(handles.text_white_level,'enable',enable_str)
 set(handles.text_black_level,'enable',enable_str)
+set(handles.popupmenu_ref_selector,'enable',enable_str)
 end
 
 if any(ismember(type,6))
@@ -58,7 +59,7 @@ set(handles.pushbutton_import_rois,'enable',enable_str)
 set(handles.pushbutton_load_rois,'enable',enable_str)
 set(handles.edit_rois_name,'enable',enable_str)
 set(handles.text_rois_name,'enable',enable_str)
-set(handles.checkbox_overwrite,'enable',enable_str)
+set(handles.pushbutton_previous_ref,'enable',enable_str)
 set(handles.edit_align_channel,'enable',enable_str)
 end
 

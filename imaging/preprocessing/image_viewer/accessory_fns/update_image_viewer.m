@@ -30,7 +30,17 @@ else
     num_old_files = 0;
 end
 
+    num_planes = im_session.ref.im_props.numPlanes;
+    num_chan = im_session.ref.im_props.nchans;
 
+cur_size = length(im_session.reg.nFrames);
+target_size = numel(cur_files_reg);
+add_size = target_size - cur_size;
+im_session.reg.nFrames = cat(1,im_session.reg.nFrames, zeros(add_size,1));
+im_session.reg.startFrame = cat(1,im_session.reg.startFrame, zeros(add_size,1));
+im_session.reg.raw_mean = cat(5,im_session.reg.raw_mean, zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,add_size,'uint16'));
+im_session.reg.align_mean = cat(5,im_session.reg.align_mean, zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,add_size,'uint16'));
+    
 % Load in im summary
 for ij = num_old_files + 1: numel(cur_files_reg)
     cur_file = fullfile(im_session.basic_info.data_dir,im_session.basic_info.cur_files(ij).name);
@@ -54,24 +64,18 @@ for ij = num_old_files + 1: numel(cur_files_reg)
         %	display('Failed to read new summary')
         return
     end
-    num_planes = im_session.ref.im_props.numPlanes;
-    num_chan = im_session.ref.im_props.nchans;
     
     % update im_session
-    tmp_raw_mean = zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,1,'uint16');
-    tmp_align_mean = zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,1,'uint16');
     for ih = 1:num_chan
         for ik = 1:num_planes
             % extract mean images and summary data for each plane
-            tmp_raw_mean(:,:,ik,ih,1) = im_summary.mean_raw{ik,ih};
-            tmp_align_mean(:,:,ik,ih,1) = im_summary.mean_aligned{ik,ih};
+            im_session.reg.raw_mean(:,:,ik,ih,ij) = im_summary.mean_raw{ik,ih};
+            im_session.reg.align_mean(:,:,ik,ih,ij) = im_summary.mean_aligned{ik,ih};
         end
     end
-    im_session.reg.nFrames = cat(1,im_session.reg.nFrames, im_summary.props.num_frames);
-    im_session.reg.startFrame = cat(1,im_session.reg.startFrame, im_summary.props.firstFrame);
-    im_session.reg.raw_mean = cat(5,im_session.reg.raw_mean, tmp_raw_mean);
-    im_session.reg.align_mean = cat(5,im_session.reg.align_mean, tmp_align_mean);
-    
+    im_session.reg.nFrames(ij) = im_summary.props.num_frames;
+    im_session.reg.startFrame(ij) = im_summary.props.firstFrame;
+
     % extract behaviour information if necessary
     %if behaviour_val == 1
     %	trial_num_im_session = ij;
@@ -118,6 +122,19 @@ for ij = num_old_files + 1: numel(cur_files_reg)
     drawnow
 end
 
+    if add_size > 0
+        for ih = 1:num_chan
+            for ik = 1:num_planes
+                % extract mean images and summary data for each plane
+                im_session.ref.session_mean{ik,ih} = mean(im_session.reg.align_mean(:,:,ik,ih,:),5);
+                im_session.ref.session_max_proj{ik,ih} = max(im_session.reg.align_mean(:,:,ik,ih,:),[],5);
+            end
+        end
+        session_mean_images = im_session.ref.session_mean;
+        session_max_proj_images = im_session.ref.session_max_proj;
+        save(fullfile(im_session.basic_info.data_dir,'ref_means.mat'),'session_mean_images','session_max_proj_images');
+    end
+    
 time_elapsed = toc;
 time_elapsed_str = sprintf('Time online %.1f s',time_elapsed);
 set(handles.text_time,'String',time_elapsed_str)

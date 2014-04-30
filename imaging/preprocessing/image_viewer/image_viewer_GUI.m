@@ -22,7 +22,7 @@ function varargout = image_viewer_GUI(varargin)
 
 % Edit the above text to modify the response to help image_viewer_GUI
 
-% Last Modified by GUIDE v2.5 27-Apr-2014 21:42:44
+% Last Modified by GUIDE v2.5 30-Apr-2014 10:39:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -275,12 +275,10 @@ if folder_name ~= 0
     % Load in reference image if there (take first one)
     ref_files = dir(fullfile(handles.data_dir,'ref_images_*.mat'));
     if numel(ref_files) > 0
-        handles.ref_images_startup = ref_files(1).name;
-        pushbutton_load_ref_Callback(hObject, eventdata, handles)
+        ref_images_startup = ref_files(1).name;
+        pushbutton_load_ref_Callback(hObject, eventdata, handles,ref_images_startup)
         % Load in spark
         load_spark_maps(handles.output_dir,1);
-    else
-        handles.ref_images_startup = [];
     end
 
     % Update behaviour trials
@@ -364,18 +362,22 @@ end
 
 
 % --- Executes on button press in pushbutton_load_ref.
-function pushbutton_load_ref_Callback(hObject, eventdata, handles)
+function pushbutton_load_ref_Callback(hObject, eventdata, handles,varargin)
 % hObject    handle to pushbutton_load_ref (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-if isempty(handles.ref_images_startup)
+if nargin == 3
     start_path = fullfile(handles.base_path,'scanimage','*.*');
     [FileName,PathName,FilterIndex] = uigetfile(start_path);
-else
+    prev_ref = 0;
+elseif nargin == 4
     PathName = handles.data_dir;
-    FileName = handles.ref_images_startup;
-    handles.ref_images_startup = [];
+    FileName = varargin{1};
+    prev_ref = 0;
+elseif nargin == 5
+    FileName = varargin{1};
+    PathName = varargin{2};
+    prev_ref = 1;
 end
 
 if FileName ~= 0
@@ -386,12 +388,8 @@ if FileName ~= 0
     set(handles.text_date,'Enable','on')
     set(handles.text_run,'Enable','on')
     set(handles.text_imaging_trials,'Enable','off')
-    set(handles.edit_trial_num,'String',num2str(0))
-    set(handles.slider_trial_num,'max',1)
-    set(handles.slider_trial_num,'SliderStep',[1 1])
-    set(handles.slider_trial_num,'Value',0);
     drawnow
-    overwrite = get(handles.checkbox_overwrite,'Value');
+    overwrite = 0;
 
     global im_session
     [pathstr,name,ext] = fileparts(FileName);
@@ -423,9 +421,9 @@ if FileName ~= 0
         name = name(12:end);
     end
     ref = post_process_ref_fft(ref);
-    im_session.ref = ref;
-    im_session.ref.path_name = PathName;
-    im_session.ref.file_name = name;
+    ref.path_name = PathName;
+    ref.file_name = name;
+    ref = add_ref_accesory_images(PathName,ref);
 
     roi_file_names = dir(fullfile(PathName,['ROIs_*.mat']));
     if numel(roi_file_names) > 0 
@@ -437,13 +435,24 @@ if FileName ~= 0
             file_name_tag = roi_file_names(1).name(6:end-4);
             set(handles.edit_rois_name,'String',file_name_tag);
         end
-        im_session.ref.roi_array = roi_array;
+        ref.roi_array = roi_array;
     end
 
-    set(handles.text_registered_trials,'String',['Registered trials ' num2str(0)]);
-    set(handles.text_num_planes,'String',sprintf('Num planes %d',im_session.ref.im_props.numPlanes))
-    set(handles.text_num_chan,'String',sprintf('Num channels %d',im_session.ref.im_props.nchans))
+    %set(handles.text_registered_trials,'String',['Registered trials ' num2str(0)]);
+    %  set(handles.edit_trial_num,'String',num2str(0))
+    %  set(handles.slider_trial_num,'max',1)
+    %  set(handles.slider_trial_num,'SliderStep',[1 1])
+    set(handles.slider_trial_num,'Value',0);
+    set(handles.text_num_planes,'String',sprintf('Num planes %d',ref.im_props.numPlanes))
+    set(handles.text_num_chan,'String',sprintf('Num channels %d',ref.im_props.nchans))
 
+    if prev_ref
+        im_session.prev_ref = ref;
+        set(handles.popupmenu_ref_selector,'value',2)
+    else
+        im_session.ref = ref;
+        set(handles.popupmenu_ref_selector,'value',1)
+    end
     image_viewer_gui_toggle_enable(handles,'on',[1 3 4 5 6 7])
     set(handles.pushbutton_data_dir,'enable','on')
     set(handles.pushbutton_load_ref,'enable','on')
@@ -456,6 +465,7 @@ if FileName ~= 0
     plot_im_gui(handles,1);
     drawnow
 end
+
 
 % --- Executes on button press in togglebutton_online_mode.
 function togglebutton_online_mode_Callback(hObject, eventdata, handles)
@@ -591,19 +601,6 @@ else
    set(handles.text_time,'String',time_elapsed_str)
    set(handles.text_time,'Enable','off')
 end
-
-
-
-% --- Executes on button press in checkbox_overwrite.
-function checkbox_overwrite_Callback(hObject, eventdata, handles)
-% hObject    handle to checkbox_overwrite (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of checkbox_overwrite
-
-%set(handles.togglebutton_online_mode,'enable','off')
-%set(handles.togglebutton_realtime_mode,'enable','off')
 
 
 % --- Executes on slider movement.
@@ -845,7 +842,7 @@ function pushbutton_draw_rois_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 set(handles.pushbutton_save_rois,'enable','on')
-overwrite = get(handles.checkbox_overwrite,'Value');
+overwrite = 0;
 c_lim = zeros(1,2);
 c_lim(1) = round(get(handles.slider_look_up_table_black,'Value'));
 c_lim(2) = round(get(handles.slider_look_up_table,'Value'));
@@ -1011,4 +1008,57 @@ switch get(hObject,'State')
     else
         colormap('gray')
     end
+end
+
+
+% --- Executes on button press in pushbutton_previous_ref.
+function pushbutton_previous_ref_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_previous_ref (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+ start_path = fullfile(handles.base_path,'scanimage','*.*');
+ [FileName,PathName,FilterIndex] = uigetfile(start_path);
+
+if FileName ~= 0
+  pushbutton_load_ref_Callback(hObject, eventdata, handles,FileName,PathName)
+end
+% --- Executes on selection change in popupmenu_ref_selector.
+function popupmenu_ref_selector_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenu_ref_selector (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu_ref_selector contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenu_ref_selector
+
+prev_ref = get(hObject,'Value')-1;
+global im_session
+if prev_ref
+    if ~isfield(im_session,'prev_ref')
+        set(hObject,'value',1)
+        return
+    end
+else
+   if ~isfield(im_session,'ref')
+        set(hObject,'value',2)
+   return
+   end
+end
+
+[im_data clim] = plot_im_gui(handles,0);
+im_plot = get(handles.axes_images,'Children');
+set(handles.axes_images,'clim',clim)
+set(im_plot,'CData',im_data)
+
+% --- Executes during object creation, after setting all properties.
+function popupmenu_ref_selector_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu_ref_selector (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end

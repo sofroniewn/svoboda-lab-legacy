@@ -11,8 +11,14 @@ function [im_data clim_data] = plot_im_gui(handles,plot_on)
     plot_function = plot_names{plot_val};
     trial_num = get(handles.slider_trial_num,'Value');
     chan_num = str2double(get(handles.edit_display_chan,'String'));
+    prev_ref = get(handles.popupmenu_ref_selector,'Value')-1;
+    if prev_ref 
+        ref = im_session.prev_ref;
+    else
+        ref = im_session.ref;        
+    end
     %axes(handles.axes_images)
-    plot_str = ['[im_data clim_data] = ' plot_function(1:end-2) '(handles.axes_images,handles.cbar_axes,im_session,trial_num,chan_num,plot_planes,c_lim,plot_on);'];
+    plot_str = ['[im_data clim_data] = ' plot_function(1:end-2) '(handles.axes_images,handles.cbar_axes,im_session,ref,trial_num,chan_num,plot_planes,c_lim,plot_on);'];
     eval(plot_str);
 
 
