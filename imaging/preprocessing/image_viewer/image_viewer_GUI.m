@@ -242,9 +242,13 @@ if folder_name ~= 0
 
     % Load in im_session
     im_session = load_im_session_data(handles.data_dir);
-    im_session.realtime.im_raw = [];
-    im_session.realtime.im_adj = [];
-    im_session.realtime.ind = 0;
+    im_session.realtime.num_avg = 10;
+    im_session.realtime.im_raw = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
+    im_session.realtime.im_adj = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
+    im_session.realtime.corr_vals = zeros(length(handles.edges_lateral_displacements),length(handles.edges_lateral_displacements),ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
+    im_session.realtime.shifts = zeros(2,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
+    im_session.realtime.ind = 1;
+    im_session.realtime.start = 0;
 
     [stim_types val_array] = setupReg_spark;
     im_session.spark_output.mean = [];
@@ -397,23 +401,23 @@ if FileName ~= 0
     [pathstr,name,ext] = fileparts(FileName);
     if strcmp(ext,'.mat') == 1
       load(fullfile(PathName,FileName));
-        %if ~strcmp(PathName,fullfile(handles.base_path,'scanimage'))
-        %    save(fullfile(handles.base_path,'scanimage',FileName),'ref');
-        %end
+        if ~strcmp(PathName,fullfile(handles.base_path,'scanimage')) && ~prev_ref
+            save(fullfile(handles.base_path,'scanimage',FileName),'ref');
+        end
     elseif strcmp(ext,'.tif') == 1
         [pathstr,name,ext] = fileparts(FileName);
         if exist(fullfile(PathName,['ref_images_' name '.mat'])) == 2 && overwrite == 0
             load(fullfile(PathName,['ref_images_' name '.mat']));
-            %if ~strcmp(PathName,fullfile(handles.base_path,'scanimage'))
-            %     save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat']),'ref');
-            %end
+            if ~strcmp(PathName,fullfile(handles.base_path,'scanimage')) && ~prev_ref
+                 save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat']),'ref');
+            end
         else
             align_chan = str2num(get(handles.edit_align_channel,'string'));
             ref = generate_reference(fullfile(PathName,FileName),align_chan,1);
-            %if ~strcmp(PathName,fullfile(handles.base_path,'scanimage'))
-            %    [pathstr,name,ext] = fileparts(FileName);
-            %    save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat']),'ref');
-            %end
+            if ~strcmp(PathName,fullfile(handles.base_path,'scanimage')) && ~prev_ref
+                [pathstr,name,ext] = fileparts(FileName);
+                save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat']),'ref');
+            end
         end
     else
       error('Wrong file type for reference')
@@ -580,8 +584,11 @@ if value == 1
   global old_mmap_frame_num
   old_mmap_frame_num = 0;
 
-  im_session.realtime.im_raw = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,10,'uint16');
-  im_session.realtime.im_adj = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,10,'uint16');
+  im_session.realtime.num_avg = 10;
+  im_session.realtime.im_raw = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
+  im_session.realtime.im_adj = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
+  im_session.realtime.corr_vals = zeros(length(handles.edges_lateral_displacements),length(handles.edges_lateral_displacements),ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
+  im_session.realtime.shifts = zeros(2,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
   im_session.realtime.ind = 1;
   im_session.realtime.start = 0;
   

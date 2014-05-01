@@ -36,11 +36,13 @@ end
 cur_size = length(im_session.reg.nFrames);
 target_size = numel(cur_files_reg);
 add_size = target_size - cur_size;
-im_session.reg.nFrames = cat(1,im_session.reg.nFrames, zeros(add_size,1));
-im_session.reg.startFrame = cat(1,im_session.reg.startFrame, zeros(add_size,1));
-im_session.reg.raw_mean = cat(5,im_session.reg.raw_mean, zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,add_size,'uint16'));
-im_session.reg.align_mean = cat(5,im_session.reg.align_mean, zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,add_size,'uint16'));
-    
+if add_size > 0
+    im_session.reg.nFrames = cat(1,im_session.reg.nFrames, zeros(add_size,1));
+    im_session.reg.startFrame = cat(1,im_session.reg.startFrame, zeros(add_size,1));
+    im_session.reg.raw_mean = cat(5,im_session.reg.raw_mean, zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,add_size,'uint16'));
+    im_session.reg.align_mean = cat(5,im_session.reg.align_mean, zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,add_size,'uint16'));
+end
+
 % Load in im summary
 for ij = num_old_files + 1: numel(cur_files_reg)
     cur_file = fullfile(im_session.basic_info.data_dir,im_session.basic_info.cur_files(ij).name);
@@ -57,11 +59,19 @@ for ij = num_old_files + 1: numel(cur_files_reg)
     try
         load(summary_file_name);
         if ~exist('im_summary')
-            %	display('Failed to read new summary')
+            %   display('Failed to read new summary')
+            im_session.reg.nFrames(ij:end) = [];
+            im_session.reg.startFrame(ij:end) = [];
+            im_session.reg.raw_mean(:,:,:,:,ij:end) = [];
+            im_session.reg.align_mean(:,:,:,:,ij:end) = [];
             return
         end
     catch
         %	display('Failed to read new summary')
+            im_session.reg.nFrames(ij:end) = [];
+            im_session.reg.startFrame(ij:end) = [];
+            im_session.reg.raw_mean(:,:,:,:,ij:end) = [];
+            im_session.reg.align_mean(:,:,:,:,ij:end) = [];
         return
     end
     
@@ -134,7 +144,7 @@ end
         session_max_proj_images = im_session.ref.session_max_proj;
         save(fullfile(im_session.basic_info.data_dir,'ref_means.mat'),'session_mean_images','session_max_proj_images');
     end
-    
+
 time_elapsed = toc;
 time_elapsed_str = sprintf('Time online %.1f s',time_elapsed);
 set(handles.text_time,'String',time_elapsed_str)

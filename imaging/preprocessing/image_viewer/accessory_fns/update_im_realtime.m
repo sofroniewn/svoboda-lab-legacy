@@ -35,35 +35,34 @@ if update_shift_plots || (update_im && (strcmp(plot_str,'plot_realtime_raw.m') |
         
         num_planes = ref.im_props.numPlanes;
 
-        shifts = zeros(2,num_planes);
-        corr_2 = zeros(ref.im_props.height, ref.im_props.width, num_planes);
-        % Extract shifted images, corr_2, and shifts for each plane.
+       % Extract shifted images, corr_2, and shifts for each plane.
         for ij = 1:num_planes
             %cur_im = mmap_data.data(1 + 1 + (plot_planes(ij) - 1)*ref.im_props.height*ref.im_props.width: 1 + (plot_planes(ij))*ref.im_props.height*ref.im_props.width);
             %cur_im = reshape(cur_im, ref.im_props.height, ref.im_props.width);
             %im_session.realtime.im_raw(:,:,plot_planes(ij),im_session.realtime.ind) = cur_im;
             ref_im = ref.post_fft{ij};
             [shift_plane corr_2_plane] = register_image_fast(im_raw(:,:,ij),ref_im);
-            shifts(:,ij) = shift_plane;
-            corr_2(:,:,ij) = corr_2_plane;
             im_adj = func_im_shift(im_raw(:,:,ij),shift_plane);
             im_session.realtime.im_raw(:,:,ij,im_session.realtime.ind) = im_raw(:,:,ij);
             im_session.realtime.im_adj(:,:,ij,im_session.realtime.ind) = im_adj;
-        end
-        im_session.realtime.ind = im_session.realtime.ind + 1;
-        if im_session.realtime.ind > size(im_session.realtime.im_raw,4)
-            im_session.realtime.ind = 1;
-            im_session.realtime.start = 1;
+        
+            im_session.realtime.corr_vals(:,:,ij,im_session.realtime.ind) = corr_2_plane(handles.edges_lateral_displacements+ref.im_props.height/2,handles.edges_lateral_displacements+ref.im_props.width/2);
+            im_session.realtime.shifts(:,ij,im_session.realtime.ind) = shift_plane;
+
         end
 
         plot_planes_str = get(handles.edit_display_planes,'string');
         plot_planes = eval(plot_planes_str);
-
-        corr_vals = mean(corr_2(handles.edges_lateral_displacements+ref.im_props.height/2,handles.edges_lateral_displacements+ref.im_props.width/2,plot_planes),3);
-        shift_vals = mean(shifts(:,plot_planes),2);
+        
+        avg_corr_vals = squeeze(mean(im_session.realtime.corr_vals,4));
+        avg_shifts = squeeze(mean(im_session.realtime.shifts,3));
+        
+        corr_vals = mean(avg_corr_vals(:,:,plot_planes),3);
+        shift_vals = mean(avg_shifts(:,plot_planes),2);
         shift_vals(shift_vals < handles.edges_lateral_displacements(1)) = handles.edges_lateral_displacements(1);
         shift_vals(shift_vals > handles.edges_lateral_displacements(end)) = handles.edges_lateral_displacements(end);
         
+
         if update_shift_plots == 1
             set(handles.plot_x_hist,'ydata',corr_vals(handles.edges_lateral_displacements(end)+1,:));
             set(handles.axes_x_hist,'ylim',[min(corr_vals(handles.edges_lateral_displacements(end)+1,:))-.01 .01+max(corr_vals(handles.edges_lateral_displacements(end)+1,:))]);
@@ -75,6 +74,12 @@ if update_shift_plots || (update_im && (strcmp(plot_str,'plot_realtime_raw.m') |
             set(handles.plot_shift_across,'ydata', [shift_vals(1) shift_vals(1)]);
         end
         
+        im_session.realtime.ind = im_session.realtime.ind + 1;
+        if im_session.realtime.ind > im_session.realtime.num_avg
+            im_session.realtime.ind = 1;
+            im_session.realtime.start = 1;
+        end
+
         % If update image / update plot turned on then
         % update shifts / images taking means across planes as required
 
