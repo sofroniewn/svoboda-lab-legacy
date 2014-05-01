@@ -120,7 +120,7 @@ if folder_name ~= 0
     clear global im_session
     global im_session;
     im_session = load_im_session_data(handles.data_dir);
-
+    
     clear global session;
     global session;
     session = [];
@@ -128,7 +128,7 @@ if folder_name ~= 0
     
     clear global remove_first;
     remove_first = 0;
-
+    
     clear global session_ca;
     global session_ca;
     
@@ -288,12 +288,13 @@ PathName = handles.data_dir;
 roi_names = get(handles.popupmenu_rois,'string');
 roi_val =  get(handles.popupmenu_rois,'value');
 FileName = [roi_names{roi_val} '.mat'];
-load(fullfile(PathName,FileName));
-global im_session
-im_session.ref.roi_array = roi_array;
-set(handles.togglebutton_gen_catsa,'enable','on')
-drawnow
-
+if exist(FileName) == 2
+    load(fullfile(PathName,FileName));
+    global im_session
+    im_session.ref.roi_array = roi_array;
+    set(handles.togglebutton_gen_catsa,'enable','on')
+    drawnow
+end
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu_rois_CreateFcn(hObject, eventdata, handles)
@@ -587,14 +588,17 @@ imaging_on = 1;
 
 if value && isfield(im_session,'reg')
     
-    num_files = numel(im_session.basic_info.cur_files);
+    num_files = length(im_session.reg.nFrames);
     % Check if behaviour mode on
     behaviour_on = get(handles.checkbox_behaviour,'Value');
     if behaviour_on
         global session;
         num_files = min(num_files,numel(session.data));
     end
+    
     analyze_chan = str2num(get(handles.edit_analyze_chan,'string'));
+    down_sample = str2double(get(handles.edit_downsample,'String'));
+    use_cluser = get(handles.checkbox_use_cluster,'Value');
     
     save_path = fileparts(im_session.basic_info.data_dir);
     save_path = fullfile(save_path,'session');
@@ -603,27 +607,35 @@ if value && isfield(im_session,'reg')
         mkdir(save_path);
     end
     
+    
+    
+    %save_path_im = fullfile(save_path,['Text_images_p01_c01.txt']);
+    save_path_bv = fullfile(save_path,['Text_behaviour.mat']);
+    overwrite = get(handles.checkbox_overwrite,'Value');
+    if overwrite ~= 1 && exist(save_path_bv) == 2
+        behaviour_on = 0;
+        fprintf('(text)  behaviour EXISTS\n');
+    end
+    
     save_path_im = fullfile(save_path,['Text_images_p01_c01.txt']);
     overwrite = get(handles.checkbox_overwrite,'Value');
     if overwrite ~= 1 && exist(save_path_im) == 2
-        fprintf('(text)  EXISTS\n');
+        imaging_on = 0;
+        fprintf('(text)  images EXIST\n');
     else
-        down_sample = str2double(get(handles.edit_downsample,'String'));
-        use_cluser = get(handles.checkbox_use_cluster,'Value');
-        
         if use_cluser
-            num_files = min(num_files,length(im_session.reg.nFrames));
-            evalScript = prepare_text_cluster(num_files,analyze_chan,down_sample);
             imaging_on = 0;
         end
-        
-        image_processing_gui_toggle_enable(handles,'off',[1 2])
-        set(handles.pushbutton_data_dir,'enable','off')
-        set(handles.togglebutton_register,'enable','off')
-        set(handles.text_status,'enable','on')
-        set(handles.text_registered_trials,'enable','on')
-        set(handles.togglebutton_gen_catsa,'enable','off')
-        
+    end
+    
+    image_processing_gui_toggle_enable(handles,'off',[1 2])
+    set(handles.pushbutton_data_dir,'enable','off')
+    set(handles.togglebutton_register,'enable','off')
+    set(handles.text_status,'enable','on')
+    set(handles.text_registered_trials,'enable','on')
+    set(handles.togglebutton_gen_catsa,'enable','off')
+    
+    if behaviour_on || imaging_on
         try
             if num_files > 0
                 cur_status = get(handles.text_status,'String');
@@ -633,15 +645,27 @@ if value && isfield(im_session,'reg')
                 set(handles.text_status,'String',cur_status)
             end
             set(handles.text_status,'String','Status: waiting')
-            
         catch
             fprintf('(text)  CANCELED\n');
             set(handles.text_status,'String','Status: canceled')
+            image_processing_gui_toggle_enable(handles,'on',[1 2])
+            set(handles.pushbutton_data_dir,'enable','on')
+            set(handles.togglebutton_gen_catsa,'enable','on')
+            set(hObject,'Value',0);
+            drawnow
+            return
+        end
+    end
+    
+    if overwrite ~= 1 && exist(save_path_im) == 2
+    else
+        if use_cluser
+            fprintf('(text)  images DO NOT EXIST\n');
+            evalScript = prepare_text_cluster(num_files,analyze_chan,down_sample);
         end
     end
     
     prepare_spark(save_path,behaviour_on,overwrite)
-    
     image_processing_gui_toggle_enable(handles,'on',[1 2])
     set(handles.pushbutton_data_dir,'enable','on')
     set(handles.togglebutton_gen_catsa,'enable','on')

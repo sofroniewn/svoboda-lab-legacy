@@ -7,7 +7,7 @@ scim_data_names = {'trial_number','trial_id','inter_trial_trig','test_period', .
     'scim_file_num','scim_frame_num'};
 
     scim_frames = find(scim_frame_trig);
-    tmp_mat = zeros(numel(scim_data_names),length(scim_frames));
+    tmp_mat = zeros(numel(scim_data_names),length(scim_frames),'single');
     tmp_mat(1,:) = trial_data_raw.processed_matrix(8,scim_frames); % trial_number
     tmp_mat(2,:) = trial_data_raw.trial_matrix(8,scim_frames); % trial_id
     tmp_mat(3,:) = trial_data_raw.trial_matrix(9,scim_frames); % inter_trial_trig

@@ -15,19 +15,27 @@ else
     num_frames = sum(im_session.reg.nFrames(1:num_files));
 end
 num_pixels = im_session.ref.im_props.height*im_session.ref.im_props.width;
+num_frame_file = 0;
 
-full_im_dat = cell(num_planes,1);
-im_cords = cell(num_planes,1);
-
-for ij = 1:num_planes
-    full_im_dat{ij} = zeros(num_frames,num_pixels,'uint16');
-    im_cords{ij} = zeros(4,num_pixels,'uint16');
+if imaging_on
+    full_im_dat = cell(num_planes,1);
+    im_cords = cell(num_planes,1);
+    
+    for ij = 1:num_planes
+        full_im_dat{ij} = zeros(num_frames,num_pixels,'uint16');
+        im_cords{ij} = zeros(4,num_pixels,'uint16');
+    end
 end
-
 
 if behaviour_on
     global session;
+    trial_data_raw = session.data{1};
+    scim_frame_trig = session.data{1}.processed_matrix(7,:);
+    [trial_data data_variable_names] = parse_behaviour2im(trial_data_raw,1,scim_frame_trig);
+    num_bv_dim = numel(data_variable_names);
+    full_trial_data = zeros(num_frames,num_bv_dim,'single');
 end
+
 start_ind = 1;
 % --- extract data
 for ij = 1:num_files
@@ -50,7 +58,6 @@ for ij = 1:num_files
             num_frame_file = size(values,1);
             full_im_dat{iPlane}(start_ind:start_ind+num_frame_file-1,:) = values;
         end
-        start_ind = start_ind+num_frame_file;
     end
     
     if behaviour_on
@@ -60,15 +67,18 @@ for ij = 1:num_files
         scim_frame_trig = session.data{trial_num_session}.processed_matrix(7,:);
         [trial_data data_variable_names] = parse_behaviour2im(trial_data_raw,trial_num_session,scim_frame_trig);
         if down_sample > 1;
-            trial_data = uint16(conv2(single(trial_data),ds_filter,'same'));
+            trial_data = conv2(trial_data,ds_filter,'same');
             trial_data = trial_data(1:down_sample:end,:);
         end
-        
+        num_frame_file = size(trial_data,1);
+
         if size(trial_data,1) ~= num_frame_file && imaging_on
             error('Synchronization scim/behaviour error')
         end
-        full_trial_data = cat(1,full_trial_data,trial_data);
+        full_trial_data(start_ind:start_ind+num_frame_file-1,:) = trial_data;
     end
+    
+    start_ind = start_ind+num_frame_file;
     fprintf('\n');
 end
 
@@ -78,19 +88,21 @@ if imaging_on
     if start_ind ~= num_frames+1
         error('Wrong number of frames');
     end
-    tSize = size(full_im_dat{1},1);
     % parse the info
     for iPlane = 1:num_planes
         save_path_im = fullfile(save_path,['Text_images_p' sprintf('%02d',iPlane) '_c' sprintf('%02d',analyze_chan) '.txt']);
         % write to text
         f = fopen(save_path_im,'w');
-        fmt = repmat('%u ',1,tSize+3);
+        fmt = repmat('%u ',1,num_frames+3);
         fprintf(f,[fmt,'%u\n'],[im_cords{iPlane};full_im_dat{iPlane}]);
         fclose(f);
     end
 end
 
 if behaviour_on
+    if start_ind ~= num_frames+1
+        error('Wrong number of frames');
+    end
     save_path_bv = fullfile(save_path,['Text_behaviour.mat']);
     save(save_path_bv,'data_variable_names','full_trial_data');
 end
