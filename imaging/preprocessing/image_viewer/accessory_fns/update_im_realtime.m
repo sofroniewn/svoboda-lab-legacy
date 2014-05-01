@@ -19,25 +19,30 @@ if update_shift_plots || (update_im && (strcmp(plot_str,'plot_realtime_raw.m') |
         
         % If new set of planes is there register each plane in a parfor loop
         global im_session;
-        
+        prev_ref = get(handles.popupmenu_ref_selector,'Value')-1;
+        if prev_ref
+            ref = im_session.prev_ref;
+        else
+            ref = im_session.ref;
+        end
         %tic
-        im_raw = reshape(mmap_data.data(2:end),im_session.ref.im_props.height, im_session.ref.im_props.width, im_session.ref.im_props.numPlanes);
+        im_raw = reshape(mmap_data.data(2:end),ref.im_props.height, ref.im_props.width, ref.im_props.numPlanes);
         
         % Look at whether plotting individual image or multiple images
         %plot_planes_str = get(handles.edit_display_planes,'string');
         %plot_planes = eval(plot_planes_str);
         %num_planes = length(plot_planes);
         
-        num_planes = im_session.ref.im_props.numPlanes;
+        num_planes = ref.im_props.numPlanes;
 
         shifts = zeros(2,num_planes);
-        corr_2 = zeros(im_session.ref.im_props.height, im_session.ref.im_props.width, num_planes);
+        corr_2 = zeros(ref.im_props.height, ref.im_props.width, num_planes);
         % Extract shifted images, corr_2, and shifts for each plane.
         for ij = 1:num_planes
-            %cur_im = mmap_data.data(1 + 1 + (plot_planes(ij) - 1)*im_session.ref.im_props.height*im_session.ref.im_props.width: 1 + (plot_planes(ij))*im_session.ref.im_props.height*im_session.ref.im_props.width);
-            %cur_im = reshape(cur_im, im_session.ref.im_props.height, im_session.ref.im_props.width);
+            %cur_im = mmap_data.data(1 + 1 + (plot_planes(ij) - 1)*ref.im_props.height*ref.im_props.width: 1 + (plot_planes(ij))*ref.im_props.height*ref.im_props.width);
+            %cur_im = reshape(cur_im, ref.im_props.height, ref.im_props.width);
             %im_session.realtime.im_raw(:,:,plot_planes(ij),im_session.realtime.ind) = cur_im;
-            ref_im = im_session.ref.post_fft{ij};
+            ref_im = ref.post_fft{ij};
             [shift_plane corr_2_plane] = register_image_fast(im_raw(:,:,ij),ref_im);
             shifts(:,ij) = shift_plane;
             corr_2(:,:,ij) = corr_2_plane;
@@ -54,7 +59,7 @@ if update_shift_plots || (update_im && (strcmp(plot_str,'plot_realtime_raw.m') |
         plot_planes_str = get(handles.edit_display_planes,'string');
         plot_planes = eval(plot_planes_str);
 
-        corr_vals = mean(corr_2(handles.edges_lateral_displacements+im_session.ref.im_props.height/2,handles.edges_lateral_displacements+im_session.ref.im_props.width/2,plot_planes),3);
+        corr_vals = mean(corr_2(handles.edges_lateral_displacements+ref.im_props.height/2,handles.edges_lateral_displacements+ref.im_props.width/2,plot_planes),3);
         shift_vals = mean(shifts(:,plot_planes),2);
         shift_vals(shift_vals < handles.edges_lateral_displacements(1)) = handles.edges_lateral_displacements(1);
         shift_vals(shift_vals > handles.edges_lateral_displacements(end)) = handles.edges_lateral_displacements(end);
