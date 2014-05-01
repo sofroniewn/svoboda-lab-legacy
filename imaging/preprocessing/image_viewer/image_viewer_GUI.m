@@ -269,6 +269,7 @@ if folder_name ~= 0
     handles.text_path = fullfile(im_session.basic_info.data_dir,type_name);
 
     set(handles.pushbutton_load_ref,'enable','on')
+    set(handles.pushbutton_previous_ref,'enable','on')
     guidata(hObject, handles);
 
     
@@ -384,6 +385,7 @@ if FileName ~= 0
     image_viewer_gui_toggle_enable(handles,'off',[1 3 4 5 6 7])
     set(handles.pushbutton_data_dir,'enable','off')
     set(handles.pushbutton_load_ref,'enable','off')
+    set(handles.pushbutton_previous_ref,'enable','off')
     set(handles.text_anm,'Enable','on')
     set(handles.text_date,'Enable','on')
     set(handles.text_run,'Enable','on')
@@ -395,23 +397,23 @@ if FileName ~= 0
     [pathstr,name,ext] = fileparts(FileName);
     if strcmp(ext,'.mat') == 1
       load(fullfile(PathName,FileName));
-        if ~strcmp(PathName,fullfile(handles.base_path,'scanimage'))
-            save(fullfile(handles.base_path,'scanimage',FileName),'ref');
-        end
+        %if ~strcmp(PathName,fullfile(handles.base_path,'scanimage'))
+        %    save(fullfile(handles.base_path,'scanimage',FileName),'ref');
+        %end
     elseif strcmp(ext,'.tif') == 1
         [pathstr,name,ext] = fileparts(FileName);
         if exist(fullfile(PathName,['ref_images_' name '.mat'])) == 2 && overwrite == 0
             load(fullfile(PathName,['ref_images_' name '.mat']));
-            if ~strcmp(PathName,fullfile(handles.base_path,'scanimage'))
-                 save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat']),'ref');
-            end
+            %if ~strcmp(PathName,fullfile(handles.base_path,'scanimage'))
+            %     save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat']),'ref');
+            %end
         else
             align_chan = str2num(get(handles.edit_align_channel,'string'));
             ref = generate_reference(fullfile(PathName,FileName),align_chan,1);
-            if ~strcmp(PathName,fullfile(handles.base_path,'scanimage'))
-                [pathstr,name,ext] = fileparts(FileName);
-                save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat']),'ref');
-            end
+            %if ~strcmp(PathName,fullfile(handles.base_path,'scanimage'))
+            %    [pathstr,name,ext] = fileparts(FileName);
+            %    save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat']),'ref');
+            %end
         end
     else
       error('Wrong file type for reference')
@@ -439,9 +441,9 @@ if FileName ~= 0
     end
 
     %set(handles.text_registered_trials,'String',['Registered trials ' num2str(0)]);
-    %  set(handles.edit_trial_num,'String',num2str(0))
     %  set(handles.slider_trial_num,'max',1)
     %  set(handles.slider_trial_num,'SliderStep',[1 1])
+    set(handles.edit_trial_num,'String',num2str(0))
     set(handles.slider_trial_num,'Value',0);
     set(handles.text_num_planes,'String',sprintf('Num planes %d',ref.im_props.numPlanes))
     set(handles.text_num_chan,'String',sprintf('Num channels %d',ref.im_props.nchans))
@@ -456,6 +458,7 @@ if FileName ~= 0
     image_viewer_gui_toggle_enable(handles,'on',[1 3 4 5 6 7])
     set(handles.pushbutton_data_dir,'enable','on')
     set(handles.pushbutton_load_ref,'enable','on')
+    set(handles.pushbutton_previous_ref,'enable','on')
     set(handles.slider_trial_num,'enable','on')
     set(handles.edit_trial_num,'enable','on')
     
@@ -480,6 +483,7 @@ if value == 1
 
   image_viewer_gui_toggle_enable(handles,'off',[7])
   set(handles.pushbutton_load_ref,'enable','off')
+  set(handles.pushbutton_previous_ref,'enable','off')
   set(handles.pushbutton_data_dir,'enable','off')
   set(handles.togglebutton_realtime_mode,'enable','off')
 
@@ -503,7 +507,8 @@ else
     
     image_viewer_gui_toggle_enable(handles,'on',[7])
   set(handles.pushbutton_load_ref,'enable','on')
-  set(handles.pushbutton_data_dir,'enable','on')
+  set(handles.pushbutton_previous_ref,'enable','on')
+   set(handles.pushbutton_data_dir,'enable','on')
   set(handles.togglebutton_realtime_mode,'enable','on')
 
 
@@ -528,6 +533,8 @@ if value == 1
 %  set(handles.edit_trial_num,'enable','on')
   set(handles.pushbutton_set_output_dir,'enable','off')
   set(handles.pushbutton_data_dir,'enable','off')
+      set(handles.pushbutton_load_ref,'enable','off')
+      set(handles.pushbutton_previous_ref,'enable','off')
   set(handles.togglebutton_realtime_mode,'enable','on')
 %   set(handles.text_anm,'Enable','on')
 %   set(handles.text_date,'Enable','on')
@@ -546,13 +553,20 @@ if value == 1
   % set(handles.text_elapsed_time,'Enable','on')
 
   global im_session;
+      prev_ref = get(handles.popupmenu_ref_selector,'Value')-1;
+    if prev_ref 
+        ref = im_session.prev_ref;
+    else
+        ref = im_session.ref;        
+    end
+    
   % setup memory map
   filename = fullfile(handles.data_dir,'memmap.dat');
   % Create the communications file if it is not already there.
   if exist(filename)~= 2
       [f, msg] = fopen(filename, 'wb');
       if f ~= -1
-          fwrite(f, zeros(im_session.ref.im_props.height*im_session.ref.im_props.width*im_session.ref.im_props.numPlanes+1,1,'uint16'), 'uint16');
+          fwrite(f, zeros(ref.im_props.height*ref.im_props.width*ref.im_props.numPlanes+1,1,'uint16'), 'uint16');
           fclose(f);
       else
           error('MATLAB:demo:send:cannotOpenFile', ...
@@ -566,8 +580,8 @@ if value == 1
   global old_mmap_frame_num
   old_mmap_frame_num = 0;
 
-  im_session.realtime.im_raw = zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,im_session.ref.im_props.numPlanes,10,'uint16');
-  im_session.realtime.im_adj = zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,im_session.ref.im_props.numPlanes,10,'uint16');
+  im_session.realtime.im_raw = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,10,'uint16');
+  im_session.realtime.im_adj = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,10,'uint16');
   im_session.realtime.ind = 1;
   im_session.realtime.start = 0;
   
@@ -594,6 +608,7 @@ else
     
     image_viewer_gui_toggle_enable(handles,'on',[1 2])
     set(handles.pushbutton_load_ref,'enable','on')
+    set(handles.pushbutton_previous_ref,'enable','on')
     set(handles.pushbutton_data_dir,'enable','on')
     set(handles.pushbutton_set_output_dir,'enable','on')
 
