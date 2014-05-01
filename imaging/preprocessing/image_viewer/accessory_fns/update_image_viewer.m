@@ -37,8 +37,8 @@ cur_size = length(im_session.reg.nFrames);
 target_size = numel(cur_files_reg);
 add_size = target_size - cur_size;
 if add_size > 0
-    im_session.reg.nFrames = cat(1,im_session.reg.nFrames, zeros(add_size,1));
-    im_session.reg.startFrame = cat(1,im_session.reg.startFrame, zeros(add_size,1));
+    im_session.reg.nFrames = cat(2,im_session.reg.nFrames, zeros(1,add_size));
+    im_session.reg.startFrame = cat(2,im_session.reg.startFrame, zeros(1,add_size));
     im_session.reg.raw_mean = cat(5,im_session.reg.raw_mean, zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,add_size,'uint16'));
     im_session.reg.align_mean = cat(5,im_session.reg.align_mean, zeros(im_session.ref.im_props.height,im_session.ref.im_props.width,num_planes,num_chan,add_size,'uint16'));
 end

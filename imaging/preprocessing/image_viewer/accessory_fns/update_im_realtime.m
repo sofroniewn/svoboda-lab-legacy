@@ -46,7 +46,7 @@ if update_shift_plots || (update_im && (strcmp(plot_str,'plot_realtime_raw.m') |
             im_session.realtime.im_raw(:,:,ij,im_session.realtime.ind) = im_raw(:,:,ij);
             im_session.realtime.im_adj(:,:,ij,im_session.realtime.ind) = im_adj;
         
-            im_session.realtime.corr_vals(:,:,ij,im_session.realtime.ind) = corr_2_plane(handles.edges_lateral_displacements+ref.im_props.height/2,handles.edges_lateral_displacements+ref.im_props.width/2);
+            im_session.realtime.corr_vals(:,:,ij,im_session.realtime.ind) = single(corr_2_plane(handles.edges_lateral_displacements+ref.im_props.height/2,handles.edges_lateral_displacements+ref.im_props.width/2))/10^6;
             im_session.realtime.shifts(:,ij,im_session.realtime.ind) = shift_plane;
 
         end
@@ -56,13 +56,15 @@ if update_shift_plots || (update_im && (strcmp(plot_str,'plot_realtime_raw.m') |
         
         avg_corr_vals = squeeze(mean(im_session.realtime.corr_vals,4));
         avg_shifts = squeeze(mean(im_session.realtime.shifts,3));
-        
+
+
         corr_vals = mean(avg_corr_vals(:,:,plot_planes),3);
         shift_vals = mean(avg_shifts(:,plot_planes),2);
         shift_vals(shift_vals < handles.edges_lateral_displacements(1)) = handles.edges_lateral_displacements(1);
         shift_vals(shift_vals > handles.edges_lateral_displacements(end)) = handles.edges_lateral_displacements(end);
+        %corr_vals(20,20)
+        %shift_vals
         
-
         if update_shift_plots == 1
             set(handles.plot_x_hist,'ydata',corr_vals(handles.edges_lateral_displacements(end)+1,:));
             set(handles.axes_x_hist,'ylim',[min(corr_vals(handles.edges_lateral_displacements(end)+1,:))-.01 .01+max(corr_vals(handles.edges_lateral_displacements(end)+1,:))]);

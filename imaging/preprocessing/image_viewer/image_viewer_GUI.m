@@ -242,13 +242,6 @@ if folder_name ~= 0
 
     % Load in im_session
     im_session = load_im_session_data(handles.data_dir);
-    im_session.realtime.num_avg = 10;
-    im_session.realtime.im_raw = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
-    im_session.realtime.im_adj = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
-    im_session.realtime.corr_vals = zeros(length(handles.edges_lateral_displacements),length(handles.edges_lateral_displacements),ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
-    im_session.realtime.shifts = zeros(2,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
-    im_session.realtime.ind = 1;
-    im_session.realtime.start = 0;
 
     [stim_types val_array] = setupReg_spark;
     im_session.spark_output.mean = [];
@@ -431,6 +424,14 @@ if FileName ~= 0
     ref.file_name = name;
     ref = add_ref_accesory_images(PathName,ref);
 
+  im_session.realtime.num_avg = 10;
+  im_session.realtime.im_raw = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
+  im_session.realtime.im_adj = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
+  im_session.realtime.corr_vals = zeros(length(handles.edges_lateral_displacements),length(handles.edges_lateral_displacements),ref.im_props.numPlanes,im_session.realtime.num_avg,'single');
+  im_session.realtime.shifts = zeros(2,ref.im_props.numPlanes,im_session.realtime.num_avg,'single');
+  im_session.realtime.ind = 1;
+  im_session.realtime.start = 0;
+  
     roi_file_names = dir(fullfile(PathName,['ROIs_*.mat']));
     if numel(roi_file_names) > 0 
         if exist(fullfile(PathName,['ROIs_cells.mat'])) == 2
@@ -587,8 +588,8 @@ if value == 1
   im_session.realtime.num_avg = 10;
   im_session.realtime.im_raw = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
   im_session.realtime.im_adj = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
-  im_session.realtime.corr_vals = zeros(length(handles.edges_lateral_displacements),length(handles.edges_lateral_displacements),ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
-  im_session.realtime.shifts = zeros(2,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
+  im_session.realtime.corr_vals = zeros(length(handles.edges_lateral_displacements),length(handles.edges_lateral_displacements),ref.im_props.numPlanes,im_session.realtime.num_avg,'single');
+  im_session.realtime.shifts = zeros(2,ref.im_props.numPlanes,im_session.realtime.num_avg,'single');
   im_session.realtime.ind = 1;
   im_session.realtime.start = 0;
   
