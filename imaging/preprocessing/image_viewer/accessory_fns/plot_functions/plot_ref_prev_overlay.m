@@ -11,9 +11,10 @@ for ij = 1:num_planes
 	start_y = 1 + col_val*ref.im_props.height;
 	if isfield(im_session,'prev_ref')
 		im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,1) = im_session.prev_ref.base_images{plot_planes(ij)};
-		im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,2) = im_session.prev_ref.base_images{plot_planes(ij)};
+		%im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,2) = im_session.prev_ref.base_images{plot_planes(ij)};
 	end
 	if isfield(im_session,'ref')
+		im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,2) = im_session.ref.base_images{plot_planes(ij)};
 		im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,3) = im_session.ref.base_images{plot_planes(ij)};
 	end
 end
