@@ -636,25 +636,14 @@ if value && isfield(im_session,'reg')
     set(handles.togglebutton_gen_catsa,'enable','off')
     
     if behaviour_on || imaging_on
-        try
-            if num_files > 0
-                cur_status = get(handles.text_status,'String');
-                set(handles.text_status,'String','Status: extracting text')
-                drawnow
-                save_session_im_text(save_path,num_files,analyze_chan,down_sample,imaging_on,behaviour_on,handles);
-                set(handles.text_status,'String',cur_status)
-            end
-            set(handles.text_status,'String','Status: waiting')
-        catch
-            fprintf('(text)  CANCELED\n');
-            set(handles.text_status,'String','Status: canceled')
-            image_processing_gui_toggle_enable(handles,'on',[1 2])
-            set(handles.pushbutton_data_dir,'enable','on')
-            set(handles.togglebutton_gen_catsa,'enable','on')
-            set(hObject,'Value',0);
+        if num_files > 0
+            cur_status = get(handles.text_status,'String');
+            set(handles.text_status,'String','Status: extracting text')
             drawnow
-            return
+            save_session_im_text(save_path,num_files,analyze_chan,down_sample,imaging_on,behaviour_on,handles);
+            set(handles.text_status,'String',cur_status)
         end
+        set(handles.text_status,'String','Status: waiting')
     end
     
     if overwrite ~= 1 && exist(save_path_im) == 2
@@ -665,7 +654,9 @@ if value && isfield(im_session,'reg')
         end
     end
     
-    prepare_spark(save_path,behaviour_on,overwrite)
+    if exist(save_path_bv) == 2
+        prepare_spark(save_path,behaviour_on,overwrite)
+    end
     image_processing_gui_toggle_enable(handles,'on',[1 2])
     set(handles.pushbutton_data_dir,'enable','on')
     set(handles.togglebutton_gen_catsa,'enable','on')

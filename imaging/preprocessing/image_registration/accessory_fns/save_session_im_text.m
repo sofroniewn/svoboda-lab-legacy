@@ -42,7 +42,8 @@ for ij = 1:num_files
     if ~isempty(handles)
         drawnow
         if ~get(handles.togglebutton_gen_text,'Value');
-            error('Break')
+            fprintf('(text)  CANCELED\n');
+            return
         end
     end
     
