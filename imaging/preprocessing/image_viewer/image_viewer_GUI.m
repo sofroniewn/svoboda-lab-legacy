@@ -22,7 +22,7 @@ function varargout = image_viewer_GUI(varargin)
 
 % Edit the above text to modify the response to help image_viewer_GUI
 
-% Last Modified by GUIDE v2.5 30-Apr-2014 10:39:26
+% Last Modified by GUIDE v2.5 01-May-2014 23:35:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1081,6 +1081,74 @@ function popupmenu_ref_selector_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on slider movement.
+function slider_overlay_Callback(hObject, eventdata, handles)
+% hObject    handle to slider_overlay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+c_lim_2 = round(get(handles.slider_overlay,'Value'));
+if c_lim_2 > 4096
+   c_lim_2 = 4096;
+   set(handles.slider_overlay,'Value',c_lim_2)
+end
+
+c_lim_1 = round(get(handles.slider_look_up_table_black,'Value'));
+if c_lim_2 < c_lim_1 + 1
+   c_lim_2 = c_lim_1 + 1;
+   set(handles.slider_overlay,'Value',c_lim_2)
+end
+
+set(handles.edit_overlay_level,'String',num2str(c_lim_2));
+[im_data clim] = plot_im_gui(handles,0);
+im_plot = get(handles.axes_images,'Children');
+set(handles.axes_images,'clim',clim)
+set(im_plot,'CData',im_data)
+
+
+% --- Executes during object creation, after setting all properties.
+function slider_overlay_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider_overlay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+
+function edit_overlay_level_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_overlay_level (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_overlay_level as text
+%        str2double(get(hObject,'String')) returns contents of edit_overlay_level as a double
+
+val = str2double(get(hObject,'String'));
+set(handles.slider_overlay,'Value',val);
+slider_overlay_Callback(handles.slider_overlay,eventdata, handles);
+
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_overlay_level_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_overlay_level (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');

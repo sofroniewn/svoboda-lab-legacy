@@ -1,4 +1,4 @@
-function [im_comb clim] = plot_realtime_adj(plot_axes,cbar_axes,im_session,ref,trial_num,chan_num,plot_planes,clim,plot_on)
+function [im_comb clim] = plot_realtime_adj(plot_axes,cbar_axes,im_session,ref,trial_num,chan_num,plot_planes,clim,c_lim_overlay,plot_on)
 
 num_planes = length(plot_planes);
 plane_rep = ceil(sqrt(num_planes));

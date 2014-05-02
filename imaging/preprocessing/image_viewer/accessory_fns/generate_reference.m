@@ -47,3 +47,5 @@ if save_opt == 1
 	ref_im_path = fullfile(pathstr,['ref_images_' name '.mat']);
 	save(ref_im_path,'ref');
 end
+
+fprintf('DONE\n')

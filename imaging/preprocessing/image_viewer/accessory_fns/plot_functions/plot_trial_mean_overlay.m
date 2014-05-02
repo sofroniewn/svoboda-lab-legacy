@@ -1,4 +1,4 @@
-function [im_comb clim] = plot_trial_mean_overlay(plot_axes,cbar_axes,im_session,ref,trial_num,chan_num,plot_planes,clim,plot_on)
+function [im_comb clim] = plot_trial_mean_overlay(plot_axes,cbar_axes,im_session,ref,trial_num,chan_num,plot_planes,clim,c_lim_overlay,plot_on)
 
 axes(plot_axes);
 colormap(gca,'gray');
@@ -22,7 +22,9 @@ for ij = 1:num_planes
 	im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,3) = im_use;
 end
 
-im_comb = (im_comb - clim(1))/clim(2);
+im_comb = im_comb - clim(1);
+im_comb(:,:,1) = im_comb(:,:,1)/clim(2);
+im_comb(:,:,2:3) = im_comb(:,:,2:3)/c_lim_overlay;
 im_comb(im_comb>1) = 1;
 im_comb(im_comb<0) = 0;
 

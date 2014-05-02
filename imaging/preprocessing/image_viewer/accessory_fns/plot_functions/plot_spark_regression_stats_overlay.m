@@ -1,4 +1,4 @@
-function [im_comb clim] = plot_spark_regression_stats_overlay(plot_axes,cbar_axes,im_session,ref,trial_num,chan_num,plot_planes,clim,plot_on)
+function [im_comb clim] = plot_spark_regression_stats_overlay(plot_axes,cbar_axes,im_session,ref,trial_num,chan_num,plot_planes,clim,c_lim_overlay,plot_on)
 
 axes(plot_axes);
 colormap(gca,'gray');
@@ -27,7 +27,10 @@ end
 end
 
 clim = clim/1000;
-im_comb = (im_comb - clim(1))/clim(2);
+c_lim_overlay = c_lim_overlay/1000;
+im_comb = im_comb - clim(1);
+im_comb(:,:,1) = im_comb(:,:,1)/clim(2);
+im_comb(:,:,2:3) = im_comb(:,:,2:3)/c_lim_overlay;
 im_comb(im_comb>1) = 1;
 im_comb(im_comb<0) = 0;
 

@@ -4,6 +4,8 @@ function [im_data clim_data] = plot_im_gui(handles,plot_on)
 	c_lim = zeros(1,2);
     c_lim(1) = round(get(handles.slider_look_up_table_black,'Value'));
     c_lim(2) = round(get(handles.slider_look_up_table,'Value'));
+    c_lim_overlay = round(get(handles.slider_overlay,'Value'));
+
     plot_planes_str = get(handles.edit_display_planes,'string');
     plot_planes = eval(plot_planes_str);
     plot_names =  get(handles.popupmenu_list_plots,'string');
@@ -18,7 +20,7 @@ function [im_data clim_data] = plot_im_gui(handles,plot_on)
         ref = im_session.ref;        
     end
     %axes(handles.axes_images)
-    plot_str = ['[im_data clim_data] = ' plot_function(1:end-2) '(handles.axes_images,handles.cbar_axes,im_session,ref,trial_num,chan_num,plot_planes,c_lim,plot_on);'];
+    plot_str = ['[im_data clim_data] = ' plot_function(1:end-2) '(handles.axes_images,handles.cbar_axes,im_session,ref,trial_num,chan_num,plot_planes,c_lim,c_lim_overlay,plot_on);'];
     eval(plot_str);
 
 
