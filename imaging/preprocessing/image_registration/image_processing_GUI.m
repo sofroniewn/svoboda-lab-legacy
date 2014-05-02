@@ -147,26 +147,27 @@ if folder_name ~= 0
     handles.text_path = fullfile(im_session.basic_info.data_dir,type_name);
     
     % LOAD EXISTING REF IMAGES
+    set(handles.popupmenu_ref,'enable','on')
     ref_files = dir(fullfile(handles.data_dir,'ref_images_*.mat'));
     if numel(ref_files) > 0
-        set(handles.popupmenu_ref,'enable','on')
+        %    set(handles.popupmenu_ref,'enable','on')
         ref_names = cell(numel(ref_files),1);
         for ij = 1:numel(ref_files)
-            ref_names{ij} = ref_files(ij).name;
+            ref_names{ij} = ref_files(ij).name(1:end-4);
         end
         set(handles.popupmenu_ref,'string',ref_names)
         set(handles.popupmenu_ref,'value',1)
         popupmenu_ref_Callback(hObject, eventdata, handles)
     else
         display('No reference images found')
-        set(handles.popupmenu_ref,'enable','off')
+        %    set(handles.popupmenu_ref,'enable','off')
     end
     
     start_val = 1;
     % LOAD EXISTING ROIs
+    set(handles.popupmenu_rois,'enable','on')
     roi_files = dir(fullfile(handles.data_dir,'ROIs_*.mat'));
     if numel(roi_files) > 0
-        set(handles.popupmenu_rois,'enable','on')
         roi_names = cell(numel(roi_files),1);
         for ij = 1:numel(roi_files)
             roi_names{ij} = roi_files(ij).name(1:end-4);
@@ -179,7 +180,6 @@ if folder_name ~= 0
         popupmenu_rois_Callback(hObject, eventdata, handles)
     else
         display('No rois found')
-        set(handles.popupmenu_rois,'enable','off')
     end
     
     
@@ -211,8 +211,6 @@ if folder_name ~= 0
         drawnow
     end
     
-    
-    
     guidata(hObject, handles);
 end
 
@@ -242,37 +240,67 @@ function popupmenu_ref_Callback(hObject, eventdata, handles)
 PathName = handles.data_dir;
 ref_names = get(handles.popupmenu_ref,'string');
 ref_val =  get(handles.popupmenu_ref,'value');
-
-FileName = ref_names{ref_val};
-
-overwrite = get(handles.checkbox_overwrite,'Value');
-
-global im_session
-load(fullfile(PathName,FileName));
-name = FileName(12:end);
-ref = post_process_ref_fft(ref);
-im_session.ref = ref;
-im_session.ref.path_name = PathName;
-im_session.ref.file_name = name;
-
-set(handles.text_num_planes,'String',sprintf('Num planes %d',im_session.ref.im_props.numPlanes))
-set(handles.text_num_chan,'String',sprintf('Num channels %d',im_session.ref.im_props.nchans))
-
-image_processing_gui_toggle_enable(handles,'on',[1 3 4 5 6])
-if get(handles.checkbox_behaviour,'value') == 0
-    set(handles.text_num_behaviour,'enable','off')
+if ischar(ref_names)
+    ref_names = {ref_names};
 end
+FileName = [ref_names{ref_val} '.mat'];
 
-set(handles.text_align_chan,'Enable','on')
-set(handles.text_align_chan,'String',['Align channel ' num2str(im_session.ref.im_props.align_chan)])
+num_refs = numel(ref_names);
+ref_files = dir(fullfile(handles.data_dir,'ref_images_*.mat'));
 
-set(handles.pushbutton_data_dir,'enable','on')
-set(handles.pushbutton_cluster_path,'enable','on')
-set(handles.togglebutton_gen_text,'enable','on')
+if numel(ref_files) > 0
+    if strcmp(FileName,'References')
+        ref_names = cell(numel(ref_files),1);
+        for ij = 1:numel(ref_files)
+            ref_names{ij} = ref_files(ij).name(1:end-4);
+        end
+        set(handles.popupmenu_ref,'string',ref_names)
+        set(handles.popupmenu_ref,'value',1)
+        FileName = ref_names{1};
+    elseif numel(ref_files) > num_refs
+        new_val = 1;
+        ref_names = cell(numel(ref_files),1);
+        for ij = 1:numel(ref_files)
+            ref_names{ij} = ref_files(ij).name(1:end-4);
+            if strcmp(FileName,ref_names{ij})
+                new_val = ij;
+            end
+        end
+        set(handles.popupmenu_ref,'string',ref_names)
+        set(handles.popupmenu_ref,'value',new_val)
+    else
+    end
 
-set(handles.text_time,'enable','off')
-set(handles.text_status,'String','Status: offline')
-drawnow
+    global im_session
+    load(fullfile(PathName,FileName));
+    name = FileName(12:end);
+    ref = post_process_ref_fft(ref);
+    im_session.ref = ref;
+    im_session.ref.path_name = PathName;
+    im_session.ref.file_name = name;
+    
+    set(handles.text_num_planes,'String',sprintf('Num planes %d',im_session.ref.im_props.numPlanes))
+    set(handles.text_num_chan,'String',sprintf('Num channels %d',im_session.ref.im_props.nchans))
+    
+    image_processing_gui_toggle_enable(handles,'on',[1 3 4 5 6])
+    if get(handles.checkbox_behaviour,'value') == 0
+        set(handles.text_num_behaviour,'enable','off')
+    end
+    
+    set(handles.text_align_chan,'Enable','on')
+    set(handles.text_align_chan,'String',['Align channel ' num2str(im_session.ref.im_props.align_chan)])
+    
+    set(handles.pushbutton_data_dir,'enable','on')
+    set(handles.pushbutton_cluster_path,'enable','on')
+    set(handles.togglebutton_gen_text,'enable','on')
+    
+    set(handles.text_time,'enable','off')
+    set(handles.text_status,'String','Status: offline')
+    drawnow
+else
+    display('No reference images found')
+    %    set(handles.popupmenu_ref,'enable','off')
+end
 
 
 % --- Executes on selection change in popupmenu_rois.
@@ -286,14 +314,49 @@ function popupmenu_rois_Callback(hObject, eventdata, handles)
 
 PathName = handles.data_dir;
 roi_names = get(handles.popupmenu_rois,'string');
+if ischar(roi_names)
+    roi_names = {roi_names};
+end
 roi_val =  get(handles.popupmenu_rois,'value');
 FileName = [roi_names{roi_val} '.mat'];
-if exist(FileName) == 2
+
+num_rois = numel(roi_names);
+roi_files = dir(fullfile(handles.data_dir,'ROIs_*.mat'));
+
+start_val = 1;
+
+if numel(roi_files) > 0
+    if strcmp(FileName,'ROIs')
+        roi_names = cell(numel(roi_files),1);
+        for ij = 1:numel(roi_files)
+            roi_names{ij} = roi_files(ij).name(1:end-4);
+            if ~isempty(strfind(roi_files(ij).name,'ROIs_cells'))
+                start_val = ij;
+            end
+        end
+        set(handles.popupmenu_rois,'string',roi_names)
+        set(handles.popupmenu_rois,'value',start_val)
+        FileName = roi_names{start_val};
+    elseif numel(roi_files) > num_rois
+        roi_names = cell(numel(roi_files),1);
+        for ij = 1:numel(roi_files)
+            roi_names{ij} = roi_files(ij).name(1:end-4);
+            if strcmp(FileName,roi_names{ij})
+                start_val = ij;
+            end
+        end
+        set(handles.popupmenu_ref,'string',roi_names)
+        set(handles.popupmenu_ref,'value',start_val)
+    else
+    end
+
     load(fullfile(PathName,FileName));
     global im_session
     im_session.ref.roi_array = roi_array;
     set(handles.togglebutton_gen_catsa,'enable','on')
     drawnow
+else
+        display('No rois found')
 end
 
 % --- Executes during object creation, after setting all properties.

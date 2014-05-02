@@ -21,6 +21,7 @@ for ij = 1:num_planes
 	im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,1) = im_use;
 	%im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,2) = im_use;
 	im_use = im_array_lc{plot_planes(ij),chan_num};
+	%im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,2) = im_use;
 	im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,3) = im_use;
 
 end
@@ -29,8 +30,8 @@ end
 clim = clim/1000;
 c_lim_overlay = c_lim_overlay/1000;
 im_comb = im_comb - clim(1);
-im_comb(:,:,1) = im_comb(:,:,1)/clim(2);
-im_comb(:,:,2:3) = im_comb(:,:,2:3)/c_lim_overlay;
+im_comb(:,:,1) = im_comb(:,:,1)/c_lim_overlay;
+im_comb(:,:,3) = im_comb(:,:,3)/clim(2);
 im_comb(im_comb>1) = 1;
 im_comb(im_comb<0) = 0;
 

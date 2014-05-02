@@ -29,7 +29,7 @@ else
 	end
 
 	image_names = '"Text_images_*.txt"';
-	analysis_str = '/scripts/custom_thunder/combined.py';
+	analysis_str = './scripts/custom_thunder/combined.py';
 
 	if behaviour_on
 		stim_str = stim_types{1};
@@ -42,6 +42,12 @@ else
 	end
 
 	% create script
+	evalScript = 'qsub -jc spark -pe spark 5 -q hadoop2 -j y -o ~/sparklogs/ /sge/current/examples/jobs/sleeper.sh 86400';
+	display(evalScript)
+	evalScript = 'ssh h??u??.int.janelia.org';
+	display(evalScript)
+	evalScript = 'export MASTER=spark://h??u??.int.janelia.org:7077';
+	display(evalScript)
 	evalScript = sprintf('pyspark %s $MASTER %s %s %s',analysis_str,directory,image_names,regress_str);
 	display(evalScript)
 end
