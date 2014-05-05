@@ -42,13 +42,21 @@ switch evnt.EventName
         fprintf('NJS memory map enabled \n');
         
     case 'frameAcquired'
-        if num_acqFrames ~= hSI.acqFramesDone
-            error('NJS USER FUNCTION NOT KEEPING UP')
-        end
-        num_acqFrames = num_acqFrames+1;
-        vol_num = mod(hSI.acqFramesDone,hSI.stackNumSlices) + 1;
-        mmap_file.Data(1+1+(vol_num-1)*hSI.scanPixelsPerLine*hSI.scanLinesPerFrame:1+vol_num*hSI.scanPixelsPerLine*hSI.scanLinesPerFrame) = uint16(hSI.acqFrameBuffer{1}(:));
-        if vol_num == hSI.stackNumSlices %hSI.loggingEnable == 1 &&
+%         666
+%         hSI.acqFramesDone
+%         num_acqFrames
+%         333
+%         if num_acqFrames ~= hSI.acqFramesDone
+%        %     error('NJS USER FUNCTION NOT KEEPING UP')
+%         end
+       %num_acqFrames = num_acqFrames+1;
+        vol_num = hSI.stackSlicesDone+1;
+       % vol_num = mod(hSI.acqFramesDone,hSI.stackNumSlices) + 1;
+        
+       if vol_num > 1
+            mmap_file.Data(1+1+(vol_num-1)*hSI.scanPixelsPerLine*hSI.scanLinesPerFrame:1+vol_num*hSI.scanPixelsPerLine*hSI.scanLinesPerFrame) = uint16(hSI.acqFrameBuffer{1}(:));
+       end
+       if vol_num == hSI.stackNumSlices %hSI.loggingEnable == 1 &&
             mmap_file.Data(1) = mmap_file.Data(1) + 1;
         end
         

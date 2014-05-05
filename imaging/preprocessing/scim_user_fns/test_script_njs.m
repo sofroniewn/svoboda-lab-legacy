@@ -30,16 +30,19 @@
         
         
         %%
-        hAO_njs98 = dabs.ni.daqmx.Task('test_njs98');
+        hAO_njs28 = dabs.ni.daqmx.Task('test_njs28');
+        hAO_njs28.createAOVoltageChan('si4-2',1);
+        hAO_njs99
+                %%
+        hAO_njs97 = dabs.ni.daqmx.Task('test_njs97');
         %%
-            hAO_njs98.createAOVoltageChan('si4-2',1);  
+            hAO_njs97.createAOVoltageChan('si4-2',1);  
             
 %%
-                  hAO_njs98 = pop_scim_AO(hAO_njs98)
               
             
             %%
-hAO_njs98.writeAnalogData(10)
+hAO_njs97.writeAnalogData(-10)
 444
             %%
 hAO_njs98.cfgSampClkTiming(1000,'DAQmx_Val_ContSamps',1000);

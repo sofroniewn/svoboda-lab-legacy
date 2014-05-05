@@ -45,7 +45,7 @@ switch evnt.EventName
       hAO_njs.writeAnalogData(5*rand);
         
     case {'acquisitionDone' 'acquisitionAborted' 'focusDone'}
-                        delete(hAO_njs);
+                     %   delete(hAO_njs);
 %hAO_njs.writeAnalogData(0);
             
     otherwise
