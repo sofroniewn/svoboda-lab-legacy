@@ -1,6 +1,6 @@
 function prepare_spark(data_path,behaviour_on,overwrite)
 
-	[stim_types val_array] = setupReg_spark;
+	[stim_types range_array] = setupReg_spark;
 	
 	if behaviour_on
 		% create regressor matrices
@@ -41,13 +41,16 @@ else
 		regress_str = '';
 	end
 
+	fprintf('\nSpark commands: \n')
 	% create script
-	evalScript = 'qsub -jc spark -pe spark 5 -q hadoop2 -j y -o ~/sparklogs/ /sge/current/examples/jobs/sleeper.sh 86400';
-	display(evalScript)
+	evalScript = 'qsub -jc spark -pe spark 20 -q hadoop2 -j y -o ~/sparklogs/ /sge/current/examples/jobs/sleeper.sh 86400';
+	fprintf('  %s\n',evalScript)
 	evalScript = 'ssh h??u??.int.janelia.org';
-	display(evalScript)
+	fprintf('  %s\n',evalScript)
 	evalScript = 'export MASTER=spark://h??u??.int.janelia.org:7077';
-	display(evalScript)
+	fprintf('  %s\n',evalScript)
 	evalScript = sprintf('pyspark %s $MASTER %s %s %s',analysis_str,directory,image_names,regress_str);
-	display(evalScript)
+	fprintf('  %s\n',evalScript)
+	fprintf('\n')
+
 end

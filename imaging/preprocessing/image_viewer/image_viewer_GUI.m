@@ -77,7 +77,7 @@ clear global im_session;
 global im_session;
 
 % Setup spark analysis output
-[stim_types val_array] = setupReg_spark;
+[stim_types range_array] = setupReg_spark;
 set(handles.popupmenu_spark_regressors,'string',stim_types)
 ref_val = 1;
 set(handles.popupmenu_spark_regressors,'value',ref_val)
@@ -88,8 +88,10 @@ im_session.spark_output.localcorr = [];
 im_session.spark_output.regressor.names = stim_types;
 im_session.spark_output.regressor.stats = cell(numel(stim_types),1);
 im_session.spark_output.regressor.tune = cell(numel(stim_types),1);
-im_session.spark_output.regressor.vals = val_array;
+im_session.spark_output.regressor.range = range_array;
 im_session.spark_output.regressor.cur_ind = ref_val;
+im_session.spark_output.streaming.tune = [];
+im_session.spark_output.streaming.stats = [];
 
 % Disable buttons
 image_viewer_gui_toggle_enable(handles,'off',[1 3 4 5 6 7])
@@ -201,7 +203,10 @@ function pushbutton_data_dir_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+start_path = handles.datastr;
+folder_name = uigetdir(start_path);
 
+if folder_name ~= 0
 % CLEAR AXES
 axes(handles.axes_images)
 cla;
@@ -229,12 +234,7 @@ set(handles.popupmenu_spark_regressors,'Value',ref_val)
 % Prepare global variables
 clear global im_session
 global im_session; 
-im_session.spark_output.mean = [];
 
-start_path = handles.datastr;
-folder_name = uigetdir(start_path);
-
-if folder_name ~= 0
     handles.base_path = folder_name;
     handles.data_dir = fullfile(handles.base_path, 'scanimage');
     
@@ -243,14 +243,16 @@ if folder_name ~= 0
     % Load in im_session
     im_session = load_im_session_data(handles.data_dir);
 
-    [stim_types val_array] = setupReg_spark;
+    [stim_types range_array] = setupReg_spark;
     im_session.spark_output.mean = [];
     im_session.spark_output.localcorr = [];
     im_session.spark_output.regressor.names = stim_types;
     im_session.spark_output.regressor.stats = cell(numel(stim_types),1);
     im_session.spark_output.regressor.tune = cell(numel(stim_types),1);
-    im_session.spark_output.regressor.vals = val_array;
+    im_session.spark_output.regressor.range = range_array;
     im_session.spark_output.regressor.cur_ind = get(handles.popupmenu_spark_regressors,'UserData');
+    im_session.spark_output.streaming.tune = [];
+    im_session.spark_output.streaming.stats = [];
 
     set(handles.text_anm,'Enable','on')
     set(handles.text_date,'Enable','on')
@@ -1021,10 +1023,10 @@ switch get(hObject,'State')
         global im_session;
         num_ticks = 6;
         cur_ind = im_session.spark_output.regressor.cur_ind;
-        vals = im_session.spark_output.regressor.vals{cur_ind};
+        vals = im_session.spark_output.regressor.range{cur_ind};
         %c_range = get(handles.cbar_axes,'Ylim');        
         %tick_vals = linspace(c_range(1),c_range(2),num_ticks);
-        tick_labels = linspace(min(vals),max(vals),num_ticks);
+        tick_labels = linspace(range(1),range(2),num_ticks);
         set(handles.cbar_axes,'Ytick',tick_labels)
         set(handles.cbar_axes,'Yticklabel',tick_labels)
         %set(handles.cbar_axes,'Ylim',[min(vals) max(vals)])

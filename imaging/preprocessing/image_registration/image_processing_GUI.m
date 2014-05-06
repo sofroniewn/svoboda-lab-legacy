@@ -22,7 +22,7 @@ function varargout = image_processing_GUI(varargin)
 
 % Edit the above text to modify the response to help image_processing_GUI
 
-% Last Modified by GUIDE v2.5 21-Apr-2014 12:42:16
+% Last Modified by GUIDE v2.5 06-May-2014 09:26:41
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -69,6 +69,7 @@ handles.jTcpObj = [];
 image_processing_gui_toggle_enable(handles,'off',[1 3 4 5 6])
 set(handles.text_align_chan,'enable','off')
 set(handles.togglebutton_gen_catsa,'enable','off')
+set(handles.pushbutton_prepare_spark,'enable','off')
 set(handles.togglebutton_gen_text,'enable','off')
 set(handles.checkbox_behaviour,'Value',1)
 set(handles.text_status,'String','Status: offline')
@@ -102,6 +103,7 @@ folder_name = uigetdir(start_path);
 
 if folder_name ~= 0
     image_processing_gui_toggle_enable(handles,'off',[1 3 4 5 6])
+    set(handles.pushbutton_prepare_spark,'enable','off')
     set(handles.togglebutton_gen_catsa,'enable','off')
     set(handles.togglebutton_gen_text,'enable','off')
     set(handles.text_align_chan,'Enable','off')
@@ -191,6 +193,7 @@ if folder_name ~= 0
         set(handles.pushbutton_data_dir,'enable','off')
         set(handles.togglebutton_gen_text,'enable','off')
         set(handles.togglebutton_gen_catsa,'enable','off')
+        set(handles.pushbutton_prepare_spark,'enable','off')
         drawnow
         base_path_behaviour = fullfile(handles.base_path, 'behaviour');
         cur_file = dir(fullfile(handles.base_path,'behaviour','*_rig_config.mat'));
@@ -208,6 +211,7 @@ if folder_name ~= 0
         set(handles.pushbutton_data_dir,'enable','on')
         set(handles.togglebutton_gen_text,'enable','on')
         set(handles.togglebutton_gen_catsa,'enable','on')
+        set(handles.pushbutton_prepare_spark,'enable','on')
         drawnow
     end
     
@@ -249,7 +253,7 @@ num_refs = numel(ref_names);
 ref_files = dir(fullfile(handles.data_dir,'ref_images_*.mat'));
 
 if numel(ref_files) > 0
-    if strcmp(FileName,'References')
+    if strcmp(FileName,'References.mat')
         ref_names = cell(numel(ref_files),1);
         for ij = 1:numel(ref_files)
             ref_names{ij} = ref_files(ij).name(1:end-4);
@@ -326,7 +330,7 @@ roi_files = dir(fullfile(handles.data_dir,'ROIs_*.mat'));
 start_val = 1;
 
 if numel(roi_files) > 0
-    if strcmp(FileName,'ROIs')
+    if strcmp(FileName,'ROIs.mat')
         roi_names = cell(numel(roi_files),1);
         for ij = 1:numel(roi_files)
             roi_names{ij} = roi_files(ij).name(1:end-4);
@@ -509,7 +513,8 @@ else
         set(handles.text_status,'String','Status: waiting')
         set(handles.togglebutton_gen_text,'enable','off')
         set(handles.togglebutton_gen_catsa,'enable','off')
-        
+        set(handles.pushbutton_prepare_spark,'enable','off')
+
         % Setup timer
         handles.obj_t = timer('TimerFcn',{@update_im_processing,handles});
         set(handles.obj_t,'ExecutionMode','fixedSpacing');
@@ -528,7 +533,8 @@ else
         
         image_processing_gui_toggle_enable(handles,'on',[1 2])
         set(handles.pushbutton_data_dir,'enable','on')
-        
+        set(handles.pushbutton_prepare_spark,'enable','on')
+       
         time_elapsed_str = sprintf('Time online %.1f s',0);
         set(handles.text_time,'String',time_elapsed_str)
         set(handles.text_time,'Enable','off')
@@ -584,7 +590,8 @@ if value && isfield(im_session,'reg')
             set(handles.text_status,'enable','on')
             set(handles.text_registered_trials,'enable','on')
             set(handles.togglebutton_gen_text,'enable','off')
-            
+            set(handles.pushbutton_prepare_spark,'enable','off')
+
             set(handles.text_status,'String','Status: extracting CaTSA')
             drawnow
             save_path = fileparts(im_session.basic_info.data_dir);
@@ -611,6 +618,7 @@ if value && isfield(im_session,'reg')
             image_processing_gui_toggle_enable(handles,'on',[1 2])
             set(handles.pushbutton_data_dir,'enable','on')
             set(handles.togglebutton_gen_text,'enable','on')
+            set(handles.pushbutton_prepare_spark,'enable','on')
             set(hObject,'Value',0);
             drawnow
         catch
@@ -618,6 +626,7 @@ if value && isfield(im_session,'reg')
             image_processing_gui_toggle_enable(handles,'on',[1 2])
             set(handles.pushbutton_data_dir,'enable','on')
             set(handles.togglebutton_gen_text,'enable','on')
+            set(handles.pushbutton_prepare_spark,'enable','on')
             set(hObject,'Value',0);
             drawnow
         end
@@ -697,6 +706,7 @@ if value && isfield(im_session,'reg')
     set(handles.text_status,'enable','on')
     set(handles.text_registered_trials,'enable','on')
     set(handles.togglebutton_gen_catsa,'enable','off')
+    set(handles.pushbutton_prepare_spark,'enable','off')
     
     if behaviour_on || imaging_on
         if num_files > 0
@@ -717,18 +727,16 @@ if value && isfield(im_session,'reg')
         end
     end
     
-    if exist(save_path_bv) == 2
-        prepare_spark(save_path,behaviour_on,overwrite)
-    end
     image_processing_gui_toggle_enable(handles,'on',[1 2])
     set(handles.pushbutton_data_dir,'enable','on')
     set(handles.togglebutton_gen_catsa,'enable','on')
+    set(handles.pushbutton_prepare_spark,'enable','on')
     set(hObject,'Value',0);
     drawnow
     
 else
     if ~isfield(im_session,'reg')
-        fprintf('(text)  first register images\n');
+        fprintf('(text) register images before generating text \n');
     end
     set(hObject,'Value',0);
     set(handles.text_status,'String','Status: waiting')
@@ -758,3 +766,25 @@ function edit_downsample_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in pushbutton_prepare_spark.
+function pushbutton_prepare_spark_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_prepare_spark (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+    overwrite = get(handles.checkbox_overwrite,'Value');
+    behaviour_on = get(handles.checkbox_behaviour,'Value');
+
+    
+    global im_session;
+    save_path = fileparts(im_session.basic_info.data_dir);
+    save_path = fullfile(save_path,'session');
+    save_path_bv = fullfile(save_path,['Text_behaviour.mat']);
+
+    if behaviour_on && exist(save_path_bv) ~= 2
+        fprintf('(spark) no behaviour matrix present please make\n');
+    else
+        prepare_spark(save_path,behaviour_on,overwrite)
+    end

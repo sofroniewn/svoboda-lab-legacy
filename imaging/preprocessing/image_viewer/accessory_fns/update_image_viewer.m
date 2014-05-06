@@ -1,5 +1,17 @@
 function update_image_viewer(obj,event,handles)
 
+% Check spark output directory
+%cur_file = dir(fullfile(handles.base_path,'behaviour','*_rig_config.mat'));
+%if numel(cur_file)>0
+%    cur_bv_files = dir(fullfile(handles.base_path,'behaviour','*_trial_*.mat'));
+%    val = get(handles.text_num_behaviour,'UserData');
+%    if numel(cur_bv_files)-1 > val
+%        set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(cur_bv_files)-1)]);
+%        set(handles.text_num_behaviour,'UserData',numel(cur_bv_files)-1)
+%    end
+%end
+
+
 % Check imaging directory
 global im_session;
 cur_files = dir(fullfile(im_session.basic_info.data_dir,'*_main_*.tif'));
