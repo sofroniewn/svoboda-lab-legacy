@@ -7,6 +7,8 @@ base_dir = '/Users/sofroniewn/Documents/DATA/WGNR_DATA/anm_0221172/2014_02_21/ru
 
 f_name = [base_dir '/ephys/raw/anm_221172_2014x02x21_run_09_trial_1.bin'];
 
+%f_name = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_231090/2014_04_24/run_01/ephys/raw/anm_anm_231090_2014x04x24_run_01_trial_2.bin';
+
 ch_common_noise = [3, 27:29, 32]; % Channels to be used for common noise subtratction
 ch_common_noise = [];
 [p d] = func_process_voltage(f_name,ch_common_noise);
@@ -113,17 +115,37 @@ ylim([-.3 .3]*10^(-3))
 xlim([0 d.TimeStamps(end)*1.1])
 
 
+laser_power = d.allOther_allCh(:,1);
+artifact_time = zeros(size(laser_power));
+
+for_conv = 50;
+laser_onsets = single(diff(laser_power)>.1);
+laser_onsets = conv(laser_onsets,ones(for_conv,1),'same');
+laser_onsets = find(laser_onsets)+for_conv/2;
+artifact_time(laser_onsets) = 1;
+for_conv = 50;
+laser_onsets = single(diff(laser_power)<-.1);
+laser_onsets = conv(laser_onsets,ones(for_conv,1),'same');
+laser_onsets = find(laser_onsets)+for_conv/2;
+artifact_time(laser_onsets) = 1;
+
+ex_trace = d.VoltageTraceInV_allCh(:,ch_id);
+ex_trace = interp1(find(~artifact_time),ex_trace(~artifact_time),[1:length(ex_trace)]);
+
+
+
 %% INDIVIDUAL CHANNEL RAW VOLTAGES
-ch_id = 17;
+ch_id = 9;
 figure(31)
 clf(31)
 set(gcf,'Position',screen_position_across)
 hold on
 plot(d.TimeStamps,d.VoltageTraceInV_allCh(:,ch_id))
 plot(d.TimeStamps,10^(-3)*d.allOther_allCh(:,1),'k')
-plot(d.TimeStamps,commonNoise,'r')
-plot(d.TimeStamps,XX(:,ch_id),'g')
-text(d.TimeStamps(end)*1.05,0,num2str(ch_id))
+plot(d.TimeStamps,artifact_time/100,'r')
+
+plot(d.TimeStamps,ch_MUA(:,ch_id),'m')
+%text(d.TimeStamps(end)*1.05,0,num2str(ch_id))
 set(gca,'position',[ 0.1300    0.1100    0.7750    0.8150])
 xlim([0 d.TimeStamps(end)*1.1])
 
@@ -161,8 +183,22 @@ laser_power = 10^(-3)*d.allOther_allCh(:,1);
         end
 
 
-[ch_MUA] = func_filter_raw_voltages(d.TimeStamps, XX,p.filter_range);
+[ch_MUA_c] = func_filter_raw_voltages(d.TimeStamps, XX,p.filter_range,laser_power);
+[ch_MUA_r] = func_filter_raw_voltages(d.TimeStamps, XX,p.filter_range,[]);
 
+%% INDIVIDUAL CHANNEL RAW VOLTAGES
+ch_id = 5;
+figure(31)
+clf(31)
+set(gcf,'Position',screen_position_across)
+hold on
+plot(d.TimeStamps,d.VoltageTraceInV_allCh(:,ch_id))
+plot(d.TimeStamps,10^(-3)*d.allOther_allCh(:,1),'k')
+plot(d.TimeStamps,ch_MUA_r(:,ch_id),'r')
+plot(d.TimeStamps,ch_MUA_c(:,ch_id),'m')
+%text(d.TimeStamps(end)*1.05,0,num2str(ch_id))
+set(gca,'position',[ 0.1300    0.1100    0.7750    0.8150])
+xlim([0 d.TimeStamps(end)*1.1])
 
 
 

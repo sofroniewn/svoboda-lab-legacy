@@ -11,7 +11,7 @@ ch_spikes = [1:2, 4:26, 30:31];
 base_dir = '/Users/sofroniewn/Documents/DATA/WGNR_DATA/anm_0221172/2014_02_21/run_09';
 base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_225493/2013_12_12/run_06';
 f_name_flag = '*_trial*.bin';
-file_nums = [1:10];
+file_nums = [1:5];
 over_write = 0;
 over_write_spikes = 0;
 over_write_cluster = 0;
@@ -19,7 +19,7 @@ cluster_name = 'klusters_data';
 
 file_list = func_list_files(base_dir,f_name_flag,file_nums);
 
-%func_concat_raw_voltages(base_dir,file_list);
+func_concat_raw_voltages(base_dir,file_list,cluster_name);
 
 
 %[ch_data] = func_spike_sort(base_dir,file_list,cluster_name,ch_common_noise,ch_spikes,over_write,over_write_spikes,over_write_cluster);

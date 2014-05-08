@@ -42,9 +42,7 @@ if n_spk>1
 
     res_tmp = total_inds + spiketimes_inds;
 
-
-
-   % Trial ID - trial time - detect channel - spike amp
+   %Trial ID - trial time - detect channel - spike amp
     sync_tmp = [trials_tmp spiketimes_tmp iCh_tmp];
 
     ch_data.spk  = cat(1, ch_data.spk, waveform_tmp);

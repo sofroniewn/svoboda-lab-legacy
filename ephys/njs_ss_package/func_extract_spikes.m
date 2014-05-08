@@ -10,7 +10,6 @@ param_extract.shadow_period_across_channels = 9;
 param_extract.channel_neighbourhood_large = 8;
 param_extract.channel_neighbourhood_small = 8;
 
-
 param_extract.w_pre = 13;
 param_extract.w_post = 16;
 param_extract.int_factor = 2;

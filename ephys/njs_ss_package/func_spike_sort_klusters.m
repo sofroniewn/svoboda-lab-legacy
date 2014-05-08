@@ -4,7 +4,7 @@ disp(['--------------------------------------------']);
 lite = 1;
 ch_data = [];
 total_inds = 0;
-f_name_cluster = fullfile(base_dir,'ephys','sorted',cluster_name);
+f_name_cluster = fullfile(base_dir,'ephys','sorted',cluster_name,cluster_name);
 
 if over_write_cluster == 0 && exist([f_name_cluster '.mat']) == 2
     disp(['LOAD KLUSTERS FILE']);
@@ -13,8 +13,8 @@ else
     if exist(fullfile(base_dir,'ephys','processed'))~=7
         mkdir(fullfile(base_dir,'ephys','processed'));
     end
-    if exist(fullfile(base_dir,'ephys','sorted'))~=7
-        mkdir(fullfile(base_dir,'ephys','sorted'));
+    if exist(fullfile(base_dir,'ephys','sorted',cluster_name))~=7
+        mkdir(fullfile(base_dir,'ephys','sorted',cluster_name));
     end
     
     for i_trial = 1:numel(file_list)
@@ -47,9 +47,9 @@ else
     
     disp(['SAVE KLUSTERS FILE']);
 
-    %fid = fopen([f_name_cluster '.spk' '.1'],'w');
-    %fwrite(fid,ch_data.spk,'int16');
-    %fclose(fid);
+    fid = fopen([f_name_cluster '.spk' '.1'],'w');
+    fwrite(fid,ch_data.spk,'int16');
+    fclose(fid);
     
     fid = fopen([f_name_cluster '.fet' '.1'],'w');
     fprintf(fid,['%i\n'],size(ch_data.fet,2));
@@ -57,12 +57,12 @@ else
     fprintf(fid,[fmt '%i\n'],ch_data.fet);
     fclose(fid);
 
-    %fid = fopen([f_name_cluster '.res' '.1'],'w');
-    %fprintf(fid,'%i\n',ch_data.res);
-    %fclose(fid);
+    fid = fopen([f_name_cluster '.res' '.1'],'w');
+    fprintf(fid,'%i\n',ch_data.res);
+    fclose(fid);
     
-    %ch_data = ch_data.sync;
-    %save([f_name_cluster '.mat'],'ch_data');
+    ch_data = ch_data.sync;
+    save([f_name_cluster '.mat'],'ch_data');
 
 end
 disp(['--------------------------------------------']);

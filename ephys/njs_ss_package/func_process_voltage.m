@@ -15,11 +15,11 @@ probe_name = 'A32_edge';
 
 %% FILTER INTO SPIKING BAND
 filter_range =[300 6000];
-[ch_MUA_raw] = func_filter_raw_voltages(TimeStamps, VoltageTraceInV_allCh, filter_range);
+laser_power = allOther_allCh(:,1);
+[ch_MUA_raw] = func_filter_raw_voltages(TimeStamps, VoltageTraceInV_allCh, filter_range,laser_power);
 
 %% SUBTRACT COMMON NOISE
 [ch_MUA commonNoise] = func_denoise(TimeStamps, ch_MUA_raw, ch_common_noise);
-
 
 %% GROUP DATA
 p.freqSampling = freqSampling;
