@@ -27,11 +27,11 @@ function varargout = image_viewer_GUI(varargin)
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @image_viewer_GUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @image_viewer_GUI_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @image_viewer_GUI_OpeningFcn, ...
+    'gui_OutputFcn',  @image_viewer_GUI_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -159,7 +159,7 @@ guidata(hObject, handles);
 % uiwait(handles.figure1);
 
 % --- Outputs from this function are returned to the command line.
-function varargout = image_viewer_GUI_OutputFcn(hObject, eventdata, handles) 
+function varargout = image_viewer_GUI_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -206,42 +206,42 @@ start_path = handles.datastr;
 folder_name = uigetdir(start_path);
 
 if folder_name ~= 0
-% CLEAR AXES
-axes(handles.axes_images)
-cla;
-imshow(zeros(512,512))
-
-%cla(handles.axes1)
-
-% disable gui buttons that should not be used
-image_viewer_gui_toggle_enable(handles,'off',[1 3 4 5 6 7])
-set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(0)]);
-set(handles.text_registered_trials,'String',['Registered trials ' num2str(0)]);
-set(handles.text_imaging_trials,'String',['Imaging trials ' num2str(0)]);
-
-set(handles.edit_trial_num,'String',num2str(0))
-set(handles.slider_trial_num,'max',1)
-set(handles.slider_trial_num,'SliderStep',[1 1])
-set(handles.slider_trial_num,'Value',0);
-
-ref_val = get(handles.popupmenu_list_plots,'UserData');
-set(handles.popupmenu_list_plots,'Value',ref_val)
-
-ref_val = get(handles.popupmenu_spark_regressors,'UserData');
-set(handles.popupmenu_spark_regressors,'Value',ref_val)
-
-% Prepare global variables
-clear global im_session
-global im_session; 
-
+    % CLEAR AXES
+    axes(handles.axes_images)
+    cla;
+    imshow(zeros(512,512))
+    
+    %cla(handles.axes1)
+    
+    % disable gui buttons that should not be used
+    image_viewer_gui_toggle_enable(handles,'off',[1 3 4 5 6 7])
+    set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(0)]);
+    set(handles.text_registered_trials,'String',['Registered trials ' num2str(0)]);
+    set(handles.text_imaging_trials,'String',['Imaging trials ' num2str(0)]);
+    
+    set(handles.edit_trial_num,'String',num2str(0))
+    set(handles.slider_trial_num,'max',1)
+    set(handles.slider_trial_num,'SliderStep',[1 1])
+    set(handles.slider_trial_num,'Value',0);
+    
+    ref_val = get(handles.popupmenu_list_plots,'UserData');
+    set(handles.popupmenu_list_plots,'Value',ref_val)
+    
+    ref_val = get(handles.popupmenu_spark_regressors,'UserData');
+    set(handles.popupmenu_spark_regressors,'Value',ref_val)
+    
+    % Prepare global variables
+    clear global im_session
+    global im_session;
+    
     handles.base_path = folder_name;
     handles.data_dir = fullfile(handles.base_path, 'scanimage');
     
     handles.output_dir = fullfile(handles.base_path, 'session');
-
+    
     % Load in im_session
     im_session = load_im_session_data(handles.data_dir);
-
+    
     [stim_types range_array] = setupReg_spark;
     im_session.spark_output.mean = [];
     im_session.spark_output.localcorr = [];
@@ -252,12 +252,12 @@ global im_session;
     im_session.spark_output.regressor.cur_ind = get(handles.popupmenu_spark_regressors,'UserData');
     im_session.spark_output.streaming.tune = [];
     im_session.spark_output.streaming.stats = [];
-
+    
     set(handles.text_anm,'Enable','on')
     set(handles.text_date,'Enable','on')
     set(handles.text_run,'Enable','on')
     set(handles.text_imaging_trials,'Enable','on')
-
+    
     set(handles.text_anm,'String',im_session.basic_info.anm_str)
     set(handles.text_date,'String',im_session.basic_info.date_str)
     set(handles.text_run,'String',im_session.basic_info.run_str)
@@ -265,11 +265,11 @@ global im_session;
     
     type_name = 'text';
     handles.text_path = fullfile(im_session.basic_info.data_dir,type_name);
-
+    
     set(handles.pushbutton_load_ref,'enable','on')
     set(handles.pushbutton_previous_ref,'enable','on')
     guidata(hObject, handles);
-
+    
     
     % Load in reference image if there (take first one)
     ref_files = dir(fullfile(handles.data_dir,'ref_images_*.mat'));
@@ -279,7 +279,7 @@ global im_session;
         % Load in spark
         load_spark_maps(handles.output_dir,1);
     end
-
+    
     % Update behaviour trials
     cur_file = dir(fullfile(handles.base_path,'behaviour','*_rig_config.mat'));
     if numel(cur_file)>0
@@ -288,7 +288,7 @@ global im_session;
         set(handles.text_num_behaviour,'UserData',numel(cur_bv_files)-1)
     else
         set(handles.text_num_behaviour,'String',['Behaviour trials ' 'off']);
-        set(handles.text_num_behaviour,'UserData',-1)     
+        set(handles.text_num_behaviour,'UserData',-1)
     end
 end
 
@@ -390,11 +390,11 @@ if FileName ~= 0
     set(handles.text_imaging_trials,'Enable','off')
     drawnow
     overwrite = 0;
-
+    
     global im_session
     [pathstr,name,ext] = fileparts(FileName);
     if strcmp(ext,'.mat') == 1
-      load(fullfile(PathName,FileName));
+        load(fullfile(PathName,FileName));
         if ~strcmp(PathName,fullfile(handles.base_path,'scanimage')) && ~prev_ref
             save(fullfile(handles.base_path,'scanimage',FileName),'ref');
         end
@@ -403,7 +403,7 @@ if FileName ~= 0
         if exist(fullfile(PathName,['ref_images_' name '.mat'])) == 2 && overwrite == 0
             load(fullfile(PathName,['ref_images_' name '.mat']));
             if ~strcmp(PathName,fullfile(handles.base_path,'scanimage')) && ~prev_ref
-                 save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat']),'ref');
+                save(fullfile(handles.base_path,'scanimage',['ref_images_' name '.mat']),'ref');
             end
         else
             align_chan = str2num(get(handles.edit_align_channel,'string'));
@@ -414,7 +414,7 @@ if FileName ~= 0
             end
         end
     else
-      error('Wrong file type for reference')
+        error('Wrong file type for reference')
     end
     
     if strcmp(name(1:11),'ref_images_')
@@ -424,17 +424,17 @@ if FileName ~= 0
     ref.path_name = PathName;
     ref.file_name = name;
     ref = add_ref_accesory_images(PathName,ref);
-
-  im_session.realtime.num_avg = 10;
-  im_session.realtime.im_raw = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
-  im_session.realtime.im_adj = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
-  im_session.realtime.corr_vals = zeros(length(handles.edges_lateral_displacements),length(handles.edges_lateral_displacements),ref.im_props.numPlanes,im_session.realtime.num_avg,'single');
-  im_session.realtime.shifts = zeros(2,ref.im_props.numPlanes,im_session.realtime.num_avg,'single');
-  im_session.realtime.ind = 1;
-  im_session.realtime.start = 0;
-  
+    
+    im_session.realtime.num_avg = 10;
+    im_session.realtime.im_raw = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
+    im_session.realtime.im_adj = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
+    im_session.realtime.corr_vals = zeros(length(handles.edges_lateral_displacements),length(handles.edges_lateral_displacements),ref.im_props.numPlanes,im_session.realtime.num_avg,'single');
+    im_session.realtime.shifts = zeros(2,ref.im_props.numPlanes,im_session.realtime.num_avg,'single');
+    im_session.realtime.ind = 1;
+    im_session.realtime.start = 0;
+    
     roi_file_names = dir(fullfile(PathName,['ROIs_*.mat']));
-    if numel(roi_file_names) > 0 
+    if numel(roi_file_names) > 0
         if exist(fullfile(PathName,['ROIs_cells.mat'])) == 2
             load(fullfile(PathName,['ROIs_cells.mat']));
             set(handles.edit_rois_name,'String','cells');
@@ -445,7 +445,7 @@ if FileName ~= 0
         end
         ref.roi_array = roi_array;
     end
-
+    
     %set(handles.text_registered_trials,'String',['Registered trials ' num2str(0)]);
     %  set(handles.slider_trial_num,'max',1)
     %  set(handles.slider_trial_num,'SliderStep',[1 1])
@@ -453,7 +453,7 @@ if FileName ~= 0
     set(handles.slider_trial_num,'Value',0);
     set(handles.text_num_planes,'String',sprintf('Num planes %d',ref.im_props.numPlanes))
     set(handles.text_num_chan,'String',sprintf('Num channels %d',ref.im_props.nchans))
-
+    
     if prev_ref
         im_session.prev_ref = ref;
         set(handles.popupmenu_ref_selector,'value',2)
@@ -485,42 +485,42 @@ function togglebutton_online_mode_Callback(hObject, eventdata, handles)
 value = get(hObject,'Value');
 
 if value == 1
-  tic;
-
-  image_viewer_gui_toggle_enable(handles,'off',[7])
-  set(handles.pushbutton_load_ref,'enable','off')
-  set(handles.pushbutton_previous_ref,'enable','off')
-  set(handles.pushbutton_data_dir,'enable','off')
-  set(handles.togglebutton_realtime_mode,'enable','off')
-
-  % Setup timer
-  set(handles.text_time,'Enable','on')    
-  handles.obj_t = timer('TimerFcn',{@update_image_viewer,handles});
-  set(handles.obj_t,'ExecutionMode','fixedSpacing');
-  set(handles.obj_t,'Period', .5);
-  set(handles.obj_t,'BusyMode','drop');
-  set(handles.obj_t,'ErrorFcn',@(obj,event)disp('Timing Error'));
-  set(handles.obj_t,'UserData',0);
-  % Update handles structure
-  guidata(hObject, handles);
-
-
-  start(handles.obj_t)
-
+    tic;
+    
+    image_viewer_gui_toggle_enable(handles,'off',[7])
+    set(handles.pushbutton_load_ref,'enable','off')
+    set(handles.pushbutton_previous_ref,'enable','off')
+    set(handles.pushbutton_data_dir,'enable','off')
+    set(handles.togglebutton_realtime_mode,'enable','off')
+    
+    % Setup timer
+    set(handles.text_time,'Enable','on')
+    handles.obj_t = timer('TimerFcn',{@update_image_viewer,handles});
+    set(handles.obj_t,'ExecutionMode','fixedSpacing');
+    set(handles.obj_t,'Period', .5);
+    set(handles.obj_t,'BusyMode','drop');
+    set(handles.obj_t,'ErrorFcn',@(obj,event)disp('Timing Error'));
+    set(handles.obj_t,'UserData',0);
+    % Update handles structure
+    guidata(hObject, handles);
+    
+    
+    start(handles.obj_t)
+    
 else
     stop(handles.obj_t);
     delete(handles.obj_t);
     
     image_viewer_gui_toggle_enable(handles,'on',[7])
-  set(handles.pushbutton_load_ref,'enable','on')
-  set(handles.pushbutton_previous_ref,'enable','on')
-   set(handles.pushbutton_data_dir,'enable','on')
-  set(handles.togglebutton_realtime_mode,'enable','on')
-
-
-   time_elapsed_str = sprintf('Time online %.1f s',0);
-   set(handles.text_time,'String',time_elapsed_str)
-   set(handles.text_time,'Enable','off')    
+    set(handles.pushbutton_load_ref,'enable','on')
+    set(handles.pushbutton_previous_ref,'enable','on')
+    set(handles.pushbutton_data_dir,'enable','on')
+    set(handles.togglebutton_realtime_mode,'enable','on')
+    
+    
+    time_elapsed_str = sprintf('Time online %.1f s',0);
+    set(handles.text_time,'String',time_elapsed_str)
+    set(handles.text_time,'Enable','off')
 end
 
 
@@ -533,81 +533,81 @@ function togglebutton_realtime_mode_Callback(hObject, eventdata, handles)
 value = get(hObject,'Value');
 
 if value == 1
-  tic;
-  image_viewer_gui_toggle_enable(handles,'off',[1 2])
-%  set(handles.slider_trial_num,'enable','on')
-%  set(handles.edit_trial_num,'enable','on')
-  set(handles.pushbutton_set_output_dir,'enable','off')
-  set(handles.pushbutton_data_dir,'enable','off')
-      set(handles.pushbutton_load_ref,'enable','off')
-      set(handles.pushbutton_previous_ref,'enable','off')
-  set(handles.togglebutton_realtime_mode,'enable','on')
-%   set(handles.text_anm,'Enable','on')
-%   set(handles.text_date,'Enable','on')
-%   set(handles.text_run,'Enable','on')
-%   set(handles.text_imaging_trials,'enable','on')
-   set(handles.text_time,'Enable','on')
-
-  % Setup timer
-  handles.obj_t_realtime = timer('TimerFcn',{@update_im_realtime,handles});
-  set(handles.obj_t_realtime,'ExecutionMode','fixedSpacing');
-  set(handles.obj_t_realtime,'Period', .01);
-  set(handles.obj_t_realtime,'BusyMode','drop');
-  set(handles.obj_t_realtime,'ErrorFcn',@(obj,event)disp('Realtime timing Error'));
-  set(handles.obj_t_realtime,'UserData',0);
+    tic;
+    image_viewer_gui_toggle_enable(handles,'off',[1 2])
+    %  set(handles.slider_trial_num,'enable','on')
+    %  set(handles.edit_trial_num,'enable','on')
+    set(handles.pushbutton_set_output_dir,'enable','off')
+    set(handles.pushbutton_data_dir,'enable','off')
+    set(handles.pushbutton_load_ref,'enable','off')
+    set(handles.pushbutton_previous_ref,'enable','off')
+    set(handles.togglebutton_realtime_mode,'enable','on')
+    %   set(handles.text_anm,'Enable','on')
+    %   set(handles.text_date,'Enable','on')
+    %   set(handles.text_run,'Enable','on')
+    %   set(handles.text_imaging_trials,'enable','on')
+    set(handles.text_time,'Enable','on')
     
-  % set(handles.text_elapsed_time,'Enable','on')
-
-  global im_session;
-      prev_ref = get(handles.popupmenu_ref_selector,'Value')-1;
-    if prev_ref 
+    % Setup timer
+    handles.obj_t_realtime = timer('TimerFcn',{@update_im_realtime,handles});
+    set(handles.obj_t_realtime,'ExecutionMode','fixedSpacing');
+    set(handles.obj_t_realtime,'Period', .01);
+    set(handles.obj_t_realtime,'BusyMode','drop');
+    set(handles.obj_t_realtime,'ErrorFcn',@(obj,event)disp('Realtime timing Error'));
+    set(handles.obj_t_realtime,'UserData',0);
+    
+    % set(handles.text_elapsed_time,'Enable','on')
+    
+    global im_session;
+    prev_ref = get(handles.popupmenu_ref_selector,'Value')-1;
+    if prev_ref
         ref = im_session.prev_ref;
     else
-        ref = im_session.ref;        
+        ref = im_session.ref;
     end
     
-  % setup memory map
-  filename = fullfile(handles.data_dir,'memmap.dat');
-  % Create the communications file if it is not already there.
-  if exist(filename)~= 2
-      [f, msg] = fopen(filename, 'wb');
-      if f ~= -1
-          fwrite(f, zeros(ref.im_props.height*ref.im_props.width*ref.im_props.numPlanes+1,1,'uint16'), 'uint16');
-          fclose(f);
-      else
-          error('MATLAB:demo:send:cannotOpenFile', ...
-              'Cannot open file "%s": %s.', filename, msg);
-      end
-  end
-  
-  global mmap_data;
-  mmap_data = memmapfile(filename, 'Writable', true, ...
+    % setup memory map
+    filename = fullfile(handles.data_dir,'memmap.dat');
+    % Create the communications file if it is not already there.
+    if exist(filename)~= 2
+        [f, msg] = fopen(filename, 'wb');
+        if f ~= -1
+            fwrite(f, zeros(ref.im_props.height*ref.im_props.width*ref.im_props.numPlanes+1,1,'uint16'), 'uint16');
+            fclose(f);
+        else
+            error('MATLAB:demo:send:cannotOpenFile', ...
+                'Cannot open file "%s": %s.', filename, msg);
+        end
+    end
+    
+    global mmap_data;
+    mmap_data = memmapfile(filename, 'Writable', true, ...
         'Format', 'uint16');
-  global old_mmap_frame_num
-  old_mmap_frame_num = 0;
-
-  im_session.realtime.num_avg = 10;
-  im_session.realtime.im_raw = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
-  im_session.realtime.im_adj = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
-  im_session.realtime.corr_vals = zeros(length(handles.edges_lateral_displacements),length(handles.edges_lateral_displacements),ref.im_props.numPlanes,im_session.realtime.num_avg,'single');
-  im_session.realtime.shifts = zeros(2,ref.im_props.numPlanes,im_session.realtime.num_avg,'single');
-  im_session.realtime.ind = 1;
-  im_session.realtime.start = 0;
-  
-  update_im = get(handles.checkbox_plot_images,'value');
-  contents = cellstr(get(handles.popupmenu_list_plots,'String'));
-  plot_str = contents{get(handles.popupmenu_list_plots,'Value')};
-
-  if update_im == 1 && strcmp(plot_str,'plot_realtime_raw.m') == 1
-    plot_im_gui(handles,0);
-  end
-
+    global old_mmap_frame_num
+    old_mmap_frame_num = 0;
+    
+    im_session.realtime.num_avg = 10;
+    im_session.realtime.im_raw = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
+    im_session.realtime.im_adj = zeros(ref.im_props.height,ref.im_props.width,ref.im_props.numPlanes,im_session.realtime.num_avg,'uint16');
+    im_session.realtime.corr_vals = zeros(length(handles.edges_lateral_displacements),length(handles.edges_lateral_displacements),ref.im_props.numPlanes,im_session.realtime.num_avg,'single');
+    im_session.realtime.shifts = zeros(2,ref.im_props.numPlanes,im_session.realtime.num_avg,'single');
+    im_session.realtime.ind = 1;
+    im_session.realtime.start = 0;
+    
+    update_im = get(handles.checkbox_plot_images,'value');
+    contents = cellstr(get(handles.popupmenu_list_plots,'String'));
+    plot_str = contents{get(handles.popupmenu_list_plots,'Value')};
+    
+    if update_im == 1 && strcmp(plot_str,'plot_realtime_raw.m') == 1
+        plot_im_gui(handles,0);
+    end
+    
     % Update handles structure
     guidata(hObject, handles);
     
     % Start Timer
     start(handles.obj_t_realtime)
-
+    
 else
     stop(handles.obj_t_realtime);
     delete(handles.obj_t_realtime);
@@ -617,10 +617,10 @@ else
     set(handles.pushbutton_previous_ref,'enable','on')
     set(handles.pushbutton_data_dir,'enable','on')
     set(handles.pushbutton_set_output_dir,'enable','on')
-
-   time_elapsed_str = sprintf('Time online %.1f s',0);
-   set(handles.text_time,'String',time_elapsed_str)
-   set(handles.text_time,'Enable','off')
+    
+    time_elapsed_str = sprintf('Time online %.1f s',0);
+    set(handles.text_time,'String',time_elapsed_str)
+    set(handles.text_time,'Enable','off')
 end
 
 
@@ -635,14 +635,14 @@ function slider_look_up_table_Callback(hObject, eventdata, handles)
 
 c_lim_2 = round(get(handles.slider_look_up_table,'Value'));
 if c_lim_2 > 4096
-   c_lim_2 = 4096;
-   set(handles.slider_look_up_table,'Value',c_lim_2)
+    c_lim_2 = 4096;
+    set(handles.slider_look_up_table,'Value',c_lim_2)
 end
 
 c_lim_1 = round(get(handles.slider_look_up_table_black,'Value'));
 if c_lim_2 < c_lim_1 + 1
-   c_lim_2 = c_lim_1 + 1;
-   set(handles.slider_look_up_table,'Value',c_lim_2)
+    c_lim_2 = c_lim_1 + 1;
+    set(handles.slider_look_up_table,'Value',c_lim_2)
 end
 
 set(handles.edit_look_up_table,'String',num2str(c_lim_2));
@@ -697,6 +697,16 @@ function edit_display_planes_Callback(hObject, eventdata, handles)
 
 %c_lim = round(get(handles.slider_look_up_table_black,'Value'));
 %set(handles.edit_look_up_table_black,'String',num2str(c_lim);
+roi_draw_mode = get(handles.togglebutton_draw_rois,'Value');
+if roi_draw_mode
+    plot_planes_str = get(handles.edit_display_planes,'string');
+    plot_planes = eval(plot_planes_str);
+    if length(plot_planes) > 1;
+        plot_planes = plot_planes(1);
+        set(handles.edit_display_planes,'string',num2str(plot_planes))
+        fprintf('Can only select a single plane when roi draw mode on')
+    end
+end
 plot_im_gui(handles,1);
 
 
@@ -724,14 +734,14 @@ function slider_look_up_table_black_Callback(hObject, eventdata, handles)
 
 c_lim_1 = round(get(handles.slider_look_up_table_black,'Value'));
 if c_lim_1 < 0
-   c_lim_1 = 0;
-   set(handles.slider_look_up_table_black,'Value',c_lim_1)
+    c_lim_1 = 0;
+    set(handles.slider_look_up_table_black,'Value',c_lim_1)
 end
 
 c_lim_2 = round(get(handles.slider_look_up_table,'Value'));
 if c_lim_1 > c_lim_2 - 1
-   c_lim_1 = c_lim_2 - 1;
-   set(handles.slider_look_up_table_black,'Value',c_lim_1)
+    c_lim_1 = c_lim_2 - 1;
+    set(handles.slider_look_up_table_black,'Value',c_lim_1)
 end
 
 set(handles.edit_look_up_table_black,'String',num2str(c_lim_1));
@@ -856,21 +866,39 @@ function togglebutton_draw_rois_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 roi_draw_mode = get(handles.togglebutton_draw_rois,'Value');
-if roi_draw_mode
 plot_planes_str = get(handles.edit_display_planes,'string');
 plot_planes = eval(plot_planes_str);
-    if length(plot_planes) > 1;
-        plot_planes = plot_planes(1);
-        set(handles.edit_display_planes,'string',num2str(plot_planes))
-    end    
-set(handles.pushbutton_save_rois,'enable','on')
-overwrite = 0;
-c_lim = zeros(1,2);
-c_lim(1) = round(get(handles.slider_look_up_table_black,'Value'));
-c_lim(2) = round(get(handles.slider_look_up_table,'Value'));
-draw_rois(plot_planes(1),overwrite,c_lim);
-else
+if length(plot_planes) > 1;
+    plot_planes = plot_planes(1);
+    set(handles.edit_display_planes,'string',num2str(plot_planes))
+    fprintf('Can only select a single plane when roi draw mode on')
+end
 
+global im_session
+
+if roi_draw_mode
+    overwrite = 0;
+    draw_rois(overwrite);
+    set(handles.pushbutton_save_rois,'enable','on')
+    plot_im_gui(handles,0);
+else
+    if isfield(im_session,'prev_ref')
+        if isfield(im_session.prev_ref,'roi_array')
+            for ik = 1:im_session.prev_ref.im_props.numPlanes
+                if sum(im_session.prev_ref.roi_array{ik}.guiHandles)>0
+                    im_session.prev_ref.roi_array{ik}.closeGui;
+                end
+            end
+        end
+    end
+    if isfield(im_session.ref,'roi_array')
+        for ik = 1:im_session.ref.im_props.numPlanes
+            if sum(im_session.ref.roi_array{ik}.guiHandles)>0
+                im_session.ref.roi_array{ik}.closeGui;
+            end
+        end
+    end
+    plot_im_gui(handles,0);
 end
 
 % --- Executes on button press in pushbutton_save_rois.
@@ -899,7 +927,7 @@ if FileName ~= 0
         roi_array{ik}.idStr = ['Source' num2str(ik)];
     end
     im_session.ref.roi_array_source = roi_array;
-
+    
     im_session.ref.roi_array = cell(im_session.ref.im_props.numPlanes,1);
     for ij = 1:im_session.ref.im_props.numPlanes
         roi_new = roi.roiArray();
@@ -978,7 +1006,6 @@ function popupmenu_spark_regressors_Callback(hObject, eventdata, handles)
 cur_ind = get(hObject,'Value');
 global im_session
 im_session.spark_output.regressor.cur_ind = cur_ind;
-
 plot_im_gui(handles,0);
 
 % --- Executes during object creation, after setting all properties.
@@ -1014,11 +1041,11 @@ function pushbutton_previous_ref_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
- start_path = fullfile(handles.base_path,'scanimage','*.*');
- [FileName,PathName,FilterIndex] = uigetfile(start_path);
+start_path = fullfile(handles.base_path,'scanimage','*.*');
+[FileName,PathName,FilterIndex] = uigetfile(start_path);
 
 if FileName ~= 0
-  pushbutton_load_ref_Callback(hObject, eventdata, handles,FileName,PathName)
+    pushbutton_load_ref_Callback(hObject, eventdata, handles,FileName,PathName)
 end
 % --- Executes on selection change in popupmenu_ref_selector.
 function popupmenu_ref_selector_Callback(hObject, eventdata, handles)
@@ -1037,10 +1064,10 @@ if prev_ref
         return
     end
 else
-   if ~isfield(im_session,'ref')
+    if ~isfield(im_session,'ref')
         set(hObject,'value',2)
-   return
-   end
+        return
+    end
 end
 
 plot_im_gui(handles,0);
@@ -1069,14 +1096,14 @@ function slider_overlay_Callback(hObject, eventdata, handles)
 
 c_lim_2 = round(get(handles.slider_overlay,'Value'));
 if c_lim_2 > 4096
-   c_lim_2 = 4096;
-   set(handles.slider_overlay,'Value',c_lim_2)
+    c_lim_2 = 4096;
+    set(handles.slider_overlay,'Value',c_lim_2)
 end
 
 c_lim_1 = round(get(handles.slider_look_up_table_black,'Value'));
 if c_lim_2 < c_lim_1 + 1
-   c_lim_2 = c_lim_1 + 1;
-   set(handles.slider_overlay,'Value',c_lim_2)
+    c_lim_2 = c_lim_1 + 1;
+    set(handles.slider_overlay,'Value',c_lim_2)
 end
 
 set(handles.edit_overlay_level,'String',num2str(c_lim_2));

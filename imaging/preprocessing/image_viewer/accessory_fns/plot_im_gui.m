@@ -27,19 +27,55 @@ function [im_data clim_data] = plot_im_gui(handles,plot_on)
     plot_str = ['[im_data clim_data cmap_str] = ' plot_function(1:end-2) '(im_session,ref,trial_num,chan_num,plot_planes,c_lim,c_lim_overlay);'];
     eval(plot_str);
 
-
+roi_draw_mode = get(handles.togglebutton_draw_rois,'Value');
 if plot_on == 1
+    if roi_draw_mode
+    if isfield(im_session,'prev_ref')
+        if isfield(im_session.prev_ref,'roi_array')
+            for ik = 1:im_session.prev_ref.im_props.numPlanes
+                if sum(im_session.prev_ref.roi_array{ik}.guiHandles)>0
+                    im_session.prev_ref.roi_array{ik}.closeGui;
+                end
+            end
+        end
+    end
+    if isfield(im_session.ref,'roi_array')
+        for ik = 1:im_session.ref.im_props.numPlanes
+            if sum(im_session.ref.roi_array{ik}.guiHandles)>0
+                im_session.ref.roi_array{ik}.closeGui;
+            end
+        end
+    end
+        set(handles.togglebutton_draw_rois,'Value',0);
+    end
     axes(handles.axes_images);
-    imagesc(im_data,clim_data)   
+    hold off
+    imagesc(im_data,clim_data)
     set(gca,'xtick',[])
     set(gca,'ytick',[])
     axis equal
 else
-    im_plot = get(handles.axes_images,'Children');
-    set(handles.axes_images,'clim',clim_data)
-    set(im_plot,'CData',im_data)
+    if roi_draw_mode == 0
+        im_plot = get(handles.axes_images,'Children');
+        set(handles.axes_images,'clim',clim_data)
+        set(im_plot,'CData',im_data)
+    else
+        if isempty(ref.roi_array{plot_planes}.guiHandles)
+            ref.roi_array{plot_planes}.startGui;
+        end
+        im_data = single(im_data);
+        if ndims(im_data) == 3
+            im_data = clim_data(2)*mean(im_data,3);
+        end
+        im_data = (im_data - clim_data(1))/clim_data(2);
+        im_data(im_data>1) = 1;
+        im_data(im_data<0) = 0;
+        ref.roi_array{plot_planes}.workingImage = im_data;
+        ref.roi_array{plot_planes}.updateImage();
+    end
 end
-   
+
+%set(handles.axes_images,'TightInset',[0.0364    0.0292    0.0056    0.0069])
 colormap(gca,cmap_str);
 
 colorbar_val = get(handles.uitoggletool4,'State');
@@ -57,12 +93,6 @@ if strcmp(colorbar_val,'on')
         %set(handles.cbar_axes,'Ylim',[min(vals) max(vals)])
     end
 end
-
-
-
-
-
-
 
 
 end
