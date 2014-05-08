@@ -1,7 +1,6 @@
-function [im_comb clim] = plot_ref_images(plot_axes,cbar_axes,im_session,ref,trial_num,chan_num,plot_planes,clim,c_lim_overlay,plot_on)
+function [im_comb clim cmap_str] = plot_ref_images(im_session,ref,trial_num,chan_num,plot_planes,clim,c_lim_overlay)
 
-	axes(plot_axes);
-	colormap(gca,'gray');
+cmap_str = 'gray';
 
 num_planes = length(plot_planes);
 plane_rep = ceil(sqrt(num_planes));
@@ -16,11 +15,3 @@ for ij = 1:num_planes
 	im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1) = im_use;
 end
 
-if plot_on == 1
-	imagesc(im_comb,clim)	
-	set(gca,'xtick',[])
-	set(gca,'ytick',[])
-    axis equal
-end
-
-end

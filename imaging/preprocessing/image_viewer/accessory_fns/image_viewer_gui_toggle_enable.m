@@ -56,7 +56,7 @@ end
 
 if any(ismember(type,7))
 set(handles.pushbutton_set_output_dir,'enable',enable_str)
-set(handles.pushbutton_draw_rois,'enable',enable_str)
+set(handles.togglebutton_draw_rois,'enable',enable_str)
 set(handles.pushbutton_save_rois,'enable',enable_str)
 set(handles.pushbutton_import_rois,'enable',enable_str)
 set(handles.pushbutton_load_rois,'enable',enable_str)

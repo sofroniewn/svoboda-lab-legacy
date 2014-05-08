@@ -10,7 +10,7 @@ function [regMat,vals,range_vals] = buildReg_spark(full_trial_data,stimType)
 
 regMat = [];
 vals = [];
-num_bins = 7;
+num_bins = 5;
 
 switch stimType
 	case 'corPos'
@@ -18,17 +18,24 @@ switch stimType
 		%vals = [floor(min(full_trial_data(:,12))):2:ceil(max(full_trial_data(:,12)))];
 		if ~isempty(full_trial_data)
 			regress_var = full_trial_data(:,12);
-			keep_data =	regress_var(keep_ind);
+			keep_ind = ~logical(full_trial_data(:,3)) & full_trial_data(:,7)>5;
+            keep_data =	regress_var(keep_ind);
 			vals = valsReg_spark(keep_data,num_bins);
+			vals = [range_vals(1) vals range_vals(2)];
+			vals = round(vals/2)*2;
+			vals = unique(vals);
 			regMat = binReg_spark(regress_var,vals,keep_ind);
 		end
 	case 'speed'
 		range_vals = [0 50];
 		if ~isempty(full_trial_data)
 			regress_var = full_trial_data(:,7);
-			keep_ind = 1 - full_trial_data(:,3);
+			keep_ind = ~logical(full_trial_data(:,3)) & full_trial_data(:,7)>5;
 			keep_data =	regress_var(keep_ind);
 			vals = valsReg_spark(keep_data,num_bins);
+			vals = [range_vals(1) vals range_vals(2)];
+			vals = round(vals/2)*2;
+			vals = unique(vals);
 			regMat = binReg_spark(regress_var,vals,keep_ind);
 		end
 	otherwise

@@ -47,8 +47,9 @@ if __name__ == "__main__":
     save(vals,outputdir,"mean_vals","matlab")
 
     # compute local cor
-    cor = localcorr(data,args.neighbourhood)
-    save(cor,outputdir,"local_corr","matlab")
+    if args.neighbourhood != 0:
+        cor = localcorr(data,args.neighbourhood)
+        save(cor,outputdir,"local_corr","matlab")
 
     # if stim argument is not default
     if args.stim != '-':

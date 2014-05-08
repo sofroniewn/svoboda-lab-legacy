@@ -1,11 +1,9 @@
-function [im_comb clim] = plot_spark_mean(plot_axes,cbar_axes,im_session,ref,trial_num,chan_num,plot_planes,clim,c_lim_overlay,plot_on)
-
-axes(plot_axes);
-colormap(gca,'gray');
+function [im_comb clim cmap_str] = plot_spark_mean(im_session,ref,trial_num,chan_num,plot_planes,clim,c_lim_overlay)
 
 num_planes = length(plot_planes);
 plane_rep = ceil(sqrt(num_planes));
 im_comb = zeros(plane_rep*ref.im_props.height,plane_rep*ref.im_props.width);
+cmap_str = 'gray';
 
 if ~isempty(im_session.spark_output.mean)
 for ij = 1:num_planes
@@ -16,13 +14,4 @@ for ij = 1:num_planes
 	im_use = im_session.spark_output.mean{plot_planes(ij),chan_num};
 	im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1) = im_use;
 end
-end
-
-if plot_on == 1
-	imagesc(im_comb,clim)	
-	set(gca,'xtick',[])
-	set(gca,'ytick',[])
-    axis equal
-end
-
 end

@@ -86,10 +86,7 @@ if update_shift_plots || (update_im && (strcmp(plot_str,'plot_realtime_raw.m') |
         % update shifts / images taking means across planes as required
 
         if update_im && (strcmp(plot_str,'plot_realtime_raw.m') || strcmp(plot_str,'plot_realtime_adj.m') || strcmp(plot_str,'plot_realtime_overlay.m'))
-            [im_data c_lim] = plot_im_gui(handles,0);
-            im_plot = get(handles.axes_images,'Children');
-            set(handles.axes_images,'clim',c_lim)
-            set(im_plot,'CData',im_data)
+            plot_im_gui(handles,0);
         end
         %toc
     end

@@ -22,7 +22,7 @@ function varargout = image_viewer_GUI(varargin)
 
 % Edit the above text to modify the response to help image_viewer_GUI
 
-% Last Modified by GUIDE v2.5 01-May-2014 23:35:22
+% Last Modified by GUIDE v2.5 07-May-2014 09:28:12
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -120,7 +120,9 @@ handles.plot_shift_up = plot([0,0],[-size_lateral_displacements size_lateral_dis
 handles.plot_shift_across = plot([-size_lateral_displacements size_lateral_displacements],[0,0],'r','LineWidth',2);
 xlim([-size_lateral_displacements size_lateral_displacements])
 ylim([-size_lateral_displacements size_lateral_displacements])
-set(handles.axes_shifts,'visible','off')
+set(gca,'xtick',[])
+set(gca,'ytick',[])
+axis equal
 
 axes(handles.axes_x_hist)
 set(handles.axes_x_hist,'HandleVisibility','on')
@@ -179,10 +181,7 @@ function popupmenu_list_plots_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns popupmenu_list_plots contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupmenu_list_plots
 
-[im_data clim] = plot_im_gui(handles,0);
-im_plot = get(handles.axes_images,'Children');
-set(handles.axes_images,'clim',clim)
-set(im_plot,'CData',im_data)
+plot_im_gui(handles,0);
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu_list_plots_CreateFcn(hObject, eventdata, handles)
@@ -600,10 +599,7 @@ if value == 1
   plot_str = contents{get(handles.popupmenu_list_plots,'Value')};
 
   if update_im == 1 && strcmp(plot_str,'plot_realtime_raw.m') == 1
-    [im_data clim] = plot_im_gui(handles,0);
-    im_plot = get(handles.axes_images,'Children');
-    set(handles.axes_images,'clim',clim)
-    set(im_plot,'CData',im_data)
+    plot_im_gui(handles,0);
   end
 
     % Update handles structure
@@ -650,10 +646,8 @@ if c_lim_2 < c_lim_1 + 1
 end
 
 set(handles.edit_look_up_table,'String',num2str(c_lim_2));
-[im_data clim] = plot_im_gui(handles,0);
-im_plot = get(handles.axes_images,'Children');
-set(handles.axes_images,'clim',clim)
-set(im_plot,'CData',im_data)
+plot_im_gui(handles,0);
+
 
 % --- Executes during object creation, after setting all properties.
 function slider_look_up_table_CreateFcn(hObject, eventdata, handles)
@@ -742,10 +736,8 @@ end
 
 set(handles.edit_look_up_table_black,'String',num2str(c_lim_1));
 
-[im_data clim] = plot_im_gui(handles,0);
-im_plot = get(handles.axes_images,'Children');
-set(handles.axes_images,'clim',clim)
-set(im_plot,'CData',im_data)
+plot_im_gui(handles,0);
+
 
 % --- Executes during object creation, after setting all properties.
 function slider_look_up_table_black_CreateFcn(hObject, eventdata, handles)
@@ -802,10 +794,7 @@ end
 set(handles.slider_trial_num,'Value',val);
 set(handles.edit_trial_num,'String',num2str(val));
 
-[im_data clim] = plot_im_gui(handles,0);
-im_plot = get(handles.axes_images,'Children');
-set(handles.axes_images,'clim',clim)
-set(im_plot,'CData',im_data)
+plot_im_gui(handles,0);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -860,21 +849,29 @@ function uipanel1_DeleteFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
-% --- Executes on button press in pushbutton_draw_rois.
-function pushbutton_draw_rois_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton_draw_rois (see GCBO)
+% --- Executes on button press in togglebutton_draw_rois.
+function togglebutton_draw_rois_Callback(hObject, eventdata, handles)
+% hObject    handle to togglebutton_draw_rois (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+roi_draw_mode = get(handles.togglebutton_draw_rois,'Value');
+if roi_draw_mode
+plot_planes_str = get(handles.edit_display_planes,'string');
+plot_planes = eval(plot_planes_str);
+    if length(plot_planes) > 1;
+        plot_planes = plot_planes(1);
+        set(handles.edit_display_planes,'string',num2str(plot_planes))
+    end    
 set(handles.pushbutton_save_rois,'enable','on')
 overwrite = 0;
 c_lim = zeros(1,2);
 c_lim(1) = round(get(handles.slider_look_up_table_black,'Value'));
 c_lim(2) = round(get(handles.slider_look_up_table,'Value'));
-plot_planes_str = get(handles.edit_display_planes,'string');
-plot_planes = eval(plot_planes_str);
 draw_rois(plot_planes(1),overwrite,c_lim);
+else
 
+end
 
 % --- Executes on button press in pushbutton_save_rois.
 function pushbutton_save_rois_Callback(hObject, eventdata, handles)
@@ -982,10 +979,7 @@ cur_ind = get(hObject,'Value');
 global im_session
 im_session.spark_output.regressor.cur_ind = cur_ind;
 
-[im_data clim] = plot_im_gui(handles,0);
-im_plot = get(handles.axes_images,'Children');
-set(handles.axes_images,'clim',clim)
-set(im_plot,'CData',im_data)
+plot_im_gui(handles,0);
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu_spark_regressors_CreateFcn(hObject, eventdata, handles)
@@ -1009,30 +1003,8 @@ function uitoggletool4_ClickedCallback(hObject, eventdata, handles)
 switch get(hObject,'State')
     case 'off'
         colorbar('off')
-        handles.cbar_axes = [];
     case 'on'
-     %    set(gca,'clim',[min(vals),max(vals)])
-    plot_names =  get(handles.popupmenu_list_plots,'string');
-    plot_val =  get(handles.popupmenu_list_plots,'value');
-    plot_function = plot_names{plot_val};
-    
-    handles.cbar_axes = colorbar;
-
-    if strcmp(plot_function,'plot_spark_regression_tune.m')
-        colormap('jet')
-        global im_session;
-        num_ticks = 6;
-        cur_ind = im_session.spark_output.regressor.cur_ind;
-        vals = im_session.spark_output.regressor.range{cur_ind};
-        %c_range = get(handles.cbar_axes,'Ylim');        
-        %tick_vals = linspace(c_range(1),c_range(2),num_ticks);
-        tick_labels = linspace(range(1),range(2),num_ticks);
-        set(handles.cbar_axes,'Ytick',tick_labels)
-        set(handles.cbar_axes,'Yticklabel',tick_labels)
-        %set(handles.cbar_axes,'Ylim',[min(vals) max(vals)])
-    else
-        colormap('gray')
-    end
+        plot_im_gui(handles,0);
 end
 
 
@@ -1071,10 +1043,7 @@ else
    end
 end
 
-[im_data clim] = plot_im_gui(handles,0);
-im_plot = get(handles.axes_images,'Children');
-set(handles.axes_images,'clim',clim)
-set(im_plot,'CData',im_data)
+plot_im_gui(handles,0);
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu_ref_selector_CreateFcn(hObject, eventdata, handles)
@@ -1111,10 +1080,7 @@ if c_lim_2 < c_lim_1 + 1
 end
 
 set(handles.edit_overlay_level,'String',num2str(c_lim_2));
-[im_data clim] = plot_im_gui(handles,0);
-im_plot = get(handles.axes_images,'Children');
-set(handles.axes_images,'clim',clim)
-set(im_plot,'CData',im_data)
+plot_im_gui(handles,0);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1155,3 +1121,21 @@ function edit_overlay_level_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+
+% --- Executes on key press with focus on figure1 and none of its controls.
+function figure1_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  structure with the following fields (see FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on mouse press over axes background.
+function axes_images_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to axes_images (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
