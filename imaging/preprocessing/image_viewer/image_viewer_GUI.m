@@ -64,11 +64,14 @@ handles.pathstr = pathstr;
 % List plot function options
 plot_list = dir(fullfile(handles.pathstr,'accessory_fns','plot_functions','*.m'));
 plot_names = cell(numel(plot_list),1);
+ref_val = 1;
 for ij = 1:numel(plot_list)
     plot_names{ij} = plot_list(ij).name;
+    if strcmp(plot_names{ij},'plot_ref_images.m')
+        ref_val = ij;
+    end
 end
 set(handles.popupmenu_list_plots,'string',plot_names)
-ref_val = 6;
 set(handles.popupmenu_list_plots,'value',ref_val)
 set(handles.popupmenu_list_plots,'UserData',ref_val);
 
@@ -708,7 +711,10 @@ if roi_draw_mode
     end
 end
 plot_im_gui(handles,1);
-
+if roi_draw_mode
+    set(handles.togglebutton_draw_rois,'Value',1);
+    togglebutton_draw_rois_Callback(handles.togglebutton_draw_rois, eventdata, handles);
+end
 
 % --- Executes during object creation, after setting all properties.
 function edit_display_planes_CreateFcn(hObject, eventdata, handles)

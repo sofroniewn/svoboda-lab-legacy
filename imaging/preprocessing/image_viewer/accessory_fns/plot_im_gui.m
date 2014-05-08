@@ -65,11 +65,12 @@ else
         end
         im_data = single(im_data);
         if ndims(im_data) == 3
-            im_data = clim_data(2)*mean(im_data,3);
+            %im_data = clim_data(2)*mean(im_data,3);
+        else
+            im_data = (im_data - clim_data(1))/clim_data(2);
+            im_data(im_data>1) = 1;
+            im_data(im_data<0) = 0;
         end
-        im_data = (im_data - clim_data(1))/clim_data(2);
-        im_data(im_data>1) = 1;
-        im_data(im_data<0) = 0;
         ref.roi_array{plot_planes}.workingImage = im_data;
         ref.roi_array{plot_planes}.updateImage();
     end

@@ -17,8 +17,12 @@ for ij = 1:num_planes
 			end
 			ref.roi_array{plot_planes(ij)}.guiHandles = [];
 		end
-		ref.roi_array{plot_planes(ij)}.workingImageSettings.pixelRange = {['[' num2str(clim(1)) ' ' num2str(clim(2)) ']']};
-		im_use = generateImage(ref.roi_array{plot_planes(ij)}, 1, 1, 0);
+		im_data = (ref.base_images{plot_planes(ij)} - clim(1))/clim(2);
+        im_data(im_data>1) = 1;
+        im_data(im_data<0) = 0;
+        ref.roi_array{plot_planes(ij)}.workingImage = im_data;
+        im_use = generateImage(ref.roi_array{plot_planes(ij)}, 1, 1, 0);
 		im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,:) = im_use;
 	end
 end
+
