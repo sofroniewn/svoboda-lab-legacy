@@ -6,6 +6,8 @@ global session_ca;
 global handles_roi_ts;
 
 
+if ~isempty(handles_roi_ts)
+    if ishandle(handles_roi_ts.axes)
 roi_id = find(session_ca.roiIds == tRoi.id);
 if ~isempty(roi_id)
 
@@ -23,3 +25,6 @@ else
 end
 
 set(handles_roi_ts.plot_roi,'ydata',y_data)
+
+    end
+end

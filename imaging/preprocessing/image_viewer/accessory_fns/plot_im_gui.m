@@ -72,6 +72,13 @@ else
             im_data(im_data<0) = 0;
         end
         ref.roi_array{plot_planes}.workingImage = im_data;
+        if strcmp(cmap_str,'jet') || ndims(im_data) == 3
+            ref.roi_array{plot_planes}.settings.basicColor = [1 1 1];
+            ref.roi_array{plot_planes}.settings.selectedColor = [0 1 0];
+        else
+            ref.roi_array{plot_planes}.settings.basicColor = [1 0 .5];        
+            ref.roi_array{plot_planes}.settings.selectedColor = [1 .5 0];
+        end
         ref.roi_array{plot_planes}.updateImage();
     end
 end

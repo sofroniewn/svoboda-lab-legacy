@@ -22,7 +22,7 @@ function varargout = image_viewer_GUI(varargin)
 
 % Edit the above text to modify the response to help image_viewer_GUI
 
-% Last Modified by GUIDE v2.5 08-May-2014 19:40:10
+% Last Modified by GUIDE v2.5 09-May-2014 13:25:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1016,12 +1016,13 @@ plot_im_gui(handles,0);
 
 global handles_roi_ts;
 if ~isempty(handles_roi_ts)
-    bv_name_list = cellstr(get(hObject,'String'));
-    bv_name = bv_name_list{cur_ind};
-    plot_bv_ts(bv_name);
-    figure(handles.figure1);
+    if ishandle(handles_roi_ts.axes)
+        bv_name_list = cellstr(get(hObject,'String'));
+        bv_name = bv_name_list{cur_ind};
+        plot_bv_ts(bv_name);
+        figure(handles.figure1);
+    end
 end
-
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu_spark_regressors_CreateFcn(hObject, eventdata, handles)
@@ -1194,8 +1195,8 @@ global im_session
 roi_names =  get(handles.edit_rois_name,'string');
 session_path = fullfile(fileparts(im_session.basic_info.data_dir),'session');
 
-f_names_ca = fullfile(session_path,['session_ca_data_' roi_names '.mat'])
-f_names_bv = fullfile(session_path,['session_behaviour_' roi_names '.mat'])
+f_names_ca = fullfile(session_path,['session_ca_data_' roi_names '.mat']);
+f_names_bv = fullfile(session_path,['session_behaviour_' roi_names '.mat']);
 
 if exist(f_names_ca) == 2 && exist(f_names_bv) == 2
     global session_ca;
@@ -1213,19 +1214,14 @@ if exist(f_names_ca) == 2 && exist(f_names_bv) == 2
     clf(1);
     set(handles_roi_ts.fig,'Position',[0 629 1432 177])
     set(handles_roi_ts.fig,'Name','ROI Time Series')
-
-    handles_roi_ts.fig = gca;
+    handles_roi_ts.axes = gca;
     hold on
     handles_roi_ts.plot_bv = plot(session_ca.time,zeros(length(session_ca.time),1),'k');
     handles_roi_ts.plot_roi = plot(session_ca.time,zeros(length(session_ca.time),1),'b');    
-
+    xlabel('Time (s)')
     figure(handles.figure1);
     popupmenu_spark_regressors_Callback(handles.popupmenu_spark_regressors, eventdata, handles)
 
 else
     display('No session behaviour and calcium objects')
 end
-
-
-
-
