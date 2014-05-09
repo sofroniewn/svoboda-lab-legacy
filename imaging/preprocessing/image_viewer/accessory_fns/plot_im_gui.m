@@ -21,9 +21,7 @@ function [im_data clim_data] = plot_im_gui(handles,plot_on)
     end
 
     roi_draw_mode = get(handles.togglebutton_draw_rois,'Value');
-%    if roi_draw_mode
-%        plot_planes = plot_planes(1);
-
+    plot_planes = plot_planes(1);
     plot_str = ['[im_data clim_data cmap_str] = ' plot_function(1:end-2) '(im_session,ref,trial_num,chan_num,plot_planes,c_lim,c_lim_overlay);'];
     eval(plot_str);
 
@@ -61,7 +59,9 @@ else
         set(im_plot,'CData',im_data)
     else
         if isempty(ref.roi_array{plot_planes}.guiHandles)
-            ref.roi_array{plot_planes}.startGui;
+            fig_handle = handles.figure1;
+            axes_handle = handles.axes_images;
+            ref.roi_array{plot_planes}.startGui(fig_handle,axes_handle);
         end
         im_data = single(im_data);
         if ndims(im_data) == 3

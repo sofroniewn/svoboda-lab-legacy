@@ -22,7 +22,7 @@ function varargout = image_viewer_GUI(varargin)
 
 % Edit the above text to modify the response to help image_viewer_GUI
 
-% Last Modified by GUIDE v2.5 07-May-2014 09:28:12
+% Last Modified by GUIDE v2.5 08-May-2014 19:40:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1014,6 +1014,15 @@ global im_session
 im_session.spark_output.regressor.cur_ind = cur_ind;
 plot_im_gui(handles,0);
 
+global handles_roi_ts;
+if ~isempty(handles_roi_ts)
+    bv_name_list = cellstr(get(hObject,'String'));
+    bv_name = bv_name_list{cur_ind};
+    plot_bv_ts(bv_name);
+    figure(handles.figure1);
+end
+
+
 % --- Executes during object creation, after setting all properties.
 function popupmenu_spark_regressors_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to popupmenu_spark_regressors (see GCBO)
@@ -1172,3 +1181,51 @@ function axes_images_ButtonDownFcn(hObject, eventdata, handles)
 % hObject    handle to axes_images (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in pushbutton_load_ts.
+function pushbutton_load_ts_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_load_ts (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global im_session
+
+roi_names =  get(handles.edit_rois_name,'string');
+session_path = fullfile(fileparts(im_session.basic_info.data_dir),'session');
+
+f_names_ca = fullfile(session_path,['session_ca_data_' roi_names '.mat'])
+f_names_bv = fullfile(session_path,['session_behaviour_' roi_names '.mat'])
+
+if exist(f_names_ca) == 2 && exist(f_names_bv) == 2
+    global session_ca;
+    global session_bv;
+    load(f_names_ca)
+    load(f_names_bv)
+    im_session.ref.roi_array = session_ca.im_session.ref.roi_array;
+    cur_pos = get(handles.figure1,'Position');
+    cur_pos(1) = 5;
+    cur_pos(2) = 0;
+    set(handles.figure1,'Position',cur_pos)
+ 
+    global handles_roi_ts;
+    handles_roi_ts.fig = figure(1);
+    clf(1);
+    set(handles_roi_ts.fig,'Position',[0 629 1432 177])
+    set(handles_roi_ts.fig,'Name','ROI Time Series')
+
+    handles_roi_ts.fig = gca;
+    hold on
+    handles_roi_ts.plot_bv = plot(session_ca.time,zeros(length(session_ca.time),1),'k');
+    handles_roi_ts.plot_roi = plot(session_ca.time,zeros(length(session_ca.time),1),'b');    
+
+    figure(handles.figure1);
+    popupmenu_spark_regressors_Callback(handles.popupmenu_spark_regressors, eventdata, handles)
+
+else
+    display('No session behaviour and calcium objects')
+end
+
+
+
+
