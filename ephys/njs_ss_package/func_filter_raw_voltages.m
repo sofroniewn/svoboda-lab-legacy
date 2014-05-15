@@ -1,35 +1,26 @@
-function [ch_MUA] = func_filter_raw_voltages(TimeStamps, VoltageTraceInV_allCh,filter_range,laser_power);
+function [ch_MUA aux_chan] = func_filter_raw_voltages(TimeStamps, vlt_chan, aux_chan, ch_ids, filter_range);
 
     disp(['--------------------------------------------']);
     disp(['filtering file']);
     
-if ~isempty(laser_power)
-artifact_time = zeros(size(laser_power));
-for_conv = 50;
-laser_onsets = single(diff(laser_power)>.1);
-laser_onsets = conv(laser_onsets,ones(for_conv,1),'same');
-laser_onsets = find(laser_onsets)+for_conv/2;
-artifact_time(laser_onsets) = 1;
-for_conv = 50;
-laser_onsets = single(diff(laser_power)<-.1);
-laser_onsets = conv(laser_onsets,ones(for_conv,1),'same');
-laser_onsets = find(laser_onsets)+for_conv/2;
-artifact_time(laser_onsets) = 1;
-end
      % filter the data into spiking and field potential band [300 6000]
-    ch_MUA = NaN(size(VoltageTraceInV_allCh));
-    for i_ch = 1:size(VoltageTraceInV_allCh,2)
-        ex_trace = VoltageTraceInV_allCh(:,i_ch);
-       if ~isempty(laser_power)
-            ex_trace = interp1(find(~artifact_time),ex_trace(~artifact_time),[1:length(ex_trace)]);
+    ch_MUA = NaN(size(vlt_chan));
+    for i_ch = 1:size(vlt_chan,2)
+        ex_trace = vlt_chan(:,i_ch);
+       if ~isempty(ch_ids.artifact)
+            ex_trace = interp1(find(~aux_chan(:,ch_ids.blank)),ex_trace(~aux_chan(:,ch_ids.blank)),[1:length(ex_trace)]);
        end
         ch_tmp = timeseries(ex_trace,TimeStamps);  
         ch_tmp = idealfilter(ch_tmp,filter_range,'pass');
         ch_MUA(:,i_ch) = ch_tmp.data;
     end
     
-       ch_MUA(1:199,:) = 0;
-       ch_MUA(end-199:end,:) = 0;
+    % Remove edge artifacts
+    ch_MUA(1:199,:) = 0;
+    ch_MUA(end-199:end,:) = 0;
+    aux_chan(1:199,ch_ids.blank) = 1;
+    aux_chan(end-199:end,ch_ids.blank) = 1;
+
 
     disp(['--------------------------------------------']);
 

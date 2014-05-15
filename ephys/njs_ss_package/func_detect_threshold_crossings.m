@@ -41,11 +41,13 @@ for i=1:nchan
     end
 end
 
-%% POOL ALL SPIKES
+%% POOL ALL SPIKES %list detected channel - then timestamp - then amplitude
 spikes_all = [];
 for ij = 1:nchan
     spikes_all = [spikes_all;[repmat(ij,length(spikes{ij,1}),1) spikes{ij,1}' spikes{ij,2}']];
 end
+
+%% Resort by time
 if isempty(spikes_all)~=1
 [B,IX] = sort(spikes_all(:,2));
 spikes_all = spikes_all(IX,:);

@@ -1,5 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SETUP CLUSTERING
 clear all
 %close all
@@ -10,29 +11,34 @@ ch_spikes = [1:2, 4:26, 30:31];
 
 base_dir = '/Users/sofroniewn/Documents/DATA/WGNR_DATA/anm_0221172/2014_02_21/run_09';
 base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_225493/2013_12_12/run_06';
+
+base_dir = '/Users/sofroniewn/Documents/DATA/ephys_ex/run_06';
 f_name_flag = '*_trial*.bin';
 file_nums = [1:5];
 over_write = 0;
 over_write_spikes = 0;
-over_write_cluster = 0;
+over_write_cluster = 1;
 cluster_name = 'klusters_data';
 
-file_list = func_list_files(base_dir,f_name_flag,file_nums);
+%%% TO PREPARE DATA FOR KLUSTERS
+file_list = func_spike_sort_klusters(base_dir,f_name_flag,file_nums,cluster_name,ch_common_noise,ch_spikes,over_write,over_write_spikes,over_write_cluster);
 
-func_concat_raw_voltages(base_dir,file_list,cluster_name);
+
+%%% TO EXTRACT CLU FILE
+sorted_spikes = extract_sorted_units_klusters(base_dir,cluster_name,over_write)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-%[ch_data] = func_spike_sort(base_dir,file_list,cluster_name,ch_common_noise,ch_spikes,over_write,over_write_spikes,over_write_cluster);
-[ch_data] = func_spike_sort_klusters(base_dir,file_list,cluster_name,ch_common_noise,ch_spikes,over_write,over_write_spikes,over_write_cluster);
 
-%% Start matclust
-cd('/Users/sofroniewn/Documents/code/external/matclust_v1.2')
-matclust(ch_data)
 
-%% Load clustered data
-load('/Users/sofroniewn/Documents/DATA/WGNR_DATA/anm_0221172/2014_02_21/run_09/ephys/sorted/matclust_sorted.mat')
-global clustattrib
-global clustdata
+
+
+
+
 
 %% Quick, global inspection of sorted data
 clust_id = 6;
@@ -122,10 +128,20 @@ spk = rand(100,1);
     fprintf(fid,res,'uint32')
     fclose(fid)
 
+%%%%%%%%%%%%%
 
 
 
+    fid = fopen([f_name_cluster 'aa.txt'],'w');
+    fprintf(fid,['%i\n'],size(ch_data.fet,2));
+    fmt = repmat('%i ',1,size(ch_data.fet,2)-1);
+    fprintf(fid,[fmt '%i\n'],ch_data.fet);
+    fclose(fid);
 
 
 
-
+    fid = fopen([f_name_cluster 'da.txt'],'w');
+    fprintf(fid,['%i\n'],size(ch_data.fet,2));
+    fmt = repmat('%i ',1,size(ch_data.fet,2)-1);
+    fprintf(fid,[fmt '%i\n'],ch_data.fet(1:2,:)');
+    fclose(fid);

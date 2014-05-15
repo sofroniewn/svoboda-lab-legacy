@@ -8,7 +8,6 @@ f_name_concat = fullfile(base_dir,'ephys','sorted',f_name_concat,[f_name_concat 
 %f_name_concat_fil = fullfile(base_dir,'ephys','sorted',f_name_concat,[f_name_concat '.fil']);
 
 
-
 fid_concat = fopen(f_name_concat,'w');
 %fid_concat_fil = fopen(f_name_concat_fil,'w');
 

@@ -1,8 +1,9 @@
-function [ch_data] = func_spike_sort_klusters(base_dir, file_list, cluster_name, ch_common_noise, ch_spikes, over_write, over_write_spikes, over_write_cluster)
+function file_list = func_spike_sort_klusters(base_dir, f_name_flag,file_nums, cluster_name, ch_common_noise, ch_spikes, over_write, over_write_spikes, over_write_cluster)
 %%
 disp(['--------------------------------------------']);
+file_list = func_list_files(base_dir,f_name_flag,file_nums);
+
 lite = 1;
-ch_data = [];
 total_inds = 0;
 f_name_cluster = fullfile(base_dir,'ephys','sorted',cluster_name,cluster_name);
 
@@ -17,6 +18,15 @@ else
         mkdir(fullfile(base_dir,'ephys','sorted',cluster_name));
     end
     
+    fid_spk = fopen([f_name_cluster '.spk' '.1'],'w');
+    fid_fet = fopen([f_name_cluster '.fet' '.1'],'w');
+    fid_res = fopen([f_name_cluster '.res' '.1'],'w');
+    fid_synch = fopen([f_name_cluster '.sync' '.1'],'w');
+    fid_clu = fopen([f_name_cluster '.clu' '.1'],'w');
+    
+    fid_dat = fopen([f_name_cluster '.dat'],'w');
+    fid_fil = fopen([f_name_cluster '.fil'],'w');
+
     for i_trial = 1:numel(file_list)
         disp(file_list{i_trial}); 
         f_name = fullfile(base_dir,'ephys','raw',file_list{i_trial});
@@ -39,31 +49,57 @@ else
             save(f_name_spikes,'s');
         end
         
-        disp(['PREPARE KLUSTERS FILE']);
-        [ch_data] = func_parse_klusters(ch_data,i_trial,s,p,d.TimeStamps,total_inds);
+        if i_trial == 1
+            num_fet = p.ch_ids.num_spike + 1;
+            fprintf(fid_fet,['%i\n'],num_fet);
+            fprintf(fid_clu,['%i\n'],1);
+        end
+ 
+    matrixVol = cat(2,d.vlt_chan,d.aux_chan(:,1:3));
+    matrixFil = cat(2,d.ch_MUA,d.aux_chan(:,1:3));
+
+    matrixVol = uint16(2^16*matrixVol/10 - (sign(matrixVol)-1)*2^15);
+    matrixFil = uint16(2^16*matrixFil/10 - (sign(matrixFil)-1)*2^15);
+
+    matrixVol = cat(2,matrixVol,i_trial+ones(length(d.TimeStamps),1),d.aux_chan(:,4:5));
+    matrixFil = cat(2,matrixFil,i_trial+ones(length(d.TimeStamps),1),d.aux_chan(:,4:5));
+
+    matrixVol = matrixVol(:);
+    matrixFil = matrixFil(:);
+
+    fwrite(fid_dat,matrixVol,'uint16');
+    fwrite(fid_fil,matrixFil,'uint16');
+
+
+        n_spk = length(s.index);
+        if n_spk > 1
+            disp(['PREPARE KLUSTERS FILE']);
+            [ch_data] = func_parse_klusters(i_trial,s,p,d.TimeStamps,total_inds);
+
+            disp(['SAVE KLUSTERS FILE']);
+            fwrite(fid_spk,ch_data.spk,'int16');
+
+            fmt = repmat('%i ',1,size(ch_data.fet,2)-1);
+            fprintf(fid_fet,[fmt '%i\n'],ch_data.fet');
+
+            fprintf(fid_clu,'%i\n',zeros(length(ch_data.res),1));
+
+            fprintf(fid_res,'%i\n',ch_data.res);
+
+            fmt = repmat('%i ',1,size(ch_data.sync,2)-1);
+            fprintf(fid_synch,[fmt '%i\n'],ch_data.sync');
+        end
         total_inds = total_inds + length(d.TimeStamps);
         disp(['--------------------------------------------']);
     end
     
-    disp(['SAVE KLUSTERS FILE']);
-
-    fid = fopen([f_name_cluster '.spk' '.1'],'w');
-    fwrite(fid,ch_data.spk,'int16');
-    fclose(fid);
-    
-    fid = fopen([f_name_cluster '.fet' '.1'],'w');
-    fprintf(fid,['%i\n'],size(ch_data.fet,2));
-    fmt = repmat('%i ',1,size(ch_data.fet,2)-1);
-    fprintf(fid,[fmt '%i\n'],ch_data.fet);
-    fclose(fid);
-
-    fid = fopen([f_name_cluster '.res' '.1'],'w');
-    fprintf(fid,'%i\n',ch_data.res);
-    fclose(fid);
-    
-    ch_data = ch_data.sync;
-    save([f_name_cluster '.mat'],'ch_data');
-
+    fclose(fid_spk);
+    fclose(fid_fet);
+    fclose(fid_res);
+    fclose(fid_synch);
+    fclose(fid_fil);
+    fclose(fid_dat);
+    fclose(fid_clu);
 end
 disp(['--------------------------------------------']);
 

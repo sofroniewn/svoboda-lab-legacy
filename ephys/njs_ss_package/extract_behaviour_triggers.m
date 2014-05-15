@@ -1,9 +1,17 @@
-function [start_ind start_time ephys_inds ephys_time] = extract_behaviour_triggers(d)
+function [aux_chan ch_ids start_ind] = extract_behaviour_triggers(aux_chan,ch_ids);
 
-	start_ind = find(d.Trigger_allCh>.5,1,'first');
-	clock_ticks = d.allOther_allCh(:,2) > .5;
-	ephys_inds = 1+find(diff(clock_ticks) == 1);
+	% find index of new file trigger
+	start_ind = find(aux_chan(:,ch_ids.file_trigger) > .5,1,'first');
+	% find index of all frame triggers
+	frame_trigs = aux_chan(:,ch_ids.frame_trigger) > .5;
+	frame_trigs = 1+find(diff(frame_trigs) == 1);
 
-	[val start_ind] = min(abs(ephys_inds - start_ind));
-	start_time = d.TimeStamps(ephys_inds(start_ind));
-	ephys_time = d.TimeStamps(ephys_inds);
+	% make vector with behaviour file trigger numbers
+	bv_frame_nums = zeros(size(aux_chan,1),1);
+	bv_frame_nums(frame_trigs) = 1;
+	bv_frame_nums = cumsum(bv_frame_nums);
+
+	bv_frame_nums = bv_frame_nums - bv_frame_nums(start_ind);
+
+	ch_ids.bv_frame_nums = size(aux_chan,2) + 1;
+	aux_chan = cat(2,aux_chan,bv_frame_nums);
