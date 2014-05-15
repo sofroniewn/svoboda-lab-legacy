@@ -3,8 +3,8 @@ function tuning_curve = plot_spike_raster_time_windows(clustnum,sorted_spikes,ex
 groups = extracted_times(:,6);
 num_groups = length(group_ids);
 
-spike_times = sorted_spikes{clustnum}.spike_inds(:,3);
-trials = sorted_spikes{clustnum}.spike_inds(:,1);
+spike_times = sorted_spikes{clustnum}.ephys_time;
+trials = sorted_spikes{clustnum}.trial_num;
 
 if plot_on
 	figure(14)

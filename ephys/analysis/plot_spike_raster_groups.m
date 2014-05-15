@@ -2,8 +2,8 @@ function plot_spike_raster_groups(clustnum,sorted_spikes,trial_range,groups,grou
 
 num_groups = length(group_ids);
 
-spike_times = sorted_spikes{clustnum}.spike_inds(:,3);
-trials = sorted_spikes{clustnum}.spike_inds(:,1);
+spike_times = sorted_spikes{clustnum}.ephys_time;
+trials = sorted_spikes{clustnum}.trial_num;
 
 spike_times(trials < trial_range(1)) = [];
 trials(trials < trial_range(1)) = [];
@@ -27,8 +27,10 @@ for i_group = 1:num_groups-1
     	spike_times_psth{i_trial,1} = spike_times(trials == trials_ids(i_trial))';
 	end
 	[psth t] = func_getPSTH(spike_times_psth,0,max_time);
-	plot(t(10:end-10),psth(10:end-10),'LineWidth',2,'Color',col_mat(i_group,:));
-	max_psth = max(max_psth,max(psth(10:end-10)));
+	if ~isempty(psth)
+		plot(t(10:end-10),psth(10:end-10),'LineWidth',2,'Color',col_mat(i_group,:));
+    	max_psth = max(max_psth,max(psth(10:end-10)));
+	end
 	tot_trials = tot_trials + length(trials_ids);
 end
 
@@ -44,8 +46,10 @@ for i_group = 1:num_groups-1
 		trials_group(trials_group == trials_ids(i_trial)) = i_trial;
 	end
 	spike_times_group = spike_times(ismember(trials,trials_ids));
-	plot(spike_times_group,prev_trials+(trials_group)*100/tot_trials,'.','Color',col_mat(i_group,:))
-	prev_trials = prev_trials + max(trials_group)*100/tot_trials + 1;
+	if ~isempty(spike_times_group)
+		plot(spike_times_group,prev_trials+(trials_group)*100/tot_trials,'.','Color',col_mat(i_group,:))
+		prev_trials = prev_trials + max(trials_group)*100/tot_trials + 1;
+	end
 end
 xlim([0 max_time])
 ylim([0 100+10+round(10*max_psth)/10+10])

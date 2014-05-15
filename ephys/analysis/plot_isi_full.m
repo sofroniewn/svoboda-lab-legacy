@@ -5,8 +5,8 @@ screen_position_left = [1, 1, screen_size(3)/2, screen_size(4)];
 screen_position_right = [1+screen_size(3)/2, 1, screen_size(3)/2, screen_size(4)];
 screen_position_across = [1, screen_size(4)*2/3, screen_size(4)/3, screen_size(4)/3];
 
-spike_times = sorted_spikes{clust_id}.spike_inds(:,3);
-trials = sorted_spikes{clust_id}.spike_inds(:,1);
+spike_times = sorted_spikes{clust_id}.ephys_time;
+trials = sorted_spikes{clust_id}.trial_num;
 
 spike_times(trials < trial_range(1)) = [];
 trials(trials < trial_range(1)) = [];

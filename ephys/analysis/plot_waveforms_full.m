@@ -6,7 +6,7 @@ screen_position_right = [1+screen_size(3)/2, 1, screen_size(3)/2, screen_size(4)
 screen_position_across = [1, screen_size(4)*2/3, screen_size(3), screen_size(4)/3];
 
 spike_wave_detect = sorted_spikes{clust_id}.spike_waves;
-trials = sorted_spikes{clust_id}.spike_inds(:,1);
+trials = sorted_spikes{clust_id}.trial_num;
 
 spike_wave_detect(trials < trial_range(1),:,:) = [];
 trials(trials < trial_range(1)) = [];

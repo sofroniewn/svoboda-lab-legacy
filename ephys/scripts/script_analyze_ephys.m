@@ -1,70 +1,29 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Set path to run
-clear all
-base_dir = '/Users/sofroniewn/Documents/DATA/WGNR_DATA/anm_0221172/2014_02_21/run_09';
-f_name_flag = '*_trial*.bin';
-file_nums = [1:100];
-file_list = func_list_files(base_dir,f_name_flag,file_nums);
-
-% Load in behaviour data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Load in behaviour data
 base_path_behaviour = fullfile(base_dir, 'behaviour');
 session = load_session_data(base_path_behaviour);
 session = parse_session_data(1,session);
 
-% Load in clustered data
-base_path_clustered = fullfile(base_dir, 'ephys', 'sorted');
-cur_file = dir(fullfile(base_path_clustered,'sorted_units*.mat'));
-f_name = fullfile(base_path_clustered,cur_file(1).name);
-load(f_name);
-
-% Load in laser power data
-cur_file = dir(fullfile(base_path_clustered,'laser_data*.mat'));
-f_name = fullfile(base_path_clustered,cur_file(1).name);
-load(f_name);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Inspect sorted units across entire session
-
-trial_range = [0 Inf];
-
-clust_id = 1;
-
-plot_spike_raster(clust_id,sorted_spikes,trial_range)
-plot_isi_full(clust_id,sorted_spikes,trial_range)
-plot_waveforms_full(clust_id,sorted_spikes,trial_range)
-plot_stability_full(clust_id,sorted_spikes,[])
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Synchronize in time
-
-[session] = sync_ephys_behaviour(base_dir,file_list,sync_trigs,session)
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Visualize unit data trial by trial
-
-trial_id = 9;
+trial_id = 1;
 [s p d] = load_ephys_trial(base_dir,file_list,trial_id);
-start_time = sync_trigs{trial_id}.start_time;
 
-clust_id = 2;
-spike_inds = sorted_spikes{clust_id}.spike_inds(:,1) == trial_id;
-spike_times = sorted_spikes{clust_id}.spike_inds(spike_inds,3);
-
-match_time = ~isnan(session.data{trial_id}.processed_matrix(6,:));
-
+clust_id = 1;
+spike_inds = sorted_spikes{clust_id}.trial_num == trial_id;
+spike_times = sorted_spikes{clust_id}.ephys_time(spike_inds);
 
 figure(43)
 clf(43)
 hold on
-plot(d.TimeStamps - start_time,-d.Trigger_allCh/5,'k')
-plot(session.data{trial_id}.processed_matrix(1,match_time),-d.Trigger_allCh(session.data{trial_id}.processed_matrix(6,match_time))/5,'k')
-plot(spike_times - start_time,0,'.k')
-plot(session.data{trial_id}.processed_matrix(1,:),-(1-session.data{trial_id}.trial_matrix(9,:)),'k')
-plot(session.data{trial_id}.processed_matrix(1,:),session.data{trial_id}.processed_matrix(5,:))
-plot(session.data{trial_id}.processed_matrix(1,:),session.data{trial_id}.trial_matrix(5,:),'Color', [1 .65 0])
+plot(d.TimeStamps,-d.aux_chan(:,3)/5,'k') % trial start
+plot(d.TimeStamps,-d.aux_chan(:,1)/5,'b') % laser power
+
+plot(spike_times,0,'.k') % plot spikes
+plot(session.data{trial_id}.processed_matrix(1,:),-(1-session.data{trial_id}.trial_matrix(9,:)),'r') % trial start
+plot(session.data{trial_id}.processed_matrix(1,:),session.data{trial_id}.trial_matrix(5,:),'g') % laser power
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -72,18 +31,13 @@ plot(session.data{trial_id}.processed_matrix(1,:),session.data{trial_id}.trial_m
 %% Plot across session ephys and behaviour data
 
 behaviour_vector = 20*session.trial_info.mean_speed;
-%behaviour_vector = 20*session.trial_info.max_laser_power;
-
+behaviour_vector = 20*session.trial_info.max_laser_power;
 plot_stability_full(clust_id,sorted_spikes,behaviour_vector);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Plot spike raster's, splitting according to trial types
-
-groups = round(laser_data.laser_power*10);
-group_ids = [unique(groups); Inf];
-col_mat = [0 0 0;.3 0 0; .6 0 0; 1 0 0];
 
 group_ids = [0 3 Inf];
 groups = session.trial_info.mean_speed;
@@ -98,7 +52,7 @@ groups = session.trial_info.forward_distance;
 groups(session.trial_info.max_laser_power > 0) = 150;
 col_mat = [0 0 0; 1 0 0; 0 1 0];
 
-clust_id = 2;
+clust_id = 1;
 trial_range = [1 30];
 
 plot_spike_raster_groups(clust_id,sorted_spikes,trial_range,groups,group_ids,col_mat);
@@ -107,7 +61,7 @@ plot_spike_raster_groups(clust_id,sorted_spikes,trial_range,groups,group_ids,col
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Across epoch rasters & PSTHs and tuning curves
 
-clust_id = 2;
+clust_id = 1;
 
 x_vars = cell(5,1);
 x_vars{1}.str = 'session.data{trial_id}.processed_matrix(5,:)';
@@ -175,6 +129,30 @@ plot_tuning_curves(tuning_curve)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
