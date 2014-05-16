@@ -1,5 +1,6 @@
 function sorted_spikes = extract_sorted_units_klusters(base_dir,sorted_name,overwrite)
 
+disp(['--------------------------------------------']);
 
 f_name_sorted_units = fullfile(base_dir,'ephys','sorted',[sorted_name '_sorted.mat']);
 
@@ -7,6 +8,7 @@ if overwrite == 0 && exist(f_name_sorted_units) == 2
     disp(['LOAD SORTED UNITS']);
     load(f_name_sorted_units);
 else
+disp(['EXTRACT SORTED UNITS']);
 
 
 f_name_sync = fullfile(base_dir,'ephys','sorted',sorted_name,[sorted_name '.sync.1']);
@@ -33,6 +35,7 @@ spike_waves = reshape(spike_waves,[num_chan-1,num_samps,num_spikes]);
 
 sorted_spikes = cell(1,num_clusters);
 for clust_id = 1:num_clusters
+	disp(['Cluster ' num2str(clust_id)]);
 	sorted_spikes{clust_id}.clust_id = clust_id-1;
 	spike_inds = cluster_ids == clust_id-1;
 	sorted_spikes{clust_id}.detected_chan = mode(sync_info(spike_inds,6));
@@ -45,4 +48,8 @@ for clust_id = 1:num_clusters
 	sorted_spikes{clust_id}.spike_waves = squeeze(spike_waves(sorted_spikes{clust_id}.detected_chan,:,spike_inds))'; %spike wave forms
 end
 	save(f_name_sorted_units,'sorted_spikes');
+disp(['SAVED SORTED UNITS']);
+disp(['--------------------------------------------']);
+
 end
+disp(['--------------------------------------------']);

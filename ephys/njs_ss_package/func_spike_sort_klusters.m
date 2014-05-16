@@ -1,8 +1,10 @@
-function file_list = func_spike_sort_klusters(base_dir, f_name_flag,file_nums, cluster_name, ch_common_noise, ch_spikes, over_write, over_write_spikes, over_write_cluster)
+function file_list = func_spike_sort_klusters(base_dir, f_name_flag,file_nums, cluster_name, over_write, over_write_spikes, over_write_cluster)
 %%
 disp(['--------------------------------------------']);
 file_list = func_list_files(base_dir,f_name_flag,file_nums);
 
+ch_common_noise = [1:32];
+ch_spikes = [1:32];
 lite = 1;
 total_inds = 0;
 f_name_cluster = fullfile(base_dir,'ephys','sorted',cluster_name,cluster_name);
