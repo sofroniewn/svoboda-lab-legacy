@@ -3,15 +3,17 @@ function [ch_data] = func_parse_klusters(i_trial,s,p,TimeStamps,total_inds)
 disp(['--------------------------------------------']);
 disp(['parse for klusters file']);
 
-    
+    keyboard
     % convert waveform to linear in klusters format and rescale voltages
     waveform_tmp = s.waveforms;
     waveform_tmp = permute(waveform_tmp,[3 2 1]);
     waveform_tmp = waveform_tmp(:);
+    waveform_tmp(isnan(waveform_tmp)) = .15*10^(-3);
     waveform_tmp = int16(waveform_tmp*p.gain/10*2^(16));
 
     % Extract amplitudes
     spike_amp = s.amplitudes;
+    spike_amp(isnan(spike_amp)) = -.6*10^(-3);
     spike_amp(spike_amp>.15*10^(-3)) = .15*10^(-3);
     spike_amp(spike_amp<-.6*10^(-3)) = -.6*10^(-3);
     spike_amp = -spike_amp;

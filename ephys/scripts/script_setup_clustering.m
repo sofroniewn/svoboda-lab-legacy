@@ -16,8 +16,8 @@ file_nums = [1:3];
 cluster_name = 'klusters_data';
 
 %% TO PREPARE DATA FOR KLUSTERS
-over_write_vlt = 1;
-over_write_spikes = 1;
+over_write_vlt = 0;
+over_write_spikes = 0;
 over_write_klusters = 1;
 file_list = func_spike_sort_klusters(base_dir,f_name_flag,file_nums,cluster_name,over_write_vlt,over_write_spikes,over_write_klusters);
 

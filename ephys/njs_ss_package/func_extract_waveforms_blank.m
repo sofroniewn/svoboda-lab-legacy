@@ -33,7 +33,7 @@ intspikes_clean = intspikes;
 for j = 1:nspk
     tmp_chan = all_chan;
     tmp_chan(max(spikes_trim(j,2)-2,1):min(spikes_trim(j,3)+2,nchan)) = [];
-    intspikes_clean(j,:,tmp_chan) = 2.0*10^(-4);
+    intspikes_clean(j,:,tmp_chan) = NaN;
 end
 
 %% Realign spikes to maximum after interpolation
