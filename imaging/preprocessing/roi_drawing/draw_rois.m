@@ -9,7 +9,7 @@ if isfield(im_session.ref,'roi_array') == 0 || overwrite == 1;
 		im_session.ref.roi_array{ij}.masterImage = single(im_session.ref.base_images{ij});
 		im_session.ref.roi_array{ij}.roiIdRange = [1 10000] + 10000*(ij-1);
 		im_session.ref.roi_array{ij}.settings.selectedColor = [1 .5 0];
-		im_session.ref.roi_array{plot_planes}.workingImageSettings.pixelRange = {['[' num2str(0) ' ' num2str(1) ']']};
+		im_session.ref.roi_array{ij}.workingImageSettings.pixelRange = {['[' num2str(0) ' ' num2str(1) ']']};
 		%im_session.ref.roi_array{ij}.workingImageMouseClickFunction = {@axes_images_ButtonDownFcn};
 		%im_session.ref.roi_array{ij}.workingImageMouseClickFunction = {@figure1_KeyPressFcn};
 		%im_session.ref.roi_array{ij}.workingImageMouseClickFunction = {@obj.guiMouseClickProcessor};

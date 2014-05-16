@@ -42,7 +42,10 @@ execfile('/groups/svoboda/home/sofroniewn/thunder/helper/thunder-startup.py')
 % load data
 data = load(sc,'/groups/svoboda/wdbp/imreg/sofroniewn/anm_0227254/2013_12_12/run_02/session/Text_images_*.txt','raw',4)
 data = load(sc,'/groups/svoboda/wdbp/imreg/sofroniewn/anm_0238004/2014_04_27/run_01/session/Text_images_*.txt','raw',4)
-stats, betas = regress(data, "/groups/svoboda/wdbp/imreg/sofroniewn/anm_0238004/2014_04_27/run_01/session/Text_behaviour_corPos", "linear")
+data = load(sc,'/groups/svoboda/wdbp/imreg/sofroniewn/anm_0245496/2014_05_13/run_01/session/Text_images_*.txt','raw',4)
+
+stats, betas = regress(data, "/groups/svoboda/wdbp/imreg/sofroniewn/anm_0245496/2014_05_13/run_01/session/Text_behaviour_corPos", "linear")
+tune = tuning(betas,"/groups/svoboda/wdbp/imreg/sofroniewn/anm_0245496/2014_05_13/run_01/session/Text_behaviour_corPos", "gaussian")
 
 % drop channel key
 data = data.map(lambda (k, v): (k[0:3], v))
@@ -51,6 +54,7 @@ data.cache()
 
 % import stats package
 from thunder.sigprocessing.stats import stats
+from thunder.regression.tuning import tuning
 
 % run mean
 vals = stats(data,'mean')
