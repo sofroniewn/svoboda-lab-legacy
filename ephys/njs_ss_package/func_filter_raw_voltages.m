@@ -16,10 +16,10 @@ function [ch_MUA aux_chan] = func_filter_raw_voltages(TimeStamps, vlt_chan, aux_
     end
     
     % Remove edge artifacts
-    ch_MUA(1:199,:) = 0;
-    ch_MUA(end-199:end,:) = 0;
-    aux_chan(1:199,ch_ids.blank) = 1;
-    aux_chan(end-199:end,ch_ids.blank) = 1;
+    ch_MUA(1:999,:) = 0;
+    ch_MUA(end-999:end,:) = 0;
+    aux_chan(1:999,ch_ids.blank) = 1;
+    aux_chan(end-999:end,ch_ids.blank) = 1;
 
 
     disp(['--------------------------------------------']);

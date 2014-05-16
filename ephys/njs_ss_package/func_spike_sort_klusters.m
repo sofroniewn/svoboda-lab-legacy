@@ -55,14 +55,14 @@ else
             fprintf(fid_clu,['%i\n'],1);
         end
  
-    matrixVol = cat(2,d.vlt_chan,d.aux_chan(:,1:3));
-    matrixFil = cat(2,d.ch_MUA,d.aux_chan(:,1:3));
+    matrixVol = cat(2,d.vlt_chan*p.gain,d.aux_chan(:,1:3));
+    matrixFil = cat(2,d.ch_MUA*p.gain,d.aux_chan(:,1:3));
 
-    matrixVol = uint16(2^16*matrixVol/10 - (sign(matrixVol)-1)*2^15);
-    matrixFil = uint16(2^16*matrixFil/10 - (sign(matrixFil)-1)*2^15);
+    matrixVol = uint16(2^16*(matrixVol/10 + (matrixVol<0)));
+    matrixFil = uint16(2^16*(matrixFil/10 + (matrixFil<0)));
 
-    matrixVol = cat(2,matrixVol,i_trial+ones(length(d.TimeStamps),1),d.aux_chan(:,4:5));
-    matrixFil = cat(2,matrixFil,i_trial+ones(length(d.TimeStamps),1),d.aux_chan(:,4:5));
+    matrixVol = cat(2,matrixVol,file_nums(i_trial)+ones(length(d.TimeStamps),1),d.aux_chan(:,4:5))';
+    matrixFil = cat(2,matrixFil,file_nums(i_trial)+ones(length(d.TimeStamps),1),d.aux_chan(:,4:5))';
 
     matrixVol = matrixVol(:);
     matrixFil = matrixFil(:);
@@ -70,11 +70,10 @@ else
     fwrite(fid_dat,matrixVol,'uint16');
     fwrite(fid_fil,matrixFil,'uint16');
 
-
         n_spk = length(s.index);
         if n_spk > 1
             disp(['PREPARE KLUSTERS FILE']);
-            [ch_data] = func_parse_klusters(i_trial,s,p,d.TimeStamps,total_inds);
+            [ch_data] = func_parse_klusters(file_nums(i_trial),s,p,d.TimeStamps,total_inds);
 
             disp(['SAVE KLUSTERS FILE']);
             fwrite(fid_spk,ch_data.spk,'int16');

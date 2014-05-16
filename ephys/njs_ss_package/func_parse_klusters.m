@@ -15,7 +15,7 @@ disp(['parse for klusters file']);
     spike_amp(spike_amp>.15*10^(-3)) = .15*10^(-3);
     spike_amp(spike_amp<-.6*10^(-3)) = -.6*10^(-3);
     spike_amp = -spike_amp;
-    spike_amp = int16(spike_amp*p.gain/10*2^(16));
+    spike_amp = round(spike_amp*p.gain/10*2^(16));
 
 
     trials_tmp = double(zeros(length(s.index),1)+i_trial);

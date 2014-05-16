@@ -39,6 +39,7 @@ plot_spike_raster(clust_id,sorted_spikes,trial_range)
 plot_isi_full(clust_id,sorted_spikes,trial_range)
 plot_waveforms_chan(clust_id,sorted_spikes,trial_range)
 plot_stability_full(clust_id,sorted_spikes,[])
+plot_waveforms_chan_norm(clust_id,sorted_spikes,trial_range)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
