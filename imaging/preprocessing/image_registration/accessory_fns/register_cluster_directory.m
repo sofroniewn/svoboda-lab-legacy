@@ -30,9 +30,20 @@ function register_cluster_directory(data_dir,file_num)
 	num_planes = ref.im_props.numPlanes;
 	num_chan = ref.im_props.nchans;
 
+replace_start = strfind(base_name,'main');
+replace_end = replace_start+4;
+trial_str = base_name(replace_end:end);
+base_name = base_name(1:replace_start-1);
+
+type_name = 'summary';
+file_name = [base_name type_name trial_str];
+summary_file_name = fullfile(data_dir,type_name,[file_name '.mat']);
+
+overwrite = 1;
+
 % if overwrite is off and summary file exists load it in
-%if overwrite ~= 1 && exist(summary_file_name) == 2
-%else % Otherwise register file
+if ~overwrite && exist(summary_file_name) == 2
+else % Otherwise register file
     fprintf('Loading images\n')
     opt.data_type = 'uint16';
     [im_raw improps] = load_image_fast(cur_file,opt);
@@ -51,8 +62,8 @@ function register_cluster_directory(data_dir,file_num)
     % save registered data
 	fprintf('Saving registered images\n')
 	save_text_on = 0;
-    save_registered_data(data_dir,base_name,trial_str,im_shifted,num_planes,num_chan,text_dir,trial_data,save_registered_on,save_text_on);
-%end
+    save_registered_data(data_dir,base_name,trial_str,im_shifted,num_planes,num_chan,[],0,[],1,0);
+end
 
 	fprintf('DONE\n');
 end
