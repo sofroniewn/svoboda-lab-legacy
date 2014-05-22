@@ -54,14 +54,13 @@ else % Otherwise register file
     
     % summarize images
     fprintf('Summarizing images\n')
-    im_summary = sumarize_images(improps,im_raw,im_shifted,shifts_raw,trial_num);
+    im_summary = sumarize_images(improps,im_raw,im_shifted,shifts,str2num(file_num));
       
     % save summary data
     save(summary_file_name,'im_summary');
     
     % save registered data
 	fprintf('Saving registered images\n')
-	save_text_on = 0;
     save_registered_data(data_dir,base_name,trial_str,im_shifted,num_planes,num_chan,[],0,[],1,0);
 end
 
