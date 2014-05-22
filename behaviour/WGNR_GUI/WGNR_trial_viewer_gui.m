@@ -519,7 +519,7 @@ start_path = handles.datastr;
 folder_name = uigetdir(start_path);
 
 if folder_name ~= 0
-    handles.data_dir = folder_name;
+    handles.data_dir = fullfile(folder_name,'behaviour');
     clear global session
     global session;
     session = load_session_data(handles.data_dir);

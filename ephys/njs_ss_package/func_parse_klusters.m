@@ -3,7 +3,6 @@ function [ch_data] = func_parse_klusters(i_trial,s,p,TimeStamps,total_inds)
 disp(['--------------------------------------------']);
 disp(['parse for klusters file']);
 
-    keyboard
     % convert waveform to linear in klusters format and rescale voltages
     waveform_tmp = s.waveforms;
     waveform_tmp = permute(waveform_tmp,[3 2 1]);

@@ -811,7 +811,7 @@ set(handles.slider_trial_num,'Value',val);
 set(handles.edit_trial_num,'String',num2str(val));
 
 plot_im_gui(handles,0);
-
+plot_trial_ts(val)
 
 % --- Executes during object creation, after setting all properties.
 function slider_trial_num_CreateFcn(hObject, eventdata, handles)
@@ -1211,15 +1211,19 @@ if exist(f_names_ca) == 2 && exist(f_names_bv) == 2
  
     global handles_roi_ts;
     handles_roi_ts.fig = figure(1);
+    handles_roi_ts.gui_fig = handles.figure1;
     clf(1);
     set(handles_roi_ts.fig,'Position',[0 629 1432 177])
     set(handles_roi_ts.fig,'Name','ROI Time Series')
+    handles_roi_ts.text_roi = text(session_ca.time(end)*1.1,2.5,['ROI ' num2str(0)]);
     handles_roi_ts.axes = gca;
     hold on
     handles_roi_ts.plot_bv = plot(session_ca.time,zeros(length(session_ca.time),1),'k');
     handles_roi_ts.plot_roi = plot(session_ca.time,zeros(length(session_ca.time),1),'b');    
+    handles_roi_ts.plot_trial = plot([0 0],[-.4 -.4],'k','LineWidth',2);    
+    ylim([-.5 5])
     xlabel('Time (s)')
-    figure(handles.figure1);
+    figure(handles_roi_ts.gui_fig);
     popupmenu_spark_regressors_Callback(handles.popupmenu_spark_regressors, eventdata, handles)
 
 else

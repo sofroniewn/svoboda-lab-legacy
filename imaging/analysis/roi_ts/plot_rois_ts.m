@@ -5,6 +5,7 @@ global session_bv;
 global session_ca;
 global handles_roi_ts;
 
+if ~isempty(session_ca)
 
 if ~isempty(handles_roi_ts)
     if ishandle(handles_roi_ts.axes)
@@ -23,8 +24,12 @@ else
 	y_data = zeros(size(x_data));
 	tRoi
 end
-
+%figure(1)
 set(handles_roi_ts.plot_roi,'ydata',y_data)
+set(handles_roi_ts.text_roi,'str',['ROI ' num2str(roi_id)])
+
+%    figure(handles_roi_ts.gui_fig);
 
     end
+end
 end

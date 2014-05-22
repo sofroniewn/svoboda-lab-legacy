@@ -275,13 +275,86 @@ all_dat = [y;x;z;dat];
 toc
 
 %% TEXT WRITING
-a = uint16(round(500*rand(74,1048576)));
+all_dat = uint16(round(500*rand(74,1048576)))+1; % 10 seconds of 512 x 512 x 4 data
+%%% 155 MB - takes 20 s with fprintf - takes 150ms with fwrite
+
+all_dat = uint16(round(500*rand(30,70))); % 10 seconds of 512 x 512 x 4 data
+
 
 tic;
-f = fopen('test.txt','w');
-fmt = repmat('%u ',1,tSize+2);
+f = fopen('test.txt','W');
+fmt = repmat('%u ',1,size(all_dat,1)-1);
 fprintf(f,[fmt,'%u\n'],all_dat);
 toc
+
+
+
+
+tic;
+fmt = repmat('%u ',1,size(all_dat,1)-1);
+aa = sprintf([fmt,'%u\n'],all_dat);
+f = fopen('test9.txt','w');
+fprintf(f,['%s'],aa);
+toc
+
+all_dat_R = all_dat(:);
+
+C = char.empty(0,7);
+
+tic;
+fmt = repmat('%u ',1,size(all_dat,1)-1);
+fmt = [fmt,'%u\n'];
+f = fopen('test99.txt','w');
+aa = char(zeros(1,293457260));
+start_ind = 0;
+for ij = 1:size(all_dat,2)
+	bb = sprintf(fmt,all_dat(:,ij));
+	aa(start_ind+1:start_ind+length(bb));
+	start_ind = start_ind + length(bb);
+end
+fprintf(f,['%s'],aa);
+toc
+
+dim = 4096;
+C = cell(1,dim);
+for ij = 1:dim
+%	C{ij} = [num2str(ij) ' '];
+	C{ij} = [num2str(ij)];
+end
+
+tic
+all_dat_R = all_dat(:);
+all_dat_str = C(all_dat_R);
+toc
+[all_dat_str{:}];
+
+ 
+tic
+qq = [pp{:}];
+toc
+tic
+qq = CStr2String(all_dat_str,' ');
+toc
+
+
+tic;
+fmt = repmat('%s',1,size(all_dat_str,1)-1);
+aa = sprintf([fmt,'%s\n'],all_dat_str);
+f = fopen('test9.txt','w');
+fprintf(f,['%s'],aa);
+toc
+
+bb = all_dat_str(:);
+
+
+tic;
+writeTextFast(double(all_dat),'test.txt')
+toc
+
+tic;
+writeIntToText(all_dat,'test2.txt')
+toc
+
 
 tic; save('test4.txt','all_dat'); toc
 
@@ -289,6 +362,20 @@ tic;
 f = fopen('test6.bin','w');
 fwrite(f,[all_dat],'uint16');
 toc
+
+
+all_dat_2 = double(all_dat);
+
+tic; writeTextFast(all_dat,'test5.txt'); toc
+
+tic;t = sprintf('%d\n',foo);toc
+Elapsed time is 14.609328 seconds.
+tic;fprintf(f,t);toc
+Elapsed time is 2.059919 seconds.
+
+
+
+
 
 
 tic;

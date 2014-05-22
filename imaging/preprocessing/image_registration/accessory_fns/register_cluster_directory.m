@@ -31,8 +31,8 @@ function register_cluster_directory(data_dir,file_num)
 	num_chan = ref.im_props.nchans;
 
 % if overwrite is off and summary file exists load it in
-if overwrite ~= 1 && exist(summary_file_name) == 2
-else % Otherwise register file
+%if overwrite ~= 1 && exist(summary_file_name) == 2
+%else % Otherwise register file
     fprintf('Loading images\n')
     opt.data_type = 'uint16';
     [im_raw improps] = load_image_fast(cur_file,opt);
@@ -52,7 +52,7 @@ else % Otherwise register file
 	fprintf('Saving registered images\n')
 	save_text_on = 0;
     save_registered_data(data_dir,base_name,trial_str,im_shifted,num_planes,num_chan,text_dir,trial_data,save_registered_on,save_text_on);
-end
+%end
 
 	fprintf('DONE\n');
 end

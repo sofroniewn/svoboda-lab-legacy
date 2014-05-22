@@ -133,6 +133,7 @@ for ij = num_old_files + 1: numel(cur_files_reg)
         set(handles.edit_trial_num,'String',num2str(ij));
         set(handles.slider_trial_num,'Value',ij);
         plot_im_gui(handles,0);
+        plot_trial_ts(ij);
     end
     
     time_elapsed = toc;
