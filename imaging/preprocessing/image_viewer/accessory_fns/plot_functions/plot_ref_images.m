@@ -1,4 +1,4 @@
-function [im_comb clim cmap_str] = plot_ref_images(im_session,ref,trial_num,chan_num,plot_planes,clim,c_lim_overlay)
+function [im_comb clim cmap_str] = plot_ref_images(im_session,ref,trial_num,chan_num,plot_planes,clim,c_lim_overlay,streaming_mode)
 
 cmap_str = 'gray';
 

@@ -360,7 +360,7 @@ tic; save('test4.txt','all_dat'); toc
 
 tic;
 f = fopen('test6.bin','w');
-fwrite(f,[all_dat],'uint16');
+fwrite(f,[all_dat'],'uint16');
 toc
 
 

@@ -1,16 +1,10 @@
 function update_image_viewer(obj,event,handles)
 
 % Check spark output directory
-%cur_file = dir(fullfile(handles.base_path,'behaviour','*_rig_config.mat'));
-%if numel(cur_file)>0
-%    cur_bv_files = dir(fullfile(handles.base_path,'behaviour','*_trial_*.mat'));
-%    val = get(handles.text_num_behaviour,'UserData');
-%    if numel(cur_bv_files)-1 > val
-%        set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(cur_bv_files)-1)]);
-%        set(handles.text_num_behaviour,'UserData',numel(cur_bv_files)-1)
-%    end
-%end
-
+update_plot = load_spark_maps_streaming(handles.output_dir);
+if update_plot
+    plot_im_gui(handles,0);
+end
 
 % Check imaging directory
 global im_session;
@@ -42,8 +36,8 @@ else
     num_old_files = 0;
 end
 
-    num_planes = im_session.ref.im_props.numPlanes;
-    num_chan = im_session.ref.im_props.nchans;
+num_planes = im_session.ref.im_props.numPlanes;
+num_chan = im_session.ref.im_props.nchans;
 
 cur_size = length(im_session.reg.nFrames);
 target_size = numel(cur_files_reg);
@@ -80,10 +74,10 @@ for ij = num_old_files + 1: numel(cur_files_reg)
         end
     catch
         %	display('Failed to read new summary')
-            im_session.reg.nFrames(ij:end) = [];
-            im_session.reg.startFrame(ij:end) = [];
-            im_session.reg.raw_mean(:,:,:,:,ij:end) = [];
-            im_session.reg.align_mean(:,:,:,:,ij:end) = [];
+        im_session.reg.nFrames(ij:end) = [];
+        im_session.reg.startFrame(ij:end) = [];
+        im_session.reg.raw_mean(:,:,:,:,ij:end) = [];
+        im_session.reg.align_mean(:,:,:,:,ij:end) = [];
         return
     end
     
@@ -97,7 +91,7 @@ for ij = num_old_files + 1: numel(cur_files_reg)
     end
     im_session.reg.nFrames(ij) = im_summary.props.num_frames;
     im_session.reg.startFrame(ij) = im_summary.props.firstFrame;
-
+    
     % extract behaviour information if necessary
     %if behaviour_val == 1
     %	trial_num_im_session = ij;
@@ -143,18 +137,18 @@ for ij = num_old_files + 1: numel(cur_files_reg)
     drawnow
 end
 
-    if add_size > 0
-        for ih = 1:num_chan
-            for ik = 1:num_planes
-                % extract mean images and summary data for each plane
-                im_session.ref.session_mean{ik,ih} = mean(im_session.reg.align_mean(:,:,ik,ih,:),5);
-                im_session.ref.session_max_proj{ik,ih} = max(im_session.reg.align_mean(:,:,ik,ih,:),[],5);
-            end
+if add_size > 0
+    for ih = 1:num_chan
+        for ik = 1:num_planes
+            % extract mean images and summary data for each plane
+            im_session.ref.session_mean{ik,ih} = mean(im_session.reg.align_mean(:,:,ik,ih,:),5);
+            im_session.ref.session_max_proj{ik,ih} = max(im_session.reg.align_mean(:,:,ik,ih,:),[],5);
         end
-        session_mean_images = im_session.ref.session_mean;
-        session_max_proj_images = im_session.ref.session_max_proj;
-        save(fullfile(im_session.basic_info.data_dir,'ref_means.mat'),'session_mean_images','session_max_proj_images');
     end
+    session_mean_images = im_session.ref.session_mean;
+    session_max_proj_images = im_session.ref.session_max_proj;
+    save(fullfile(im_session.basic_info.data_dir,'ref_means.mat'),'session_mean_images','session_max_proj_images');
+end
 
 time_elapsed = toc;
 time_elapsed_str = sprintf('Time online %.1f s',time_elapsed);

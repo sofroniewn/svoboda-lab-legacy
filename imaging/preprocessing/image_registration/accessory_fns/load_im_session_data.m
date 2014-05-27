@@ -50,6 +50,11 @@ im_session.basic_info.cur_files = dir(fullfile(im_session.basic_info.data_dir,'*
 		mkdir(folder_name);
 	end
 
-
+	% Directory for text data
+	type_name = 'behaviour';
+	folder_name = fullfile(im_session.basic_info.data_dir,type_name);
+	if exist(folder_name) ~= 7
+		mkdir(folder_name);
+	end
 
 end

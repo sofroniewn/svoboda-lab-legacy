@@ -54,6 +54,7 @@ else
         if i_trial == 1
             num_fet = p.ch_ids.num_spike + 1;
             fprintf(fid_fet,['%i\n'],num_fet);
+            %dlmwrite([f_name_cluster '.fet' '.1'],num_fet);
             fprintf(fid_clu,['%i\n'],1);
         end
  
@@ -81,7 +82,8 @@ else
             fwrite(fid_spk,ch_data.spk,'int16');
 
             fmt = repmat('%i ',1,size(ch_data.fet,2)-1);
-            fprintf(fid_fet,[fmt '%i\n'],ch_data.fet');
+            fprintf(fid_fet,[fmt ' %i\n'],ch_data.fet');
+            %dlmwrite([f_name_cluster '.fet' '.1'],ch_data.fet','-append');
 
             fprintf(fid_clu,'%i\n',zeros(length(ch_data.res),1));
 
@@ -103,7 +105,6 @@ else
     fclose(fid_clu);
 end
 disp(['--------------------------------------------']);
-
 
 
 

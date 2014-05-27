@@ -58,9 +58,9 @@ handles.datastr = pwd;
 
 set(handles.pushbutton_set_output_dir,'enable','off')
 set(handles.togglebutton_start,'enable','off')
-set(handles.edit_num_frames,'enable','off')
+%set(handles.edit_num_frames,'enable','off')
 set(handles.checkbox_overwrite,'enable','off')
-set(handles.text_num_frames,'enable','off')
+%set(handles.text_num_frames,'enable','off')
 set(handles.text_time,'enable','off')
 set(handles.text_done,'enable','off')
 
@@ -91,12 +91,27 @@ folder_name = uigetdir(start_path);
 
 if folder_name ~= 0
 	handles.data_dir = folder_name;
-	handles.output_dir = folder_name;
+	handles.output_dir = fullfile(folder_name,'scanimage','streaming');
+
+% Check number of imaging files
+global im_conv_session;
+cur_files = dir(fullfile(handles.data_dir,'scanimage','summary','*_summary_*.mat'));
+im_conv_session.cur_files = cur_files;
+overwrite = get(handles.checkbox_overwrite,'value');
+if overwrite
+	im_conv_session.num_conv = 0;
+else
+	cur_files = dir(fullfile(handles.output_dir,'*.bin'));
+	im_conv_session.num_conv = numel(cur_files);
+end
+
+    set(handles.text_done,'String',['Files converted ' num2str(im_conv_session.num_conv) '/' num2str(numel(im_conv_session.cur_files))]);
+
 	set(handles.togglebutton_start,'enable','on')
 	set(handles.pushbutton_set_output_dir,'enable','on')
-	set(handles.edit_num_frames,'enable','on')
+	%set(handles.edit_num_frames,'enable','on')
 	set(handles.checkbox_overwrite,'enable','on')
-	set(handles.text_num_frames,'enable','on')
+	%set(handles.text_num_frames,'enable','on')
 	set(handles.text_done,'enable','on')
 
 	guidata(hObject, handles);
@@ -111,8 +126,20 @@ start_path = handles.datastr;
 folder_name = uigetdir(start_path);
 
 if folder_name ~= 0
-	handles.output_dir = folder_name;
-    guidata(hObject, handles);
+    handles.output_dir = fullfile(folder_name,'streaming');
+
+% Check number of imaging files
+global im_conv_session;
+overwrite = get(handles.checkbox_overwrite,'value');
+if overwrite
+	im_conv_session.num_conv = 0;
+else
+	cur_files = dir(fullfile(handles.output_dir,'*.bin'));
+	im_conv_session.num_conv = numel(cur_files);
+end
+
+
+guidata(hObject, handles);
 end
 
 % --- Executes on button press in togglebutton_start.
@@ -129,11 +156,31 @@ value = get(hObject,'Value');
 if value == 1
     tic;
 
+	if exist(handles.output_dir) ~= 7
+		mkdir(handles.output_dir)
+	end
+
+    ref_files = dir(fullfile(handles.data_dir,'scanimage','ref_images_*.mat'));
+    if numel(ref_files) > 0
+        load(fullfile(handles.data_dir,'scanimage',ref_files(1).name));
+        im_props = ref.im_props;
+    else
+        display('No reference images found, use defaults')
+        im_props.nchans = 1;
+	    im_props.numPlanes = 4;
+        im_props.height = 512;
+        im_props.width = 512;
+    end
+
+	varNames = {'corPos'};
+	binVals = {[0:2:30]};
+	save_streaming_config(handles.output_dir,varNames,binVals,im_props);
+
 	set(handles.pushbutton_set_dir,'enable','off')
 	set(handles.pushbutton_set_output_dir,'enable','off')
-	set(handles.edit_num_frames,'enable','off')
+	%set(handles.edit_num_frames,'enable','off')
 	set(handles.checkbox_overwrite,'enable','off')
-	set(handles.text_num_frames,'enable','off')
+	%set(handles.text_num_frames,'enable','off')
     
     % Setup timer
     set(handles.text_time,'Enable','on')
@@ -155,35 +202,13 @@ else
     
  	set(handles.pushbutton_set_dir,'enable','on')
 	set(handles.pushbutton_set_output_dir,'enable','on')
-	set(handles.edit_num_frames,'enable','on')
+	%set(handles.edit_num_frames,'enable','on')
 	set(handles.checkbox_overwrite,'enable','on')
-	set(handles.text_num_frames,'enable','on')  
+	%set(handles.text_num_frames,'enable','on')  
     
     time_elapsed_str = sprintf('Time online %.1f s',0);
     set(handles.text_time,'String',time_elapsed_str)
     set(handles.text_time,'Enable','off')
-end
-
-
-function edit_num_frames_Callback(hObject, eventdata, handles)
-% hObject    handle to edit_num_frames (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit_num_frames as text
-%        str2double(get(hObject,'String')) returns contents of edit_num_frames as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit_num_frames_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit_num_frames (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
 end
 
 
@@ -194,3 +219,13 @@ function checkbox_overwrite_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkbox_overwrite
+% Check number of imaging files
+global im_conv_session;
+overwrite = get(handles.checkbox_overwrite,'value');
+if overwrite
+	im_conv_session.num_conv = 0;
+else
+	cur_files = dir(fullfile(handles.output_dir,'*.bin'));
+	im_conv_session.num_conv = numel(cur_files);
+end
+    set(handles.text_done,'String',['Files converted ' num2str(im_conv_session.num_conv) '/' num2str(numel(im_conv_session.cur_files))]);

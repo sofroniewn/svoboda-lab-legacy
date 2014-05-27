@@ -127,10 +127,19 @@ if folder_name ~= 0
     global session;
     session = [];
     session.data = [];
-    
+
     clear global remove_first;
+    clear global scim_first_offset;
+    global remove_first;
+    global scim_first_offset;
+    scim_first_offset = 0;
     remove_first = 0;
-    
+    if exist(fullfile(handles.data_dir,'sync_offsets.mat')) == 2
+        sync_data = load(fullfile(handles.data_dir,'sync_offsets.mat'));
+        remove_first = sync_data.remove_first;
+        scim_first_offset = sync_data.scim_first_offset;
+    end
+
     clear global session_ca;
     global session_ca;
     

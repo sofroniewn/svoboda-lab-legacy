@@ -48,8 +48,8 @@ else % Otherwise register file
     save(summary_file_name,'im_summary');
 end
 
-im_session.reg.nFrames = cat(1,im_session.reg.nFrames, im_summary.props.num_frames);
-im_session.reg.startFrame = cat(1,im_session.reg.startFrame, im_summary.props.firstFrame);
+    im_session.reg.nFrames = cat(1,im_session.reg.nFrames, im_summary.props.num_frames);
+    im_session.reg.startFrame = cat(1,im_session.reg.startFrame, im_summary.props.firstFrame);
 
 % extract behaviour information if necessary
 if behaviour_on
@@ -64,6 +64,13 @@ if behaviour_on
     trial_data_raw = session.data{trial_num_session};
     scim_frame_trig = im_summary.behaviour.align_vect;
     [trial_data data_variable_names] = parse_behaviour2im(trial_data_raw,trial_num_session,scim_frame_trig);
+
+    type_name = 'behaviour';
+    file_name = [base_name type_name trial_str];
+    behaviour_file_name = fullfile(data_dir,type_name,[file_name '.mat']);
+    if overwrite || exist(behaviour_file_name) ~= 2
+        save(behaviour_file_name,'trial_data','data_variable_names','trial_num_session');
+    end
 else
     trial_data = [];
 end

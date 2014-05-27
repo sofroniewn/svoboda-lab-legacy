@@ -1,4 +1,4 @@
-function [im_comb clim cmap_str] = plot_session_max_proj_aligned(im_session,ref,trial_num,chan_num,plot_planes,clim,c_lim_overlay)
+function [im_comb clim cmap_str] = plot_session_max_proj_aligned(im_session,ref,trial_num,chan_num,plot_planes,clim,c_lim_overlay,streaming_mode)
 
 cmap_str = 'gray';
 num_planes = length(plot_planes);

@@ -22,7 +22,7 @@ function varargout = image_viewer_GUI(varargin)
 
 % Edit the above text to modify the response to help image_viewer_GUI
 
-% Last Modified by GUIDE v2.5 09-May-2014 13:25:09
+% Last Modified by GUIDE v2.5 27-May-2014 09:52:41
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -95,6 +95,7 @@ im_session.spark_output.regressor.range = range_array;
 im_session.spark_output.regressor.cur_ind = ref_val;
 im_session.spark_output.streaming.tune = [];
 im_session.spark_output.streaming.stats = [];
+im_session.spark_output.streaming.tot_num_files = 0;
 
 % Disable buttons
 image_viewer_gui_toggle_enable(handles,'off',[1 3 4 5 6 7])
@@ -255,7 +256,8 @@ if folder_name ~= 0
     im_session.spark_output.regressor.cur_ind = get(handles.popupmenu_spark_regressors,'UserData');
     im_session.spark_output.streaming.tune = [];
     im_session.spark_output.streaming.stats = [];
-    
+    im_session.spark_output.streaming.tot_num_files = 0;
+   
     set(handles.text_anm,'Enable','on')
     set(handles.text_date,'Enable','on')
     set(handles.text_run,'Enable','on')
@@ -281,6 +283,7 @@ if folder_name ~= 0
         pushbutton_load_ref_Callback(hObject, eventdata, handles,ref_images_startup)
         % Load in spark
         load_spark_maps(handles.output_dir,1);
+        load_spark_maps_streaming(handles.output_dir);
     end
     
     % Update behaviour trials
@@ -996,6 +999,7 @@ folder_name = uigetdir(start_path);
 if folder_name ~= 0
     handles.output_dir = folder_name;
     load_spark_maps(handles.output_dir,1);
+    load_spark_maps_streaming(handles.output_dir);
 end
 guidata(hObject, handles);
 
@@ -1229,3 +1233,13 @@ if exist(f_names_ca) == 2 && exist(f_names_bv) == 2
 else
     display('No session behaviour and calcium objects')
 end
+
+
+% --- Executes on button press in checkbox_streaming.
+function checkbox_streaming_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_streaming (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_streaming
+plot_im_gui(handles,0);

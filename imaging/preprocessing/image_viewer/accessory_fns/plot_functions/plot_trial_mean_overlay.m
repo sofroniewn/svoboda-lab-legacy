@@ -1,4 +1,4 @@
-function [im_comb clim cmap_str] = plot_trial_mean_overlay(im_session,ref,trial_num,chan_num,plot_planes,clim,c_lim_overlay)
+function [im_comb clim cmap_str] = plot_trial_mean_overlay(im_session,ref,trial_num,chan_num,plot_planes,clim,c_lim_overlay,streaming_mode)
 
 num_planes = length(plot_planes);
 plane_rep = ceil(sqrt(num_planes));

@@ -1,4 +1,4 @@
-function [im_comb clim cmap_str] = plot_spark_regression_stats(im_session,ref,trial_num,chan_num,plot_planes,clim,c_lim_overlay)
+function [im_comb clim cmap_str] = plot_spark_regression_stats(im_session,ref,trial_num,chan_num,plot_planes,clim,c_lim_overlay,streaming_mode)
   
 num_planes = length(plot_planes);
 plane_rep = ceil(sqrt(num_planes));
@@ -6,7 +6,12 @@ im_comb = zeros(plane_rep*ref.im_props.height,plane_rep*ref.im_props.width);
 cmap_str = 'gray';
 
 cur_ind = im_session.spark_output.regressor.cur_ind;
-im_array = im_session.spark_output.regressor.stats{cur_ind};
+if ~streaming_mode
+	im_array = im_session.spark_output.regressor.stats{cur_ind};
+else
+	im_array = im_session.spark_output.streaming.stats{cur_ind};
+end
+
 if ~isempty(im_array)
 for ij = 1:num_planes
 	row_val = mod(ij-1,plane_rep);
