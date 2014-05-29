@@ -1,14 +1,11 @@
-function sorted_spikes = extract_sorted_units_klusters(base_dir,sorted_name,overwrite)
+function add_pca_features(base_dir,sorted_name,num_pca_features)
+
 
 disp(['--------------------------------------------']);
 
 f_name_sorted_units = fullfile(base_dir,'ephys','sorted',[sorted_name '_sorted.mat']);
 
-if overwrite == 0 && exist(f_name_sorted_units) == 2
-    disp(['LOAD SORTED UNITS']);
-    load(f_name_sorted_units);
-else
-disp(['EXTRACT SORTED UNITS']);
+disp(['ADD PCA FEATURES']);
 
 f_name_sync = fullfile(base_dir,'ephys','sorted',sorted_name,[sorted_name '.sync.1']);
 sync_info = dlmread(f_name_sync);
@@ -23,7 +20,11 @@ cluster_ids(1) = [];
 num_spikes = length(cluster_ids);
 
 num_chan = spike_amp(1);
-spike_amp(1,:) = [];
+top_row = spike_amp(2,1);
+spike_amp(1:2,:) = [];
+num_fet = num_chan;
+
+disp(['LOAD WAVEFORMS']);
 
 f_name_spk = fullfile(base_dir,'ephys','sorted',sorted_name,[sorted_name '.spk.1']);
 fid_spk = fopen(f_name_spk,'r');
@@ -53,25 +54,30 @@ fclose(fid_spk);
 if tot_spikes~=num_spikes
     error('Problem reading waveforms')
 end
+spike_waves(1,:) = [];
 
-sorted_spikes = cell(1,num_clusters);
-for clust_id = 1:num_clusters
-    disp(['Cluster ' num2str(clust_id)]);
-	sorted_spikes{clust_id}.clust_id = clust_id-1;
-	spike_inds = cluster_ids == clust_id-1;
-	sorted_spikes{clust_id}.detected_chan = mode(sync_info(spike_inds,6));
-	sorted_spikes{clust_id}.trial_num = sync_info(spike_inds,1);
-	sorted_spikes{clust_id}.ephys_index = sync_info(spike_inds,2);
-	sorted_spikes{clust_id}.ephys_time = sync_info(spike_inds,3)/10^6;
-	sorted_spikes{clust_id}.bv_index = sync_info(spike_inds,10);
-	sorted_spikes{clust_id}.laser_power = sync_info(spike_inds,9)/10^3;
-	sorted_spikes{clust_id}.spike_amp = spike_amp(spike_inds,sorted_spikes{clust_id}.detected_chan); %spike amplitude on detected channel
-%	sorted_spikes{clust_id}.spike_waves = squeeze(spike_waves(sorted_spikes{clust_id}.detected_chan,:,spike_inds))'; %spike wave forms
-	sorted_spikes{clust_id}.spike_waves = spike_waves(spike_inds,:); %spike wave forms
-end
-	save(f_name_sorted_units,'sorted_spikes');
-disp(['SAVED SORTED UNITS']);
+disp(['PERFROM PCA']);
+[COEFF,SCORE]   = princomp(spike_waves);
+spike_PCA = SCORE(:,1:num_pca_features);
+spike_PCA = round(spike_PCA) + round(top_row/2);
+spike_amp = cat(2,spike_amp(:,1:end-1),spike_PCA,spike_amp(:,end));
+top_row = repmat(top_row,1,size(spike_amp,2));
+top_row(end) = 0;
+spike_amp = cat(1,top_row,spike_amp);
+num_fet = num_fet + num_pca_features;
+
+
+
+disp(['SAVE FEATURES']);
+
+fid_fet = fopen(f_name_fet,'w');
+fprintf(fid_fet,['%i\n'],num_fet);
+
+fmt = repmat('%i ',1,size(spike_amp,2)-1);
+fprintf(fid_fet,[fmt ' %i\n'],spike_amp');
+
+
+disp(['DONE']);
 disp(['--------------------------------------------']);
 
 end
-disp(['--------------------------------------------']);

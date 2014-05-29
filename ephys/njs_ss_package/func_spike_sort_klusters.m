@@ -103,6 +103,12 @@ else
     fclose(fid_fil);
     fclose(fid_dat);
     fclose(fid_clu);
+
+num_pca_features = 6;
+if num_pca_features > 0
+    add_pca_features(base_dir,cluster_name,num_pca_features)
+end
+
 end
 disp(['--------------------------------------------']);
 
