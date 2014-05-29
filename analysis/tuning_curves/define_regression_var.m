@@ -27,6 +27,7 @@ switch stim_type_name
 end
 
 regressor_obj.var_name = stim_type_name;
+regressor_obj.y_label = 'Avg dF/F';
 
 switch regressor_obj.bin_type
 	case 'equal'

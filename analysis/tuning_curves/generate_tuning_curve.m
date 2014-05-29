@@ -15,4 +15,5 @@ responseVar = session_ca.dff(roi_id,:);
 tuning_curve = get_tuning_curve(regVect,num_groups,responseVar);
 tuning_curve.x_vals = regressor_obj.x_vals;
 tuning_curve.x_label = regressor_obj.x_label;
+tuning_curve.y_label = regressor_obj.y_label;
 tuning_curve.x_range = regressor_obj.x_range;

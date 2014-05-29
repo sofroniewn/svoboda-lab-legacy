@@ -14,7 +14,7 @@ switch keep_type_name
 		keep_vars{2}.vals = trial_range;
 		keep_vars{2}.type = 'range';
 	case 'openloop'
-		keep_vars = cell(3,1);
+		keep_vars = cell(4,1);
 		keep_vars{1}.vect = session_bv.data_mat(9,:);
 		keep_vars{1}.name = 'ITI';
 		keep_vars{1}.vals = 0;
@@ -27,6 +27,10 @@ switch keep_type_name
 		keep_vars{3}.name = 'trial_id';
 		keep_vars{3}.vals = find(~session_bv.trial_config.processed_dat.vals.trial_type);
 		keep_vars{3}.type = 'equal'; % equal - use ismember, range two element vector use range.
+		keep_vars{4}.vect = session_bv.data_mat(17,:);
+		keep_vars{4}.name = 'test_period';
+		keep_vars{4}.vals = 1;
+		keep_vars{4}.type = 'equal'; % equal - use ismember, range two element vector use range.
 	case 'closedloop'
 		keep_vars = cell(3,1);
 		keep_vars{1}.vect = session_bv.data_mat(9,:);
