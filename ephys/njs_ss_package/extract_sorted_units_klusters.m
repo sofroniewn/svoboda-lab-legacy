@@ -28,9 +28,31 @@ spike_amp(1,:) = [];
 
 f_name_spk = fullfile(base_dir,'ephys','sorted',sorted_name,[sorted_name '.spk.1']);
 fid_spk = fopen(f_name_spk,'r');
-%spike_waves = fread(fid_spk,'int16');
-%num_samps = length(spike_waves)/(num_chan-1)/num_spikes;
-%spike_waves = reshape(spike_waves,[num_chan-1,num_samps,num_spikes]);
+num_samps = 53;
+spikes_to_read = 1000;
+read_length = spikes_to_read*(num_chan-1)*num_samps;
+read_samps = 1;
+spike_waves = [];
+tot_spikes = 0;
+while read_samps
+	tmp = fread(fid_spk,read_length,'int16');
+	if ~isempty(tmp)
+	num_spikes_read = length(tmp)/(num_chan-1)/num_samps;
+	spike_waves_tmp = reshape(tmp,[num_chan-1,num_samps,num_spikes_read]);
+	spike_inds = [1:num_spikes_read] + tot_spikes;
+    X = sync_info(spike_inds,6);
+    Y = [1:num_spikes_read]';
+    spike_waves_tmp = arrayfun(@(x,y) squeeze(spike_waves_tmp(x,:,y)),X,Y,'UniformOutput',0);
+	tot_spikes = tot_spikes + num_spikes_read;
+	spike_waves = cat(1,spike_waves,cell2mat(spike_waves_tmp));
+	else
+	read_samps = 0;
+	end
+end
+fclose(fid_spk);
+if tot_spikes~=num_spikes
+    error('Problem reading waveforms')
+end
 
 sorted_spikes = cell(1,num_clusters);
 for clust_id = 1:num_clusters
@@ -45,6 +67,7 @@ for clust_id = 1:num_clusters
 	sorted_spikes{clust_id}.laser_power = sync_info(spike_inds,9)/10^3;
 	sorted_spikes{clust_id}.spike_amp = spike_amp(spike_inds,sorted_spikes{clust_id}.detected_chan); %spike amplitude on detected channel
 %	sorted_spikes{clust_id}.spike_waves = squeeze(spike_waves(sorted_spikes{clust_id}.detected_chan,:,spike_inds))'; %spike wave forms
+	sorted_spikes{clust_id}.spike_waves = spike_waves(spike_inds,:); %spike wave forms
 end
 	save(f_name_sorted_units,'sorted_spikes');
 disp(['SAVED SORTED UNITS']);

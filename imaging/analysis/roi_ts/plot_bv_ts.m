@@ -15,12 +15,13 @@ switch bv_name
 	y_col = 'r';
 case 'corPos'
 	y_data = bv_ca_data(3,:)/30*3;
-	y_col = 'k';
+	y_col = 'b';
 otherwise
 	display('Unrecognized behaviour variable')
 	y_data = zeros(1,size(bv_ca_data,2));
 	y_col = 'k';
 end
+handles_roi_ts.y_col = y_col;
 figure(1)
 set(handles_roi_ts.plot_bv,'ydata',y_data)
 set(handles_roi_ts.plot_bv,'color',y_col)

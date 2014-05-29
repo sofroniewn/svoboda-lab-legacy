@@ -22,7 +22,7 @@ function varargout = image_viewer_GUI(varargin)
 
 % Edit the above text to modify the response to help image_viewer_GUI
 
-% Last Modified by GUIDE v2.5 27-May-2014 09:52:41
+% Last Modified by GUIDE v2.5 29-May-2014 08:31:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -85,6 +85,8 @@ set(handles.popupmenu_spark_regressors,'string',stim_types)
 ref_val = 1;
 set(handles.popupmenu_spark_regressors,'value',ref_val)
 set(handles.popupmenu_spark_regressors,'UserData',ref_val);
+
+set(handles.popupmenuspark_keep_inds,'string',{'base','openloop','closedloop'});
 
 im_session.spark_output.mean = [];
 im_session.spark_output.localcorr = [];
@@ -257,7 +259,7 @@ if folder_name ~= 0
     im_session.spark_output.streaming.tune = [];
     im_session.spark_output.streaming.stats = [];
     im_session.spark_output.streaming.tot_num_files = 0;
-   
+    
     set(handles.text_anm,'Enable','on')
     set(handles.text_date,'Enable','on')
     set(handles.text_run,'Enable','on')
@@ -1019,11 +1021,14 @@ im_session.spark_output.regressor.cur_ind = cur_ind;
 plot_im_gui(handles,0);
 
 global handles_roi_ts;
+global handles_roi_tuning_curve;
 if ~isempty(handles_roi_ts)
     if ishandle(handles_roi_ts.axes)
         bv_name_list = cellstr(get(hObject,'String'));
         bv_name = bv_name_list{cur_ind};
         plot_bv_ts(bv_name);
+        handles_roi_tuning_curve.bv_name = bv_name;
+        plot_rois_tuning;
         figure(handles.figure1);
     end
 end
@@ -1212,24 +1217,39 @@ if exist(f_names_ca) == 2 && exist(f_names_bv) == 2
     cur_pos(1) = 5;
     cur_pos(2) = 0;
     set(handles.figure1,'Position',cur_pos)
- 
+    
     global handles_roi_ts;
     handles_roi_ts.fig = figure(1);
     handles_roi_ts.gui_fig = handles.figure1;
     clf(1);
-    set(handles_roi_ts.fig,'Position',[0 629 1432 177])
+    set(handles_roi_ts.fig,'Position',[0         633        1432         173])
     set(handles_roi_ts.fig,'Name','ROI Time Series')
-    handles_roi_ts.text_roi = text(session_ca.time(end)*1.1,2.5,['ROI ' num2str(0)]);
+    handles_roi_ts.text_roi = title(['ROI ' num2str(0)]);
     handles_roi_ts.axes = gca;
     hold on
     handles_roi_ts.plot_bv = plot(session_ca.time,zeros(length(session_ca.time),1),'k');
-    handles_roi_ts.plot_roi = plot(session_ca.time,zeros(length(session_ca.time),1),'b');    
-    handles_roi_ts.plot_trial = plot([0 0],[-.4 -.4],'k','LineWidth',2);    
+    handles_roi_ts.plot_roi = plot(session_ca.time,zeros(length(session_ca.time),1),'k');
+    handles_roi_ts.plot_trial = plot([0 0],[-.4 -.4],'k','LineWidth',2);
     ylim([-.5 5])
     xlabel('Time (s)')
+    ylabel('dF/F')
     figure(handles_roi_ts.gui_fig);
+    global handles_roi_tuning_curve;
+    handles_roi_tuning_curve.fig = figure(2);
+    handles_roi_tuning_curve.gui_fig = handles.figure1;
+    clf(2);
+    set(handles_roi_tuning_curve.fig,'Position',[720   311   345   249])
+    set(handles_roi_tuning_curve.fig,'Name','ROI Tuning Curve')
+    handles_roi_tuning_curve.roi_id = [];
+    cur_str = get(handles.edit_trial_range,'String');
+    handles_roi_tuning_curve.trial_range = eval(cur_str);
+    cur_ind = get(handles.popupmenuspark_keep_inds,'Value');
+    keep_ind_list = cellstr(get(handles.popupmenuspark_keep_inds,'String'));
+    handles_roi_tuning_curve.keep_type_name =  keep_ind_list{cur_ind};
+    
+    
     popupmenu_spark_regressors_Callback(handles.popupmenu_spark_regressors, eventdata, handles)
-
+    
 else
     display('No session behaviour and calcium objects')
 end
@@ -1243,3 +1263,63 @@ function checkbox_streaming_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of checkbox_streaming
 plot_im_gui(handles,0);
+
+
+% --- Executes on selection change in popupmenuspark_keep_inds.
+function popupmenuspark_keep_inds_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenuspark_keep_inds (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupmenuspark_keep_inds contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenuspark_keep_inds
+
+cur_ind = get(hObject,'Value');
+global handles_roi_tuning_curve;
+if ~isempty(handles_roi_tuning_curve)
+    keep_ind_list = cellstr(get(hObject,'String'));
+    handles_roi_tuning_curve.keep_type_name =  keep_ind_list{cur_ind};
+    plot_rois_tuning;
+    figure(handles.figure1);
+end
+
+% --- Executes during object creation, after setting all properties.
+function popupmenuspark_keep_inds_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenuspark_keep_inds (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function edit_trial_range_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_trial_range (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_trial_range as text
+%        str2double(get(hObject,'String')) returns contents of edit_trial_range as a double
+cur_str = get(hObject,'String');
+global handles_roi_tuning_curve;
+if ~isempty(handles_roi_tuning_curve)
+    handles_roi_tuning_curve.trial_range = eval(cur_str);
+    plot_rois_tuning;
+    figure(handles.figure1);
+end
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_trial_range_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_trial_range (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

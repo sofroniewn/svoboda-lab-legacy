@@ -70,7 +70,7 @@ toc
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-base_name = '/Volumes/wdbp/imreg/sofroniewn/anm_0216166/2013_07_10/run_01';
+base_name = '/Volumes/wdbp/imreg/sofroniewn/anm_0216166/2013_07_15/run_01';
 im_stats = get_image_stats(base_name);
 
 im_stats
