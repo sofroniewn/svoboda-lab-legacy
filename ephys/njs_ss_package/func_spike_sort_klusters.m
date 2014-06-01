@@ -1,24 +1,26 @@
-function file_list = func_spike_sort_klusters(base_dir, f_name_flag,file_nums, cluster_name, over_write, over_write_spikes, over_write_cluster)
+function func_spike_sort_klusters(all_base_dir, f_name_flag,file_nums_all, cluster_name, over_write, over_write_spikes, over_write_cluster)
 %%
+
 disp(['--------------------------------------------']);
-file_list = func_list_files(base_dir,f_name_flag,file_nums);
 
 ch_common_noise = [1:32];
 ch_spikes = [1:32];
-lite = 1;
 total_inds = 0;
-f_name_cluster = fullfile(base_dir,'ephys','sorted',cluster_name,cluster_name);
+f_name_cluster = fullfile(all_base_dir{1},'ephys','sorted',cluster_name,cluster_name);
+
+    
+    if exist(fullfile(all_base_dir{1},'ephys','processed'))~=7
+        mkdir(fullfile(all_base_dir{1},'ephys','processed'));
+    end
+    if exist(fullfile(all_base_dir{1},'ephys','sorted',cluster_name))~=7
+        mkdir(fullfile(all_base_dir{1},'ephys','sorted',cluster_name));
+    end
+    
 
 if over_write_cluster == 0 && exist([f_name_cluster '.mat']) == 2
     disp(['LOAD KLUSTERS FILE']);
     load(f_name_cluster);
 else
-    if exist(fullfile(base_dir,'ephys','processed'))~=7
-        mkdir(fullfile(base_dir,'ephys','processed'));
-    end
-    if exist(fullfile(base_dir,'ephys','sorted',cluster_name))~=7
-        mkdir(fullfile(base_dir,'ephys','sorted',cluster_name));
-    end
     
     fid_spk = fopen([f_name_cluster '.spk' '.1'],'w');
     fid_fet = fopen([f_name_cluster '.fet' '.1'],'w');
@@ -29,6 +31,16 @@ else
     fid_dat = fopen([f_name_cluster '.dat'],'w');
     fid_fil = fopen([f_name_cluster '.fil'],'w');
 
+for i_dir = 1:numel(all_base_dir)
+    base_dir = all_base_dir{i_dir};
+    if exist(fullfile(base_dir,'ephys','processed'))~=7
+        mkdir(fullfile(base_dir,'ephys','processed'));
+    end
+    if exist(fullfile(base_dir,'ephys','sorted',cluster_name))~=7
+        mkdir(fullfile(base_dir,'ephys','sorted',cluster_name));
+    end
+    file_nums = file_nums_all{i_dir};   
+    file_list = func_list_files(base_dir,f_name_flag,file_nums);
     for i_trial = 1:numel(file_list)
         disp(file_list{i_trial}); 
         f_name = fullfile(base_dir,'ephys','raw',file_list{i_trial});
@@ -76,7 +88,7 @@ else
         n_spk = length(s.index);
         if n_spk > 1
             disp(['PREPARE KLUSTERS FILE']);
-            [ch_data] = func_parse_klusters(file_nums(i_trial),s,p,d.TimeStamps,total_inds);
+            [ch_data] = func_parse_klusters(i_dir,file_nums(i_trial),s,p,d.TimeStamps,total_inds);
 
             disp(['SAVE KLUSTERS FILE']);
             fwrite(fid_spk,ch_data.spk,'int16');
@@ -95,6 +107,7 @@ else
         total_inds = total_inds + length(d.TimeStamps);
         disp(['--------------------------------------------']);
     end
+ end   
     
     fclose(fid_spk);
     fclose(fid_fet);
@@ -106,7 +119,7 @@ else
 
 num_pca_features = 6;
 if num_pca_features > 0
-    add_pca_features(base_dir,cluster_name,num_pca_features)
+    add_pca_features(all_base_dir{1},cluster_name,num_pca_features)
 end
 
 end

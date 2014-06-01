@@ -1,4 +1,4 @@
-function [ch_data] = func_parse_klusters(i_trial,s,p,TimeStamps,total_inds)
+function [ch_data] = func_parse_klusters(i_dir,i_trial,s,p,TimeStamps,total_inds)
 %%
 disp(['--------------------------------------------']);
 disp(['parse for klusters file']);
@@ -32,10 +32,11 @@ disp(['parse for klusters file']);
     spike_amp = round(spike_amp);
     
     trials_tmp = double(zeros(length(s.index),1)+i_trial);
+    dir_tmp = double(zeros(length(s.index),1)+i_dir);
     res_tmp = total_inds + s.index;
     
     %Trial ID - trial time - detect channel - spike amp
-    sync_tmp = [trials_tmp s.index s.TimeStamp*10^6 s.ch_ids s.aux_chan(:,1:3)*1000 s.aux_chan(:,4:5)];
+    sync_tmp = [trials_tmp s.index s.TimeStamp*10^6 s.ch_ids s.aux_chan(:,1:3)*1000 s.aux_chan(:,4:5) dir_tmp];
     spike_amp = [repmat(clip_val,1,size(spike_amp,2));spike_amp];
     res_tmp = [total_inds+1;res_tmp];
     sync_tmp = [sync_tmp(1,:);sync_tmp];

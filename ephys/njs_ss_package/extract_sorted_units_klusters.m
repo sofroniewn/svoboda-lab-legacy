@@ -1,8 +1,7 @@
-function sorted_spikes = extract_sorted_units_klusters(base_dir,sorted_name,overwrite)
+function sorted_spikes = extract_sorted_units_klusters(all_base_dir,sorted_name,dir_num,overwrite)
 
 disp(['--------------------------------------------']);
-
-f_name_sorted_units = fullfile(base_dir,'ephys','sorted',[sorted_name '_sorted.mat']);
+f_name_sorted_units = fullfile(all_base_dir{dir_num},'ephys','sorted',[sorted_name '_sorted.mat']);
 
 if overwrite == 0 && exist(f_name_sorted_units) == 2
     disp(['LOAD SORTED UNITS']);
@@ -10,6 +9,7 @@ if overwrite == 0 && exist(f_name_sorted_units) == 2
 else
 disp(['EXTRACT SORTED UNITS']);
 
+base_dir = all_base_dir{1};
 f_name_sync = fullfile(base_dir,'ephys','sorted',sorted_name,[sorted_name '.sync.1']);
 sync_info = dlmread(f_name_sync);
 
@@ -58,9 +58,10 @@ sorted_spikes = cell(1,num_clusters);
 for clust_id = 1:num_clusters
     disp(['Cluster ' num2str(clust_id)]);
 	sorted_spikes{clust_id}.clust_id = clust_id-1;
-	spike_inds = cluster_ids == clust_id-1;
+	spike_inds = cluster_ids == clust_id-1 && sync_info(:,end) == dir_num;
 	sorted_spikes{clust_id}.detected_chan = mode(sync_info(spike_inds,6));
 	sorted_spikes{clust_id}.trial_num = sync_info(spike_inds,1);
+	sorted_spikes{clust_id}.session_id_num = sync_info(spike_inds,end);
 	sorted_spikes{clust_id}.ephys_index = sync_info(spike_inds,2);
 	sorted_spikes{clust_id}.ephys_time = sync_info(spike_inds,3)/10^6;
 	sorted_spikes{clust_id}.bv_index = sync_info(spike_inds,10);
