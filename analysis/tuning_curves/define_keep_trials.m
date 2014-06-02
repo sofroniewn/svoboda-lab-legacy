@@ -14,6 +14,9 @@ switch keep_type_name
 		split_var.bins = 1;
 		split_var.order = session_bv.trial_info.trial_num;		
 		split_var.values = 0;
+	
+		split_var.x_label = 'Fraction of trial';
+		split_var.x_max = 1;
 	case 'openloop'
 		keep_vars = cell(2,1);
 		keep_vars{1}.vect = session_bv.trial_info.trial_num;
@@ -29,6 +32,8 @@ switch keep_type_name
 		split_var.bins = find(~session_bv.trial_config.processed_dat.vals.trial_type);
 		split_var.order = session_bv.trial_info.trial_num;
 		split_var.values = session_bv.trial_config.processed_dat.vals.trial_ol_vals(~session_bv.trial_config.processed_dat.vals.trial_type);
+		split_var.x_label = 'Time (s)';
+		split_var.x_max = mean(session_bv.trial_config.processed_dat.vals.trial_timeout(~session_bv.trial_config.processed_dat.vals.trial_type));
 	case 'closedloop'
 		keep_vars = cell(2,1);
 		keep_vars{1}.vect = session_bv.trial_info.trial_num;
@@ -43,7 +48,9 @@ switch keep_type_name
 		split_var.vect = session_bv.trial_info.inds;
 		split_var.bins = find(session_bv.trial_config.processed_dat.vals.trial_type);
 		split_var.order = session_bv.trial_info.trial_num;
-		split_var.values = session_bv.trial_config.processed_dat.vals.trial_turn_vals(session_bv.trial_config.processed_dat.vals.trial_type);
+		split_var.values = session_bv.trial_config.processed_dat.vals.trial_turn_vals(logical(session_bv.trial_config.processed_dat.vals.trial_type));
+		split_var.x_label = 'Distance (cm)';
+		split_var.x_max = mean(session_bv.trial_config.processed_dat.vals.trial_dur(logical(session_bv.trial_config.processed_dat.vals.trial_type)));
 	otherwise
 		error('Unrecognized stim type for spark regression')
 end

@@ -5,13 +5,17 @@
 clear all
 %close all
 %drawnow
+batch_mode = cell(num_batch,1);
 
-base_dir = 'Z:\EPHYS_RIG\DATA\anm_245128\2014_05_09\run_02';
+
+batch_mode{1}.base_dir = 'Z:\EPHYS_RIG\DATA\anm_245128\2014_05_09\run_02';
+batch_mode{1}.file_nums = [1:3];
+batch_mode{1}.cluster_name = 'klusters_data';
+
 base_dir = '/Users/sofroniewn/Documents/DATA/WGNR_DATA/anm_0221172/2014_02_21/run_09';
 base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_225493/2013_12_12/run_06';
 base_dir = '/Users/sofroniewn/Documents/DATA/ephys_ex/run_06';
 
-f_name_flag = '*_trial*.bin';
 file_nums = [1:3];
 cluster_name = 'klusters_data';
 
@@ -19,7 +23,7 @@ cluster_name = 'klusters_data';
 over_write_vlt = 0;
 over_write_spikes = 0;
 over_write_klusters = 1;
-file_list = func_spike_sort_klusters(base_dir,f_name_flag,file_nums,cluster_name,over_write_vlt,over_write_spikes,over_write_klusters);
+failed = func_spike_sort_klusters(batch_mode,over_write_vlt,over_write_spikes,over_write_klusters);
 
 %% TO EXTRACT CLU FILE
 over_write_sorted = 1;

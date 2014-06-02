@@ -1029,6 +1029,7 @@ if ~isempty(handles_roi_ts)
         plot_bv_ts(bv_name);
         handles_roi_tuning_curve.bv_name = bv_name;
         plot_rois_tuning;
+        plot_rois_raster;
         figure(handles.figure1);
     end
 end
@@ -1266,9 +1267,14 @@ if exist(f_names_ca) == 2 && exist(f_names_bv) == 2
     clf(2);
     set(handles_roi_tuning_curve.fig,'Position',[720   311   345   249])
     set(handles_roi_tuning_curve.fig,'Name','ROI Tuning Curve')
+    
+    handles_roi_tuning_curve.raster_fig = figure(3);
+    clf(3);
+    set(handles_roi_tuning_curve.raster_fig,'Position',[1066 2  371 559])
+    set(handles_roi_tuning_curve.raster_fig,'Name','ROI Raster Plots')
+    
     figure(handles_roi_ts.gui_fig);
 
-    
     popupmenu_spark_regressors_Callback(handles.popupmenu_spark_regressors, eventdata, handles)
     
 else
@@ -1301,6 +1307,7 @@ if ~isempty(handles_roi_tuning_curve)
     keep_ind_list = cellstr(get(hObject,'String'));
     handles_roi_tuning_curve.keep_type_name =  keep_ind_list{cur_ind};
     plot_rois_tuning;
+    plot_rois_raster;
     figure(handles.figure1);
     global handles_roi_ts;
      if ~isempty(handles_roi_ts)
@@ -1361,6 +1368,7 @@ if ~isempty(handles_roi_tuning_curve)
         end
     end
     plot_rois_tuning;
+    plot_rois_raster;
     figure(handles.figure1);
 end
 

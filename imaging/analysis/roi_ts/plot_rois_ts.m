@@ -22,6 +22,7 @@ y_data = session_ca.dff(roi_id,:);
 
 handles_roi_tuning_curve.roi_id = roi_id;
 plot_rois_tuning;
+plot_rois_raster;
 
 else
 	display('ROI id not found')
