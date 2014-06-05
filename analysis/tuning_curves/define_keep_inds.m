@@ -13,6 +13,34 @@ switch keep_type_name
 		keep_vars{2}.name = 'trial_num';
 		keep_vars{2}.vals = trial_range;
 		keep_vars{2}.type = 'range';
+	case 'running'
+		keep_vars = cell(3,1);
+		keep_vars{1}.vect = session_bv.data_mat(9,:);
+		keep_vars{1}.name = 'ITI';
+		keep_vars{1}.vals = 0;
+		keep_vars{1}.type = 'equal'; % equal - use ismember, range two element vector use range, inclusive.
+		keep_vars{2}.vect = session_bv.data_mat(25,:);
+		keep_vars{2}.name = 'trial_num';
+		keep_vars{2}.vals = trial_range;
+		keep_vars{2}.type = 'range';
+		keep_vars{3}.vect = session_bv.data_mat(22,:);
+		keep_vars{3}.name = 'speed';
+		keep_vars{3}.vals = [5 Inf];
+		keep_vars{3}.type = 'range'; % equal - use ismember, range two element vector use range.
+	case 'farFromWall'
+		keep_vars = cell(3,1);
+		keep_vars{1}.vect = session_bv.data_mat(9,:);
+		keep_vars{1}.name = 'ITI';
+		keep_vars{1}.vals = 0;
+		keep_vars{1}.type = 'equal'; % equal - use ismember, range two element vector use range, inclusive.
+		keep_vars{2}.vect = session_bv.data_mat(25,:);
+		keep_vars{2}.name = 'trial_num';
+		keep_vars{2}.vals = trial_range;
+		keep_vars{2}.type = 'range';
+		keep_vars{3}.vect = session_bv.data_mat(3,:); %smooth(session_bv.data_mat(3,:),500);
+		keep_vars{3}.name = 'corPos';
+		keep_vars{3}.vals = [16 Inf];
+		keep_vars{3}.type = 'range'; % equal - use ismember, range two element vector use range.
 	case 'openloop'
 		keep_vars = cell(4,1);
 		keep_vars{1}.vect = session_bv.data_mat(9,:);

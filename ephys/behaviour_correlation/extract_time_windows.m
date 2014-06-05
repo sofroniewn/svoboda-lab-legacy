@@ -36,8 +36,9 @@ end
 extracted_times(isnan(extracted_times(:,4)),:) = [];
 extracted_times(isnan(extracted_times(:,5)),:) = [];
 
-extracted_times(extracted_times(:,1) < trial_range(1),:) = [];
-extracted_times(extracted_times(:,1) > trial_range(2),:) = [];
+
+extracted_times(~ismember(extracted_times(:,1),trial_range),:) = [];
+
 
 
 % Set max time

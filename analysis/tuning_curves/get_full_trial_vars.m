@@ -14,12 +14,12 @@ for ik = 1:split_var.num_groups
 		trial_raster.traj{ik} = NaN(num_trials,num_samples);
 		trial_raster.response{ik} = NaN(num_trials,num_samples);
 		
-		if strcmp(split_var.name,'base')
+		if strcmp(split_var.name,'running')
 			[val Idx] = sort(regressor_obj.trial_order(group_trials),'descend');
 		end
 
 		for ij = 1:num_trials
-			if strcmp(split_var.name,'base')
+			if strcmp(split_var.name,'running')
 				cur_trial_num = group_trials(Idx(ij));
 			else
 				cur_trial_num = group_trials(ij);

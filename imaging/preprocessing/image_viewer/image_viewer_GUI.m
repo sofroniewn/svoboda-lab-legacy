@@ -86,7 +86,7 @@ ref_val = 1;
 set(handles.popupmenu_spark_regressors,'value',ref_val)
 set(handles.popupmenu_spark_regressors,'UserData',ref_val);
 
-set(handles.popupmenuspark_keep_inds,'string',{'base','openloop','closedloop'});
+set(handles.popupmenuspark_keep_inds,'string',{'base','running','farFromWall','openloop','closedloop'});
 
 im_session.spark_output.mean = [];
 im_session.spark_output.localcorr = [];
@@ -1028,8 +1028,22 @@ if ~isempty(handles_roi_ts)
         bv_name = bv_name_list{cur_ind};
         plot_bv_ts(bv_name);
         handles_roi_tuning_curve.bv_name = bv_name;
+        handles_roi_tuning_curve.summary_id = cur_ind;
+        
+    global summary_ca
+    if ~isempty(summary_ca)
+        clf(4)
+        hold on
+        tuning_param = summary_ca{handles_roi_tuning_curve.summary_id}.tuning_param;
+        tuning_param.title = ['Tuning to ' tuning_param.stim_type_name];
+        handles_roi_tuning_curve.highlighted_roi_title = plot_summary_tuning(4,tuning_param,handles_roi_ts.y_col);
+        handles_roi_tuning_curve.highlighted_roi = plot(0,0,'Color',[1 .5 0],'Marker','.','MarkerSize',20);
+        plot_rois_summary;
+    end
         plot_rois_tuning;
+        drawnow
         plot_rois_raster;
+        drawnow
         figure(handles.figure1);
     end
 end
@@ -1252,6 +1266,7 @@ if exist(f_names_ca) == 2 && exist(f_names_bv) == 2
     xlim(x_time_lim);
             
     handles_roi_tuning_curve.roi_id = [];
+    handles_roi_tuning_curve.roi_plane = [];
     cur_ind = get(handles.popupmenuspark_keep_inds,'Value');
     keep_ind_list = cellstr(get(handles.popupmenuspark_keep_inds,'String'));
     handles_roi_tuning_curve.keep_type_name =  keep_ind_list{cur_ind};
@@ -1272,6 +1287,13 @@ if exist(f_names_ca) == 2 && exist(f_names_bv) == 2
     clf(3);
     set(handles_roi_tuning_curve.raster_fig,'Position',[1066 2  371 559])
     set(handles_roi_tuning_curve.raster_fig,'Name','ROI Raster Plots')
+    
+
+    handles_roi_tuning_curve.summary_fig = figure(4);
+    clf(4)
+    hold on
+    set(handles_roi_tuning_curve.summary_fig,'Position',[720 -1 345 239])
+    set(handles_roi_tuning_curve.summary_fig,'Name','ROI Tuning Summary')
     
     figure(handles_roi_ts.gui_fig);
 
@@ -1307,7 +1329,9 @@ if ~isempty(handles_roi_tuning_curve)
     keep_ind_list = cellstr(get(hObject,'String'));
     handles_roi_tuning_curve.keep_type_name =  keep_ind_list{cur_ind};
     plot_rois_tuning;
+    drawnow
     plot_rois_raster;
+    drawnow
     figure(handles.figure1);
     global handles_roi_ts;
      if ~isempty(handles_roi_ts)
@@ -1368,7 +1392,9 @@ if ~isempty(handles_roi_tuning_curve)
         end
     end
     plot_rois_tuning;
+    drawnow
     plot_rois_raster;
+    drawnow
     figure(handles.figure1);
 end
 

@@ -5,10 +5,8 @@ num_groups = length(group_ids);
 spike_times = sorted_spikes{clustnum}.ephys_time;
 trials = sorted_spikes{clustnum}.trial_num;
 
-spike_times(trials < trial_range(1)) = [];
-trials(trials < trial_range(1)) = [];
-spike_times(trials > trial_range(2)) = [];
-trials(trials > trial_range(2)) = [];
+spike_times(~ismember(trials,trial_range)) = [];
+trials(~ismember(trials,trial_range)) = [];
 
 max_time = max(spike_times);
 
@@ -20,8 +18,7 @@ tot_trials = 0;
 max_psth = 0;
 for i_group = 1:num_groups-1
 	trials_ids = find(groups >= group_ids(i_group) & groups < group_ids(i_group+1));
-	trials_ids(trials_ids < trial_range(1)) = [];
-	trials_ids(trials_ids > trial_range(2)) = [];
+	trials_ids(~ismember(trials_ids,trial_range)) = [];
 	spike_times_psth = {};
 	for i_trial = 1:length(trials_ids)
     	spike_times_psth{i_trial,1} = spike_times(trials == trials_ids(i_trial))';
@@ -39,8 +36,7 @@ for i_group = 1:num_groups-1
 	trials_ids = find(groups >= group_ids(i_group) & groups < group_ids(i_group+1));
 	spike_times_psth = {};
 	trials_group = trials(ismember(trials,trials_ids));
-	trials_ids(trials_ids < trial_range(1)) = [];
-	trials_ids(trials_ids > trial_range(2)) = [];
+	trials_ids(~ismember(trials_ids,trial_range)) = [];
 	for i_trial = 1:length(trials_ids)
     	spike_times_psth{i_trial,1} = spike_times(trials == trials_ids(i_trial))';
 		trials_group(trials_group == trials_ids(i_trial)) = i_trial;

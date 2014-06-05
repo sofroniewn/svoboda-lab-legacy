@@ -26,6 +26,7 @@ switch stimType
 			vals(end-1) = floor(vals(end-1)/2)*2;
 			vals = round(vals/2)*2;
 			vals = unique(vals);
+			vals = [-1:2:31];
 			regMat = binReg_spark(regress_var,vals,keep_ind);
 			display([stimType ' bin centers'])
 			vals = vals(1:end-1) + diff(vals)/2;
@@ -38,7 +39,7 @@ switch stimType
 		range_vals = [0 50];
 		if ~isempty(full_trial_data)
 			regress_var = full_trial_data(:,7);
-			keep_ind = ~logical(full_trial_data(:,3)) & full_trial_data(:,7)>5;
+			keep_ind = ~logical(full_trial_data(:,3));
 			keep_data =	regress_var(keep_ind);
 			vals = valsReg_spark(keep_data,num_bins);
 			vals = [range_vals(1) vals range_vals(2)];
@@ -46,11 +47,13 @@ switch stimType
 			vals(end-1) = floor(vals(end-1)/2)*2;
 			vals = round(vals/2)*2;
 			vals = unique(vals);
+			vals = [0:2:40];
 			regMat = binReg_spark(regress_var,vals,keep_ind);
 			display([stimType ' bin centers'])
 			vals = vals(1:end-1) + diff(vals)/2;
 			display(vals)
 			if det(regMat*regMat') == 0
+				sum(regMat')
 				error([stimType ' matrix not invertible'])
 			end
 		end

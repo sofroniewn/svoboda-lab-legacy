@@ -57,12 +57,23 @@ end
 spike_waves(1,:) = [];
 
 disp(['PERFROM PCA']);
-[COEFF,SCORE]   = princomp(spike_waves);
+num_spike_thresh = 50000;
+if size(spike_waves,1) > num_spike_thresh
+	full_inds = randperm(size(spike_waves,1));
+	[COEFF] = pca(spike_waves(full_inds(1:num_spike_thresh),:));
+else
+	[COEFF] = pca(spike_waves);
+end
+
+zeroed_spike_waves = spike_waves - repmat(mean(spike_waves),size(spike_waves,1),1);
+SCORE = zeroed_spike_waves*COEFF;
+
 spike_PCA = SCORE(:,1:num_pca_features);
-spike_PCA = round(spike_PCA) + round(top_row/2);
+spike_PCA = round(spike_PCA) + round(top_row);
 spike_amp = cat(2,spike_amp(:,1:end-1),spike_PCA,spike_amp(:,end));
 top_row = repmat(top_row,1,size(spike_amp,2));
 top_row(end) = 0;
+top_row(end-num_pca_features-1:end-1) = 2*top_row(end-num_pca_features-1:end-1);
 spike_amp = cat(1,top_row,spike_amp);
 num_fet = num_fet + num_pca_features;
 

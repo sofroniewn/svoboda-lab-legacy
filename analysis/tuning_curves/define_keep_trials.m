@@ -17,6 +17,43 @@ switch keep_type_name
 	
 		split_var.x_label = 'Fraction of trial';
 		split_var.x_max = 1;
+	case 'running'
+		keep_vars = cell(2,1);
+		keep_vars{1}.vect = session_bv.trial_info.trial_num;
+		keep_vars{1}.name = 'trial_num';
+		keep_vars{1}.vals = trial_range;
+		keep_vars{1}.type = 'range';
+		keep_vars{2}.vect = session_bv.trial_info.mean_speed;
+		keep_vars{2}.name = 'speed';
+		keep_vars{2}.vals = [5 Inf];
+		keep_vars{2}.type = 'range';
+
+		split_var.vect = ones(length(session_bv.trial_info.trial_num),1);
+		split_var.bins = 1;
+		split_var.order = session_bv.trial_info.trial_num;		
+		split_var.values = 0;
+	
+		split_var.x_label = 'Fraction of trial';
+		split_var.x_max = 1;
+	case 'farFromWall'
+		keep_vars = cell(2,1);
+		keep_vars{1}.vect = session_bv.trial_info.trial_num;
+		keep_vars{1}.name = 'trial_num';
+		keep_vars{1}.vals = trial_range;
+		keep_vars{1}.type = 'range';
+		keep_vars{2}.vect = session_bv.trial_info.inds;
+		keep_vars{2}.name = 'trial_id';
+		keep_vars{2}.vals = find(~session_bv.trial_config.processed_dat.vals.trial_type);
+		keep_vars{2}.type = 'equal';
+		keep_vars{2}.vals = keep_vars{2}.vals(7:end);
+		
+		split_var.vect = ones(length(session_bv.trial_info.trial_num),1);
+		split_var.bins = 1;
+		split_var.order = session_bv.trial_info.trial_num;		
+		split_var.values = 0;
+	
+		split_var.x_label = 'Fraction of trial';
+		split_var.x_max = 1;
 	case 'openloop'
 		keep_vars = cell(2,1);
 		keep_vars{1}.vect = session_bv.trial_info.trial_num;

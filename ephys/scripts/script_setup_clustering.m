@@ -3,46 +3,40 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SETUP CLUSTERING
 clear all
-%close all
-%drawnow
-batch_mode = cell(num_batch,1);
+close all
+drawnow
+batch_mode = cell(1,1);
 
 
-batch_mode{1}.base_dir = 'Z:\EPHYS_RIG\DATA\anm_245128\2014_05_09\run_02';
-batch_mode{1}.file_nums = [1:3];
+batch_mode{1}.base_dir = {'/Users/sofroniewn/Documents/DATA/ephys_ex/run_06','/Users/sofroniewn/Documents/DATA/ephys_ex/run_06'};
+batch_mode{1}.file_nums = {[1:2],3};
 batch_mode{1}.cluster_name = 'klusters_data';
 
-base_dir = '/Users/sofroniewn/Documents/DATA/WGNR_DATA/anm_0221172/2014_02_21/run_09';
-base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_225493/2013_12_12/run_06';
-base_dir = '/Users/sofroniewn/Documents/DATA/ephys_ex/run_06';
+batch_mode{2}.base_dir = {'/Users/sofroniewn/Documents/DATA/ephys_ex/run_06'};
+batch_mode{2}.file_nums = {[1:2],3};
+batch_mode{2}.cluster_name = 'klusters_data_again';
 
-file_nums = [1:3];
-cluster_name = 'klusters_data';
 
-%% TO PREPARE DATA FOR KLUSTERS
+% batch_mode{2}.base_dir = {'Z:\EPHYS_RIG\DATA\anm_241133\2014_06_01\run_02\'};
+% batch_mode{2}.file_nums = {[91:200]};
+% batch_mode{2}.cluster_name = 'klusters_data_new2';
+% 
+% batch_mode{3}.base_dir = {'Z:\EPHYS_RIG\DATA\anm_241133\2014_06_01\run_02\'};
+% batch_mode{3}.file_nums = {[210:340]};
+% batch_mode{3}.cluster_name = 'klusters_data_new3';
+ 
+% batch_mode{4}.base_dir = {'Z:\EPHYS_RIG\DATA\anm_241133\2014_06_01\run_02\'};
+% batch_mode{4}.file_nums = {[345:405]};
+% batch_mode{4}.cluster_name = 'klusters_data_new4';
+
+% TO PREPARE DATA FOR KLUSTERS
 over_write_vlt = 0;
 over_write_spikes = 0;
-over_write_klusters = 1;
-failed = func_spike_sort_klusters(batch_mode,over_write_vlt,over_write_spikes,over_write_klusters);
+failed = func_spike_sort_klusters(batch_mode,over_write_vlt,over_write_spikes);
 
-%% TO EXTRACT CLU FILE
-over_write_sorted = 1;
-sorted_spikes = extract_sorted_units_klusters(base_dir,cluster_name,over_write_sorted);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Inspect sorted units across entire session
-
-trial_range = [0 Inf];
-
-clust_id = 1;
-
-plot_spike_raster(clust_id,sorted_spikes,trial_range)
-plot_isi_full(clust_id,sorted_spikes,trial_range)
-plot_waveforms_chan(clust_id,sorted_spikes,trial_range)
-plot_waveforms_chan_norm(clust_id,sorted_spikes,trial_range)
-plot_stability_full(clust_id,sorted_spikes,[])
+%%
+i_batch = 2;
+merge_klusters_files(batch_mode,i_batch);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

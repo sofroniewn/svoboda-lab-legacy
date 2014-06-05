@@ -3,10 +3,8 @@ function plot_spike_raster(clustnum,sorted_spikes,trial_range)
 spike_times = sorted_spikes{clustnum}.ephys_time;
 trials = sorted_spikes{clustnum}.trial_num;
 
-spike_times(trials < trial_range(1)) = [];
-trials(trials < trial_range(1)) = [];
-spike_times(trials > trial_range(2)) = [];
-trials(trials > trial_range(2)) = [];
+spike_times(~ismember(trials,trial_range)) = [];
+trials(~ismember(trials,trial_range)) = [];
 
 figure(14)
 clf(14)

@@ -8,7 +8,6 @@ if overwrite == 0 && exist(f_name_sorted_units) == 2
     load(f_name_sorted_units);
 else
 disp(['EXTRACT SORTED UNITS']);
-
 base_dir = all_base_dir{1};
 f_name_sync = fullfile(base_dir,'ephys','sorted',sorted_name,[sorted_name '.sync.1']);
 sync_info = dlmread(f_name_sync);
@@ -58,7 +57,8 @@ sorted_spikes = cell(1,num_clusters);
 for clust_id = 1:num_clusters
     disp(['Cluster ' num2str(clust_id)]);
 	sorted_spikes{clust_id}.clust_id = clust_id-1;
-	spike_inds = cluster_ids == clust_id-1 && sync_info(:,end) == dir_num;
+	spike_inds = cluster_ids == clust_id-1 & sync_info(:,end) == dir_num;
+	if sum(spike_inds) > 0
 	sorted_spikes{clust_id}.detected_chan = mode(sync_info(spike_inds,6));
 	sorted_spikes{clust_id}.trial_num = sync_info(spike_inds,1);
 	sorted_spikes{clust_id}.session_id_num = sync_info(spike_inds,end);
@@ -69,6 +69,7 @@ for clust_id = 1:num_clusters
 	sorted_spikes{clust_id}.spike_amp = spike_amp(spike_inds,sorted_spikes{clust_id}.detected_chan); %spike amplitude on detected channel
 %	sorted_spikes{clust_id}.spike_waves = squeeze(spike_waves(sorted_spikes{clust_id}.detected_chan,:,spike_inds))'; %spike wave forms
 	sorted_spikes{clust_id}.spike_waves = spike_waves(spike_inds,:); %spike wave forms
+	end
 end
 	save(f_name_sorted_units,'sorted_spikes');
 disp(['SAVED SORTED UNITS']);

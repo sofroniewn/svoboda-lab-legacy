@@ -87,6 +87,15 @@ else
     end
 end
 
+global handles_roi_tuning_curve;
+if ~isempty(handles_roi_tuning_curve)
+    if ~isempty(handles_roi_tuning_curve.roi_id)
+        global session_ca;
+        ref.roi_array{handles_roi_tuning_curve.roi_plane}.guiSelectedRoiIds = session_ca.roiIds(handles_roi_tuning_curve.roi_id);
+        ref.roi_array{handles_roi_tuning_curve.roi_plane}.updateImage();
+    end
+end
+
 %set(handles.axes_images,'TightInset',[0.0364    0.0292    0.0056    0.0069])
 colormap(gca,cmap_str);
 

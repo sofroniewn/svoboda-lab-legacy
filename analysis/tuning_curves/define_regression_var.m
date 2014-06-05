@@ -6,10 +6,10 @@ global session_bv
 switch stim_type_name
 	case 'speed'
 		regressor_obj.var_tune = session_bv.data_mat(22,:);
-		regressor_obj.bin_vals = [0:15 Inf]; 
+		regressor_obj.bin_vals = [0:2:30 Inf]; 
 		regressor_obj.bin_type = 'edges';
 		regressor_obj.x_label = 'Speed (cm/s)';
-		regressor_obj.x_range = [0 16];
+		regressor_obj.x_range = [0 30];
 	case 'corPos'
 		regressor_obj.var_tune = session_bv.data_mat(3,:);
 		regressor_obj.bin_vals = [0:29]+0.5; 
