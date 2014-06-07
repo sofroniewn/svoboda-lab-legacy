@@ -26,7 +26,7 @@ hax = axes('Position',[.1 .27 .38 .69]);
 h = imagesc(trial_raster_comb_traj);
 axis off
 set(h, 'AlphaData', ~isnan(trial_raster_comb_traj))
-title(trial_raster.title)
+title(trial_raster.title_1)
 
 hax = axes('Position',[.1 .07 .38 .19]);
 hold on
@@ -42,7 +42,7 @@ hax = axes('Position',[.6 .27 .38 .69]);
 h = imagesc(trial_raster_comb_response);
 axis off
 set(h, 'AlphaData', ~isnan(trial_raster_comb_response))
-title(trial_raster.title)
+title(trial_raster.title_2)
 
 hax = axes('Position',[.6 .07 .38 .19]);
 hold on

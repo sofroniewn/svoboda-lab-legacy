@@ -75,6 +75,7 @@ set(handles.popupmenu_list_plots,'string',plot_names)
 set(handles.popupmenu_list_plots,'value',ref_val)
 set(handles.popupmenu_list_plots,'UserData',ref_val);
 
+
 % Prepare global variables
 clear global im_session;
 global im_session;
@@ -85,6 +86,12 @@ set(handles.popupmenu_spark_regressors,'string',stim_types)
 ref_val = 1;
 set(handles.popupmenu_spark_regressors,'value',ref_val)
 set(handles.popupmenu_spark_regressors,'UserData',ref_val);
+
+ref_val = 2;
+set(handles.popupmenuspark_keep_inds,'value',ref_val)
+set(handles.popupmenuspark_keep_inds,'UserData',ref_val);
+
+
 
 set(handles.popupmenuspark_keep_inds,'string',{'base','running','farFromWall','openloop','closedloop'});
 
@@ -235,7 +242,10 @@ if folder_name ~= 0
     
     ref_val = get(handles.popupmenu_spark_regressors,'UserData');
     set(handles.popupmenu_spark_regressors,'Value',ref_val)
-    
+  
+    ref_val = get(handles.popupmenuspark_keep_inds,'UserData');
+    set(handles.popupmenuspark_keep_inds,'Value',ref_val)
+      
     % Prepare global variables
     clear global im_session
     global im_session;
@@ -1023,7 +1033,7 @@ plot_im_gui(handles,0);
 global handles_roi_ts;
 global handles_roi_tuning_curve;
 if ~isempty(handles_roi_ts)
-    if ishandle(handles_roi_ts.axes)
+    if ishandle(handles_roi_ts.axes(1))
         bv_name_list = cellstr(get(hObject,'String'));
         bv_name = bv_name_list{cur_ind};
         plot_bv_ts(bv_name);
@@ -1227,6 +1237,10 @@ if exist(f_names_ca) == 2 && exist(f_names_bv) == 2
     global session_bv;
     load(f_names_ca)
     load(f_names_bv)
+
+    global summary_ca;    
+    summary_ca = generate_neuron_summary(session_path,0);
+
     im_session.ref.roi_array = session_ca.im_session.ref.roi_array;
     cur_pos = get(handles.figure1,'Position');
     cur_pos(1) = 5;
@@ -1244,13 +1258,23 @@ if exist(f_names_ca) == 2 && exist(f_names_bv) == 2
     set(handles_roi_ts.fig,'Position',[0         633        1432         173])
     set(handles_roi_ts.fig,'Name','ROI Time Series')
     handles_roi_ts.text_roi = title(['ROI ' num2str(0)]);
-    handles_roi_ts.axes = gca;
     hold on
-    handles_roi_ts.plot_bv = plot(session_ca.time,zeros(length(session_ca.time),1),'k');
-    handles_roi_ts.plot_roi = plot(session_ca.time,zeros(length(session_ca.time),1),'k');
-    ylim([-.5 5])
-    xlabel('Time (s)')
-    ylabel('dF/F')
+    [AX,H1,H2] = plotyy(session_ca.time,zeros(length(session_ca.time),1),session_ca.time,zeros(length(session_ca.time),1));
+    handles_roi_ts.plot_bv = H1;
+    handles_roi_ts.plot_roi = H2;
+    handles_roi_ts.axes = [AX(2) AX(1)];
+    set(handles_roi_ts.plot_roi,'Color','k');
+    set(handles_roi_ts.plot_bv,'Color','k');
+    set(handles_roi_ts.axes(1),'YColor','k');
+    set(handles_roi_ts.axes(2),'YColor','k');
+    ylabel(handles_roi_ts.axes(1),'dF/F');
+    ylim(handles_roi_ts.axes(1),[-.5 5]);
+    set(handles_roi_ts.axes(1),'Ytick',[0:1:5]);
+    xlabel(handles_roi_ts.axes(1),'Time (s)');
+    ylabel(handles_roi_ts.axes(2),'');
+    x_time_lim = [floor(session_ca.time(1)) ceil(session_ca.time(end))];
+    xlim(handles_roi_ts.axes(1),x_time_lim);
+    xlim(handles_roi_ts.axes(2),x_time_lim);
 
     scim_frames = logical(session_bv.data_mat(24,:));
     bv_ca_data = session_bv.data_mat(:,scim_frames);
@@ -1274,8 +1298,8 @@ if exist(f_names_ca) == 2 && exist(f_names_bv) == 2
     
     keep_times_scim = session_ca.time;
     keep_times_scim(~keep_inds(scim_frames)) = NaN;
-    handles_roi_ts.plot_keep_inds = plot(keep_times_scim,repmat(-.4,length(session_ca.time),1),'Color',[.6 .6 .6],'LineWidth',2);
-    handles_roi_ts.plot_trial = plot([0 0],[-.3 -.3],'k','LineWidth',2);
+    handles_roi_ts.plot_keep_inds = plot(handles_roi_ts.axes(2),keep_times_scim,repmat(-.4,length(session_ca.time),1),'Color',[.6 .6 .6],'LineWidth',2);
+    handles_roi_ts.plot_trial = plot(handles_roi_ts.axes(2),[0 0],[-.3 -.3],'k','LineWidth',2);
 
     handles_roi_tuning_curve.fig = figure(2);
     handles_roi_tuning_curve.gui_fig = handles.figure1;
@@ -1330,12 +1354,12 @@ if ~isempty(handles_roi_tuning_curve)
     handles_roi_tuning_curve.keep_type_name =  keep_ind_list{cur_ind};
     plot_rois_tuning;
     drawnow
-    plot_rois_raster;
-    drawnow
+    %plot_rois_raster;
+    %drawnow
     figure(handles.figure1);
     global handles_roi_ts;
      if ~isempty(handles_roi_ts)
-        if ishandle(handles_roi_ts.axes)
+        if ishandle(handles_roi_ts.axes(1))
             [keep_inds keep_vars] = define_keep_inds(handles_roi_tuning_curve.keep_type_name,[0 Inf]);
             global session_bv;
             global session_ca;
@@ -1373,7 +1397,7 @@ global handles_roi_ts;
 if ~isempty(handles_roi_tuning_curve)
     handles_roi_tuning_curve.trial_range = eval(cur_str);
     if ~isempty(handles_roi_ts)
-        if ishandle(handles_roi_ts.axes)
+        if ishandle(handles_roi_ts.axes(1))
             global session_bv;
             global session_ca;
             scim_frames = logical(session_bv.data_mat(24,:));
@@ -1386,9 +1410,9 @@ if ~isempty(handles_roi_tuning_curve)
             if isempty(stop_ind)
                 stop_ind = size(bv_ca_data,2);
             end
-            axes(handles_roi_ts.axes);
             x_time_lim = [floor(session_ca.time(start_ind)) ceil(session_ca.time(stop_ind))];
-            xlim(x_time_lim);
+            xlim(handles_roi_ts.axes(1),x_time_lim);
+            xlim(handles_roi_ts.axes(2),x_time_lim);
         end
     end
     plot_rois_tuning;

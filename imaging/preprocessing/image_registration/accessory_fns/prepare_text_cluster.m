@@ -42,7 +42,7 @@ else
 		end
 
 		% create and evaluate the script
-		evalScript = sprintf('qsub -t %g-%g -pe batch 12 -N ''register'' -j y -o /dev/null -b y -cwd -V ''%s %s ${SGE_TASK_ID} > %s${SGE_TASK_ID}.log %s %s %s %s %s''',startTime, endTime, functionPath, directory, logPath, analyze_chan, down_sample, num_files, num_frames, num_pixels);
+		evalScript = sprintf('qsub -t %g-%g -pe batch 16 -N ''register'' -j y -o /dev/null -b y -cwd -V ''%s %s ${SGE_TASK_ID} > %s${SGE_TASK_ID}.log %s %s %s %s %s''',startTime, endTime, functionPath, directory, logPath, analyze_chan, down_sample, num_files, num_frames, num_pixels);
 		display(evalScript)
 	else
 		evalScript = 'No frame count';

@@ -20,6 +20,22 @@ plot_tuning_curves(tuning_curve)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+figure(7)
+clf(7)
+[AX,H1,H2] = plotyy([1:10],rand(10,1),[1:10],rand(10,1))
+    set(H1,'Color','k');
+    set(H2,'Color','r');
+    set(AX(1),'YColor','k');
+	set(AX(2),'YColor','r');
+	axes(AX(1))
+	ylabel('dff')
+	axes(AX(2))
+	ylabel('pos')
+	 %   set(AX(1),'YLabel','dff');
+%	set(AX(2),'YLabel','pos');
+
+
+
 summary_ca = generate_neuron_summary;
 
 
@@ -58,7 +74,7 @@ plot(summary_ca{1}.tuning_param.estPrs(:,1),summary_ca{1}.tuning_param.r2,'.')
 
 
 figure;
-plot(summary_ca{2}.tuning_param.dI,summary_ca{2}.tuning_param.r2,'.')
+plot(summary_ca{1}.tuning_param.dI,summary_ca{1}.tuning_param.r2,'.')
 
 figure;
 plot(summary_ca{2}.tuning_param.estPrs(:,1),summary_ca{2}.tuning_param.r2,'.')

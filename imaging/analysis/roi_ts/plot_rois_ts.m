@@ -9,7 +9,7 @@ global handles_roi_tuning_curve;
 if ~isempty(session_ca)
     
     if ~isempty(handles_roi_ts)
-        if ishandle(handles_roi_ts.axes)
+        if ishandle(handles_roi_ts.axes(1))
             roi_id = find(session_ca.roiIds == tRoi.id);
             if ~isempty(roi_id)
                 
