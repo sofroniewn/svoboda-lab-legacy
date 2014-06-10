@@ -80,6 +80,12 @@ set(handles.popupmenu_list_plots,'UserData',ref_val);
 clear global im_session;
 global im_session;
 
+clear global handles_roi_ts;
+clear global handles_roi_tuning_curve;
+clear global session_bv;
+clear global session_ca;
+clear global session;
+
 % Setup spark analysis output
 [stim_types range_array] = setupReg_spark;
 set(handles.popupmenu_spark_regressors,'string',stim_types)
@@ -250,7 +256,13 @@ if folder_name ~= 0
     clear global im_session
     global im_session;
     
-    handles.base_path = folder_name;
+    clear global handles_roi_ts;
+    clear global handles_roi_tuning_curve;
+    clear global session_bv;
+    clear global session_ca;
+    clear global session;
+
+handles.base_path = folder_name;
     handles.data_dir = fullfile(handles.base_path, 'scanimage');
     
     handles.output_dir = fullfile(handles.base_path, 'session');
@@ -1268,8 +1280,8 @@ if exist(f_names_ca) == 2 && exist(f_names_bv) == 2
     set(handles_roi_ts.axes(1),'YColor','k');
     set(handles_roi_ts.axes(2),'YColor','k');
     ylabel(handles_roi_ts.axes(1),'dF/F');
-    ylim(handles_roi_ts.axes(1),[-.5 5]);
-    set(handles_roi_ts.axes(1),'Ytick',[0:1:5]);
+    ylim(handles_roi_ts.axes(1),[-1 10]);
+    set(handles_roi_ts.axes(1),'Ytick',[0:2:10]);
     xlabel(handles_roi_ts.axes(1),'Time (s)');
     ylabel(handles_roi_ts.axes(2),'');
     x_time_lim = [floor(session_ca.time(1)) ceil(session_ca.time(end))];

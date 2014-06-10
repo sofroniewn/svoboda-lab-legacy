@@ -23,7 +23,7 @@ function [im_data clim_data] = plot_im_gui(handles,plot_on)
     streaming_mode = get(handles.checkbox_streaming,'Value');
 
     roi_draw_mode = get(handles.togglebutton_draw_rois,'Value');
-    plot_planes = plot_planes(1);
+    %plot_planes = plot_planes(1);
     plot_str = ['[im_data clim_data cmap_str] = ' plot_function(1:end-2) '(im_session,ref,trial_num,chan_num,plot_planes,c_lim,c_lim_overlay,streaming_mode);'];
     eval(plot_str);
 

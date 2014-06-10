@@ -43,7 +43,7 @@ else
 
 	fprintf('\nSpark commands: \n')
 	% create script
-	evalScript = 'qsub -jc spark -pe spark 30 -q hadoop2 -j y -o ~/sparklogs/ /sge/current/examples/jobs/sleeper.sh 86400';
+	evalScript = 'qsub -jc spark -pe spark 30 -q hadoop2 -j y -o ~/sparklogs/ /sge/current/examples/jobs/sleeper.sh 7200';
 	fprintf('  %s\n',evalScript)
 	evalScript = 'ssh h??u??.int.janelia.org';
 	fprintf('  %s\n',evalScript)

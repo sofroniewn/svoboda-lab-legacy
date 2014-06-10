@@ -47,7 +47,7 @@ switch stimType
 			vals(end-1) = floor(vals(end-1)/2)*2;
 			vals = round(vals/2)*2;
 			vals = unique(vals);
-			vals = [0:2:40];
+			vals = [0:2:30];
 			regMat = binReg_spark(regress_var,vals,keep_ind);
 			display([stimType ' bin centers'])
 			vals = vals(1:end-1) + diff(vals)/2;

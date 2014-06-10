@@ -14,8 +14,8 @@ switch bv_name
 	y_data = bv_ca_data(22,:);
 	y_col = 'r';
     y_label = 'Speed (cm/s)';
-	y_range = [-5 50];
-	y_tick = [0:10:60];	
+	y_range = [-6 60];
+	y_tick = [0:12:60];	
 case 'corPos'
 	y_data = bv_ca_data(3,:);
 	y_col = 'b';

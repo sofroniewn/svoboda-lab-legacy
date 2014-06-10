@@ -27,7 +27,7 @@ end
 %plot(tuning_curve.x_vals,tuning_curve.means,'LineWidth',2)
 %plot(tuning_curve.x_vals,(tuning_curve.means+tuning_curve.stds))
 %plot(tuning_curve.x_vals,(tuning_curve.means-tuning_curve.stds))
-ylim([-.1 max_y])
+ylim([0 max_y])
 xlim([tuning_curve.x_range])
 xlabel(tuning_curve.x_label)
 ylabel(tuning_curve.y_label)
