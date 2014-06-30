@@ -1,14 +1,14 @@
-function sorted_spikes = extract_sorted_units_klusters(all_base_dir,sorted_name,dir_num,overwrite)
+function sorted_spikes = extract_sorted_units_klusters(base_dir,sorted_name,dir_num,overwrite)
 
 disp(['--------------------------------------------']);
-f_name_sorted_units = fullfile(all_base_dir{dir_num},'ephys','sorted',[sorted_name '_sorted.mat']);
+f_name_sorted_units = fullfile(base_dir,'ephys','sorted',[sorted_name '_sorted.mat']);
 
 if overwrite == 0 && exist(f_name_sorted_units) == 2
     disp(['LOAD SORTED UNITS']);
     load(f_name_sorted_units);
 else
 disp(['EXTRACT SORTED UNITS']);
-base_dir = all_base_dir{1};
+%base_dir = all_base_dir{1};
 f_name_sync = fullfile(base_dir,'ephys','sorted',sorted_name,[sorted_name '.sync.1']);
 sync_info = dlmread(f_name_sync);
 

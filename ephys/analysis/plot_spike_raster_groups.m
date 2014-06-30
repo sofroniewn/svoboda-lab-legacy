@@ -8,10 +8,11 @@ trials = sorted_spikes{clustnum}.trial_num;
 spike_times(~ismember(trials,trial_range)) = [];
 trials(~ismember(trials,trial_range)) = [];
 
+
 max_time = max(spike_times);
 
-figure(14)
-clf(14)
+figure(15)
+clf(15)
 hold on
 
 tot_trials = 0;

@@ -1,17 +1,16 @@
-function plot_isi_full(clust_id,sorted_spikes,trial_range)
+function plot_isi_full(fig_id,clust_id,sorted_spikes,trial_range)
 
-screen_size = get(0,'ScreenSize');
-screen_position_left = [1, 1, screen_size(3)/2, screen_size(4)];
-screen_position_right = [1+screen_size(3)/2, 1, screen_size(3)/2, screen_size(4)];
-screen_position_across = [1, screen_size(4)*2/3, screen_size(4)/3, screen_size(4)/3];
+% screen_size = get(0,'ScreenSize');
+% screen_position_left = [1, 1, screen_size(3)/2, screen_size(4)];
+% screen_position_right = [1+screen_size(3)/2, 1, screen_size(3)/2, screen_size(4)];
+% screen_position_across = [1, screen_size(4)*2/3, screen_size(4)/3, screen_size(4)/3];
 
 spike_times = sorted_spikes{clust_id}.ephys_time;
 trials = sorted_spikes{clust_id}.trial_num;
 
-spike_times(trials < trial_range(1)) = [];
-trials(trials < trial_range(1)) = [];
-spike_times(trials > trial_range(2)) = [];
-trials(trials > trial_range(2)) = [];
+spike_times(~ismember(trials,trial_range)) = [];
+trials(~ismember(trials,trial_range)) = [];
+
 
 
 ISI = diff(spike_times);
@@ -20,10 +19,10 @@ ISI = [ISI;-ISI];
 edges = [-.3:.0005:.3];
 N = histc(ISI,edges);
 
-figure(21)
-clf(21)
+figure(fig_id)
+clf(fig_id)
 hold on
-set(gcf,'Position',screen_position_across)
+set(gcf,'Position',[11   634   358   360])
 if (sum(N))
     phandle = bar(edges,N,'histc');
     set(phandle,'LineStyle','none');
@@ -32,4 +31,6 @@ if (sum(N))
     ylabel('Number of events','FontSize',12);
 end
 
+title(['Cluster Id ' num2str(clust_id)])
+text(-0.03,.95*max(N),['Ch ' num2str(sorted_spikes{clust_id}.detected_chan)],'FontSize',18)
 axis([-.04 .04 0 max(N)]);

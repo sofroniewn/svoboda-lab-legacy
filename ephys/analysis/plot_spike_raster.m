@@ -1,4 +1,4 @@
-function plot_spike_raster(clustnum,sorted_spikes,trial_range)
+function plot_spike_raster(fig_id,clustnum,sorted_spikes,trial_range)
 
 spike_times = sorted_spikes{clustnum}.ephys_time;
 trials = sorted_spikes{clustnum}.trial_num;
@@ -6,9 +6,11 @@ trials = sorted_spikes{clustnum}.trial_num;
 spike_times(~ismember(trials,trial_range)) = [];
 trials(~ismember(trials,trial_range)) = [];
 
-figure(14)
-clf(14)
+
+figure(fig_id)
+clf(fig_id)
 hold on
+set(gcf,'Position',[13   192   356   348])
 
 trial_tmp = [];
 spike_times_psth = {};

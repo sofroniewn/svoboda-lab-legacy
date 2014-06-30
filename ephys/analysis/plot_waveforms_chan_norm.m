@@ -8,8 +8,10 @@ screen_position_across = [1, screen_size(4)*2/3, screen_size(3), screen_size(4)/
 spike_wave_detect = sorted_spikes{clust_id}.spike_waves;
 trials = sorted_spikes{clust_id}.trial_num;
 
+
 spike_wave_detect(~ismember(trials,trial_range),:) = [];
 trials(~ismember(trials,trial_range)) = [];
+
 
 %spike_wave_detect(mean(spike_wave_detect(:,18:22),2)>-100,:) = [];
 spike_wave_detect = bsxfun(@minus,spike_wave_detect,mean(spike_wave_detect(:,1:15),2));

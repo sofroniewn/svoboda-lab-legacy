@@ -4,6 +4,7 @@ param_extract.ch_spikes = ch_spikes;
 param_extract.ch_num_spike = p.ch_ids.num_spike;
 param_extract.ch_ids = p.ch_ids;
 
+% SETTING THRESHOLD
 param_extract.std_level = 3;
 param_extract.retriggerDelay = 4;
 param_extract.shadow_period = 9;

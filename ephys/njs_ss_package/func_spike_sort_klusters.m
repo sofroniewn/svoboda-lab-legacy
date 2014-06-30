@@ -1,4 +1,4 @@
-function failed = func_spike_sort_klusters(batch_mode, over_write, over_write_spikes)
+function failed = func_spike_sort_klusters(batch_mode, over_write, over_write_spikes,xml_path)
 %%
 
 disp(['--------------------------------------------']);
@@ -25,9 +25,11 @@ while i_batch <= numel(batch_mode)
             base_dir = all_base_dir{i_dir};
             cluster_name = base_cluster_name;
             new_files = 0;
+            dir_num = i_dir;
         else
+            dir_num = 1;
             base_dir = all_base_dir{1};
-            if i_dir > 1
+            if numel(file_nums_all) > 1
                 cluster_name = [base_cluster_name '_' num2str(i_dir)];
             else
                 cluster_name = base_cluster_name;
@@ -35,11 +37,13 @@ while i_batch <= numel(batch_mode)
             new_files = 1;
         end
         
-        if new_files && i_dir == 1
+        if new_files && i_dir == 1 && numel(file_nums_all) > 1
              batch_mode{numel(batch_mode)+1} = batch_mode{i_batch};
              batch_mode{numel(batch_mode)}.cluster_name = [batch_mode{i_batch}.cluster_name '_concat'];
+             batch_mode{numel(batch_mode)}.file_nums = cell(1,1);
              for ih = 1:numel(file_nums_all)
-                 batch_mode{numel(batch_mode)}.base_dir{ih} = batch_mode{i_batch}.base_dir{1};
+             %    batch_mode{numel(batch_mode)}.base_dir{ih} = batch_mode{i_batch}.base_dir{1};
+                  batch_mode{numel(batch_mode)}.file_nums{1} = [batch_mode{numel(batch_mode)}.file_nums{1}, batch_mode{i_batch}.file_nums{ih}];
              end
          end
 
@@ -51,8 +55,12 @@ while i_batch <= numel(batch_mode)
         if exist(fullfile(base_dir,'ephys','sorted',cluster_name))~=7
             mkdir(fullfile(base_dir,'ephys','sorted',cluster_name));
         end
+
         
         if new_files || i_dir == 1
+            if ~isempty(xml_path)
+                copyfile(xml_path,[f_name_cluster '.xml']);
+            end
             fid_spk = fopen([f_name_cluster '.spk' '.1'],'w');
             fid_fet = fopen([f_name_cluster '.fet' '.1'],'w');
             fid_res = fopen([f_name_cluster '.res' '.1'],'w');
@@ -113,7 +121,7 @@ while i_batch <= numel(batch_mode)
             n_spk = length(s.index);
             if n_spk > 1
                 disp(['PREPARE KLUSTERS FILE']);
-                [ch_data] = func_parse_klusters(i_dir,file_nums(i_trial),s,p,d.TimeStamps,total_inds);
+                [ch_data] = func_parse_klusters(dir_num,file_nums(i_trial),s,p,d.TimeStamps,total_inds);
                 
                 disp(['SAVE KLUSTERS FILE']);
                 fwrite(fid_spk,ch_data.spk,'int16');
@@ -162,9 +170,11 @@ while i_batch <= numel(batch_mode)
     i_batch = i_batch+1;
 end
 
-   if ~isempty(failed)
-        disp(['BATCH ' num2str(failed) ' FAILED']);
-    end
+if ~isempty(failed)
+    disp(['BATCH ' num2str(failed) ' FAILED']);
+else
+    disp(['BATCH ' num2str(1:numel(batch_mode)) ' SUCCEEDED']);
+end
 
 
 disp(['--------------------------------------------']);

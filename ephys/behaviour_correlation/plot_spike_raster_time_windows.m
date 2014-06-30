@@ -1,14 +1,10 @@
-function tuning_curve = plot_spike_raster_time_windows(clustnum,sorted_spikes,extracted_times,group_ids,max_time,col_mat,plot_on,trial_range)
+function tuning_curve = plot_spike_raster_time_windows(clustnum,sorted_spikes,extracted_times,group_ids,max_time,col_mat,plot_on)
 
 groups = extracted_times(:,6);
 num_groups = length(group_ids);
 
 spike_times = sorted_spikes{clustnum}.ephys_time;
 trials = sorted_spikes{clustnum}.trial_num;
-
-spike_times(~ismember(trials,trial_range)) = [];
-trials(~ismember(trials,trial_range)) = [];
-
 
 if plot_on
 	figure(14)
@@ -29,7 +25,7 @@ for i_group = 1:num_groups
 	tuning_curve.data{i_group} = zeros(length(trials_ids),1);
 	for i_trial = 1:length(trials_ids)
 		tmp = spike_times(trials == extracted_times(trials_ids(i_trial),1))';
-		tmp = tmp(tmp>=extracted_times(trials_ids(i_trial),4)&tmp<=extracted_times(trials_ids(i_trial),5));
+        tmp = tmp(tmp>=extracted_times(trials_ids(i_trial),4)&tmp<=extracted_times(trials_ids(i_trial),5));
 		tmp = tmp - extracted_times(trials_ids(i_trial),4);
     	spike_times_psth{i_trial,1} = tmp;
 		tuning_curve.data{i_group}(i_trial) = length(tmp)/max_time;

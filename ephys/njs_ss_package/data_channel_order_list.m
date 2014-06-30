@@ -26,11 +26,15 @@ simtec32.topConnector.order(4,:) = [32 30 31 28  29 27 25 22 23 21];
 % 
 % Female connectors looking up (as you would be connecting the probes).
 % Starting from the top
-apig64_v1.topConnector.order(1,:) = [9  10 11 12 14 16 23 21 19 17];
-apig64_v1.topConnector.order(2,:) = [-3 -2 -3 -3 13 15 24 22 20 18];
-apig64_v1.topConnector.order(3,:) = [-3 -2 -3 -3 4  2  25 27 29 31];
-apig64_v1.topConnector.order(4,:) = [8   7  6  5 3  1  26 28 30 32];
+% apig64_v1.topConnector.order(1,:) = [9  10 11 12 14 16 23 21 19 17];
+% apig64_v1.topConnector.order(2,:) = [-3 -2 -3 -3 13 15 24 22 20 18];
+% apig64_v1.topConnector.order(3,:) = [-3 -2 -3 -3 4  2  25 27 29 31];
+% apig64_v1.topConnector.order(4,:) = [8   7  6  5 3  1  26 28 30 32];
 
+apig64_v1.topConnector.order(1,:) = [16 17 18 19 21 23 25 27 29 31];
+apig64_v1.topConnector.order(2,:) = [-3 -2 -3 -3 20 22 24 26 28 30];
+apig64_v1.topConnector.order(3,:) = [-3 -2 -3 -3 11 9  7  5  3  1 ];
+apig64_v1.topConnector.order(4,:) = [15 14 13 12 10 8  6  4  2  0 ];
 
 % ***************************
 %  connection.A32x1ToApig64_v1 -> Connection in the top of Apig64
@@ -40,7 +44,7 @@ apig64_v1.topConnector.order(4,:) = [8   7  6  5 3  1  26 28 30 32];
 
 for i=1:32,
     simtec_Pin  = find(simtec32.topConnector.order == i);
-    Intan_Ch(i,1) = apig64_v1.topConnector.order(simtec_Pin);
+    Intan_Ch(i,1) = 1 + apig64_v1.topConnector.order(simtec_Pin);
 end
 
 %% ELCECTRODE specification

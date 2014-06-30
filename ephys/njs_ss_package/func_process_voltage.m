@@ -1,7 +1,7 @@
 function [p d] = func_process_voltage(f_name,ch_common_noise)
 
-freqSampling = 19531.25;
-gain = 200;
+freqSampling = 20833.33; %%% 19531.25 or 20833.33;
+gain = 4*200;
 ch_ids.num_tot = 35;
 ch_ids.num_spike = 32;
 ch_ids.file_trigger = 3;

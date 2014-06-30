@@ -12,11 +12,7 @@ for i_dir = 1:numel(file_nums_all)
     disp(['--------------------------------------------']);
     disp(['MERGE SPLIT ' num2str(i_dir)]);
 
-    if i_dir > 1
         cluster_name = [base_cluster_name '_' num2str(i_dir)];
-    else
-        cluster_name = base_cluster_name;
-    end
     
     if i_dir == 1
         cluster_name_concat = [base_cluster_name '_concat'];

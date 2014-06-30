@@ -8,13 +8,13 @@ drawnow
 batch_mode = cell(1,1);
 
 
-batch_mode{1}.base_dir = {'/Users/sofroniewn/Documents/DATA/ephys_ex/run_06','/Users/sofroniewn/Documents/DATA/ephys_ex/run_06'};
-batch_mode{1}.file_nums = {[1:2],3};
+batch_mode{1}.base_dir = {'/Users/sofroniewn/Documents/DATA/ephys_ex/artifact/run_09/'};
+batch_mode{1}.file_nums = {[1:4]};
 batch_mode{1}.cluster_name = 'klusters_data';
 
-batch_mode{2}.base_dir = {'/Users/sofroniewn/Documents/DATA/ephys_ex/run_06'};
-batch_mode{2}.file_nums = {[1:2],3};
-batch_mode{2}.cluster_name = 'klusters_data_again';
+%batch_mode{2}.base_dir = {'/Users/sofroniewn/Documents/DATA/ephys_ex/run_06'};
+%batch_mode{2}.file_nums = {[1:2],3};
+%batch_mode{2}.cluster_name = 'klusters_data_again';
 
 
 % batch_mode{2}.base_dir = {'Z:\EPHYS_RIG\DATA\anm_241133\2014_06_01\run_02\'};
