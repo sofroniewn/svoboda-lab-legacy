@@ -41,10 +41,18 @@ dff_trace = session_ca.dff(iRoi,:);
 
 
 			caES{1}.decayTimeConstants = caES{1}.decayTimeConstants/10;
-			dffVec = getDffVectorFromEvents(caES{1}, session_ca.time, evdetOpts.timeUnit);
+
+caES = session_ca.event_array{24};
+rescale = 2;
+caES.decayTimeConstants = caES.decayTimeConstants/rescale;
+dffVec = getDffVectorFromEvents(caES, session_ca.time, 2);
+caES.decayTimeConstants = caES.decayTimeConstants*rescale;
 			
-        figure
+ figure(100)
+ clf(100)
  hold on
  plot(session_ca.time,session_ca.dff(24,:))
- plot(caES{1}.eventTimes,1,'.r')
- plot(session_ca.time,dffVec,'g')
+ plot(session_ca.time,session_ca.event_dff(24,:),'g')
+ plot(session_ca.time,session_ca.events(24,:),'k')
+ plot(session_ca.time,dffVec,'m')
+

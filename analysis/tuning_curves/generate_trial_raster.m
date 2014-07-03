@@ -2,7 +2,29 @@ function trial_raster = generate_trial_raster(roi_id,stim_type_name,keep_type_na
 
 global session_bv;
 global session_ca;
-respones_vect = session_ca.dff(roi_id,:);
+
+	global handles_roi_ts
+                switch handles_roi_ts.type
+                    case 'dff'
+                        respones_vect = session_ca.dff(roi_id,:);
+                    case 'events'
+                        respones_vect = session_ca.events(roi_id,:);
+                    case 'event_dff'
+                        respones_vect = session_ca.event_dff(roi_id,:);
+                    case 'raw'
+                        respones_vect = session_ca.rawRoiData(roi_id,:);
+                    case 'deconv'
+      					caES = session_ca.event_array{roi_id};
+                        rescale = 2;
+                        caES.decayTimeConstants = caES.decayTimeConstants/rescale;
+                        respones_vect = getDffVectorFromEvents(caES, session_ca.time, 2);
+                        caES.decayTimeConstants = caES.decayTimeConstants*rescale;
+          		    case 'neuropil'
+                        respones_vect = session_ca.neuropilData(roi_id,:);
+                    otherwise
+                        respones_vect = session_ca.dff(roi_id,:);
+                end
+
 
 if strcmp(keep_type_name,'openloop')
  scim_frames = logical(session_bv.data_mat(24,:));

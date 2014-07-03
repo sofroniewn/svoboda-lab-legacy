@@ -45,7 +45,7 @@ for ij = 1:length(keep_list)
 end
 
 
-tuning_means = NaN(length(keep_list),length(tuning_curve{1}.x_vals));
+tuning_means = NaN(length(keep_list),length(tuning_curve{1}.x_fit_vals));
 for ij = 1:length(keep_list)
 	roi_id = keep_list(ij);
 %	tuning_means(ij,:) = tuning_curve{ij}.means./summary_ca{type_id}.tuning_param.estPrs(roi_id,3);

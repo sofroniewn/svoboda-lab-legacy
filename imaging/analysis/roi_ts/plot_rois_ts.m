@@ -5,6 +5,7 @@ global session_bv;
 global session_ca;
 global handles_roi_ts;
 global handles_roi_tuning_curve;
+handles_roi_ts.tRoi = tRoi;
 
 if ~isempty(session_ca)
     
@@ -18,7 +19,28 @@ if ~isempty(session_ca)
                 
                 
                 x_data = session_ca.time;
-                y_data = session_ca.dff(roi_id,:);
+
+                switch handles_roi_ts.type
+                    case 'dff'
+                        y_data = session_ca.dff(roi_id,:);
+                    case 'events'
+                        y_data = session_ca.events(roi_id,:);
+                    case 'event_dff'
+                        y_data = session_ca.event_dff(roi_id,:);
+                    case 'raw'
+                        y_data = session_ca.rawRoiData(roi_id,:);
+                    case 'deconv'
+                        caES = session_ca.event_array{roi_id};
+                        rescale = 2;
+                        caES.decayTimeConstants = caES.decayTimeConstants/rescale;
+                        y_data = getDffVectorFromEvents(caES, session_ca.time, 2);
+                        caES.decayTimeConstants = caES.decayTimeConstants*rescale;
+                    case 'neuropil'
+                        y_data = session_ca.neuropilData(roi_id,:);
+                    otherwise
+                        y_data = session_ca.dff(roi_id,:);
+                end
+
                 
             else
                 display('ROI id not found')

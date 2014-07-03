@@ -22,7 +22,7 @@ function varargout = image_viewer_GUI(varargin)
 
 % Edit the above text to modify the response to help image_viewer_GUI
 
-% Last Modified by GUIDE v2.5 29-May-2014 08:31:55
+% Last Modified by GUIDE v2.5 03-Jul-2014 14:33:30
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1261,6 +1261,10 @@ if exist(f_names_ca) == 2 && exist(f_names_bv) == 2
     
     global handles_roi_ts;
     global handles_roi_tuning_curve;
+    
+    contents = cellstr(get(handles.popupmenu_roi_ts,'String'));
+    handles_roi_ts.type = contents{get(handles.popupmenu_roi_ts,'Value')};
+
     handles_roi_ts.fig = figure(1);
     handles_roi_ts.gui_fig = handles.figure1;
     cur_str = get(handles.edit_trial_range,'String');
@@ -1442,6 +1446,37 @@ function edit_trial_range_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in popupmenu_roi_ts.
+function popupmenu_roi_ts_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenu_roi_ts (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu_roi_ts contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenu_roi_ts
+contents = cellstr(get(hObject,'String'));
+global handles_roi_ts;
+handles_roi_ts.type = contents{get(hObject,'Value')};
+
+if isfield(handles_roi_ts,'tRoi')
+    if ~isempty(handles_roi_ts.tRoi)
+     plot_rois_ts(handles_roi_ts.tRoi);
+    end
+end
+
+% --- Executes during object creation, after setting all properties.
+function popupmenu_roi_ts_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu_roi_ts (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');

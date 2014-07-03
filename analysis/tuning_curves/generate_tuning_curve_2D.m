@@ -5,7 +5,24 @@ global session_bv;
 global session_ca;
 
 scim_frames = logical(session_bv.data_mat(24,:));
-respones_vect = session_ca.dff(roi_id,:);
+
+	global handles_roi_ts
+                switch handles_roi_ts.type
+                    case 'dff'
+                        respones_vect = session_ca.dff(roi_id,:);
+                    case 'events'
+                        respones_vect = session_ca.events(roi_id,:);
+                    case 'event_dff'
+                        respones_vect = session_ca.event_dff(roi_id,:);
+                    case 'raw'
+                        respones_vect = session_ca.rawRoiData(roi_id,:);
+                    case 'deconv'
+                        respones_vect = conv(session_ca.events(roi_id,:),linspace(1,0,10)/sum(linspace(1,0,10)),'same');
+                    case 'neuropil'
+                        respones_vect = session_ca.neuropilData(roi_id,:);
+                    otherwise
+                        respones_vect = session_ca.dff(roi_id,:);
+                end
 
 [regMat regVect regressor_obj_1 keep_obj] = get_full_regression_vars(stim_type_name_1,keep_type_name,trial_range);
 regVect_1 = regVect(scim_frames);
