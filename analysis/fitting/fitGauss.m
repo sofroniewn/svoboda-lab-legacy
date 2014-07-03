@@ -23,3 +23,5 @@ out.r2 = 1 - out.sse/out.sst;
 out.sigma = var(y-out.predic);
 
 out.dI = estPrs(3)/(estPrs(3) + 2*sqrt(out.sse/sum(~badinds)));
+
+out.keep_val = estPrs(3);

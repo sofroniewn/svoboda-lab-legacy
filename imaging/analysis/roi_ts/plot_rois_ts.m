@@ -39,6 +39,8 @@ if ~isempty(session_ca)
                 drawnow
                 plot_rois_tuning;
                 drawnow
+                plot_rois_tuning_2D;
+                drawnow
                 plot_rois_raster;
                 drawnow
             end

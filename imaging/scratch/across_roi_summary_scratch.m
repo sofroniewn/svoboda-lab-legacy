@@ -50,7 +50,6 @@ for ij = 1:length(keep_list)
 	roi_id = keep_list(ij);
 %	tuning_means(ij,:) = tuning_curve{ij}.means./summary_ca{type_id}.tuning_param.estPrs(roi_id,3);
 	tuning_means(ij,:) = tuning_curve{ij}.model_fit.curve./max(tuning_curve{ij}.model_fit.curve);
-
 end
 
 %vals_new = mean(tuning_means.*repmat(tuning_curve{1}.x_vals',length(keep_list),1),2);
@@ -65,8 +64,14 @@ imagesc(tuning_means(Idx,:))
 
 
 
+%%
+figure(11)
+clf(11)
+corTune = summary_ca{1}.tuning_param.estPrs(:,1);
+speedTune = summary_ca{2}.tuning_param.estPrs(:,1);
+keep_inds = (summary_ca{1}.tuning_param.keep_val > 1 & summary_ca{1}.tuning_param.r2 > .1) | (summary_ca{2}.tuning_param.keep_val > 1 & summary_ca{2}.tuning_param.r2 > .1);
 
-
+plot(corTune(keep_inds),speedTune(keep_inds),'.')
 
 
 

@@ -1267,7 +1267,7 @@ if exist(f_names_ca) == 2 && exist(f_names_bv) == 2
     handles_roi_tuning_curve.trial_range = eval(cur_str);
 
     clf(1);
-    set(handles_roi_ts.fig,'Position',[0         633        1432         173])
+    set(handles_roi_ts.fig,'Position',[5         633        1029         173])
     set(handles_roi_ts.fig,'Name','ROI Time Series')
     handles_roi_ts.text_roi = title(['ROI ' num2str(0)]);
     hold on

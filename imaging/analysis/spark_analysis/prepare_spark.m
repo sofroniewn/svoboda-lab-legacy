@@ -49,7 +49,7 @@ else
 	fprintf('  %s\n',evalScript)
 	evalScript = 'export MASTER=spark://h??u??.int.janelia.org:7077';
 	fprintf('  %s\n',evalScript)
-	evalScript = sprintf('pyspark %s $MASTER %s %s %s',analysis_str,directory,image_names,regress_str);
+	evalScript = sprintf('/usr/local/spark-current/bin/pyspark %s $MASTER %s %s %s',analysis_str,directory,image_names,regress_str);
 	fprintf('  %s\n',evalScript)
 	fprintf('\n')
 

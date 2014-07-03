@@ -4,13 +4,14 @@ close all
 drawnow
 
 base_dir = '/Users/sofroniewn/Documents/DATA/WGNR_DATA/anm_0221172/2014_02_21/run_09';
+base_dir = '/Users/sofroniewn/Documents/DATA/ephys_ex/artifact/run_09/'
 
-f_name = [base_dir '/ephys/raw/anm_221172_2014x02x21_run_09_trial_1.bin'];
+f_name = [base_dir '/ephys/raw/anm_235584_2014x05x22_run_09_trial_40.bin'];
 
 %f_name = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_231090/2014_04_24/run_01/ephys/raw/anm_anm_231090_2014x04x24_run_01_trial_2.bin';
 
 ch_common_noise = [3, 27:29, 32]; % Channels to be used for common noise subtratction
-ch_common_noise = [];
+ch_common_noise = [1:32];
 [p d] = func_process_voltage(f_name,ch_common_noise);
    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,7 +34,7 @@ set(gca,'position',[ 0.1300    0.1100    0.7750    0.8150])
 xlim([0 d.TimeStamps(end)*1.1])
 
 %% INDIVIDUAL CHANNEL RAW VOLTAGES
-ch_id = 1;
+ch_id = 24;
 figure(31)
 clf(31)
 set(gcf,'Position',screen_position_across)
@@ -79,12 +80,12 @@ xlim([0 d.TimeStamps(end)*1.1])
 set(gca,'position',[ 0.05    0.050    0.90    0.90])
 
 %% INDIVIDUAL CHANNEL FILETERED / DENOISED
-ch_id = 10;
+ch_id = 24;
 figure(33)
 clf(33)
 set(gcf,'Position',screen_position_across)
 hold on
-plot(d.TimeStamps,d.ch_MUA(:,ch_id),'b')
+plot(d.TimeStamps,d.ch_MUA(:,ch_id),'g')
 %plot(d.TimeStamps,d.commonNoise(:,1),'k')
 text(d.TimeStamps(end)*1.05,0,num2str(ch_id))
 set(gca,'position',[ 0.1300    0.1100    0.7750    0.8150])
@@ -94,3 +95,15 @@ xlim([0 d.TimeStamps(end)*1.1])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+aa = d.vlt_chan(:,ch_id);
+a_sm = smooth(aa',100,'sgolay',2);
+a_dm = aa - a_sm;
+
+figure;
+hold on
+%plot(a_dm)
+plot(aa)
+plot(a_sm,'r')
+

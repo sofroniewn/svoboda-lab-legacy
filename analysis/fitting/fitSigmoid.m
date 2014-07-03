@@ -1,4 +1,4 @@
-function out = fitSigmoid(x,y)
+function out = fitSigmoid(x,y,initPrs)
 
 % fit a sigmoidal tuning curve to x,y data
 
@@ -8,12 +8,18 @@ x = x(:);
 badinds = isnan(y) | isnan(x);
 
 opts = optimoptions('fminunc','display','off');
-initPrs = [mean(x) 1 prctile(y, 90)];
+if isempty(initPrs)
+	initPrs = [prctile(y, 90) 1 0 mean(x)];
+end
+warning('off','all');
 estPrs = fminunc(@(prs) fitSigmoid_errFun(prs,x,y),initPrs,opts);
+warning('on','all');
 out.estPrs = estPrs;
 out.predic = fitSigmoid_modelFun(x,estPrs);
-
 out.sst = nansum((y-mean(y)).^2);
 out.sse = nansum((y-out.predic).^2);
 out.r2 = 1 - out.sse/out.sst;
 out.sigma = var(y-out.predic);
+
+out.dI = estPrs(1)/(estPrs(1) + 2*sqrt(out.sse/sum(~badinds)));
+out.keep_val = abs(estPrs(1));

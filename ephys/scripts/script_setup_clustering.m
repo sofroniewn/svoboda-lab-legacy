@@ -32,7 +32,7 @@ batch_mode{1}.cluster_name = 'klusters_data';
 % TO PREPARE DATA FOR KLUSTERS
 over_write_vlt = 0;
 over_write_spikes = 0;
-failed = func_spike_sort_klusters(batch_mode,over_write_vlt,over_write_spikes);
+failed = func_spike_sort_klusters(batch_mode,over_write_vlt,over_write_spikes,[]);
 
 %%
 i_batch = 2;
