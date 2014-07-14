@@ -8,7 +8,11 @@ if ~isempty(handles_roi_tuning_curve)
 if ~isempty(handles_roi_tuning_curve.roi_id)
 	stim_type_name_1 = 'speed2D';
 	stim_type_name_2 = 'corPos2D';
-	keep_type_name = 'base';
+	if strcmp(handles_roi_tuning_curve.keep_type_name,'openloop') || strcmp(handles_roi_tuning_curve.keep_type_name,'closedloop')
+		keep_type_name = handles_roi_tuning_curve.keep_type_name;
+	else
+		keep_type_name = 'base';	
+	end
 	trial_range = [0 Inf];
 	roi_id = handles_roi_tuning_curve.roi_id;
 	tuning_curve = generate_tuning_curve_2D(roi_id,stim_type_name_1,stim_type_name_2,keep_type_name,trial_range);

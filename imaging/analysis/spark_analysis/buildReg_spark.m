@@ -32,7 +32,8 @@ switch stimType
 			vals = vals(1:end-1) + diff(vals)/2;
 			display(vals)
 			if det(regMat*regMat') == 0
-				error([stimType ' matrix not invertible'])
+				sum(regMat')
+            	error([stimType ' matrix not invertible'])
 			end
 		end
 	case 'speed'

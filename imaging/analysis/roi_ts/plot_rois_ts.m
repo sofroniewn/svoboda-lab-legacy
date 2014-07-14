@@ -31,7 +31,7 @@ if ~isempty(session_ca)
                         y_data = session_ca.rawRoiData(roi_id,:);
                     case 'deconv'
                         caES = session_ca.event_array{roi_id};
-                        rescale = 2;
+                        rescale = 5;
                         caES.decayTimeConstants = caES.decayTimeConstants/rescale;
                         y_data = getDffVectorFromEvents(caES, session_ca.time, 2);
                         caES.decayTimeConstants = caES.decayTimeConstants*rescale;

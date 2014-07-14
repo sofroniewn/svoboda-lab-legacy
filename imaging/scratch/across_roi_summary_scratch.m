@@ -62,6 +62,23 @@ clf(10)
 imagesc(tuning_means(Idx,:))
 %plot(tuning_means')
 
+tuning_means = NaN(length(keep_list),length(tuning_curve{1}.x_vals));
+for ij = 1:length(keep_list)
+	roi_id = keep_list(ij);
+	tuning_means(ij,:) = tuning_curve{ij}.means./summary_ca{type_id}.tuning_param.estPrs(roi_id,3);
+%	tuning_means(ij,:) = tuning_curve{ij}.model_fit.curve./max(tuning_curve{ij}.model_fit.curve);
+end
+
+%vals_new = mean(tuning_means.*repmat(tuning_curve{1}.x_vals',length(keep_list),1),2);
+vals_new = summary_ca{type_id}.tuning_param.estPrs(keep_inds,1) + 0.1*summary_ca{type_id}.tuning_param.estPrs(keep_inds,2);
+
+[sort_vals Idx] = sort(vals_new);
+
+figure(10)
+clf(10)
+imagesc(tuning_means(Idx,:))
+%plot(tuning_means')
+
 
 
 %%

@@ -12,6 +12,7 @@ regVect = regVect(scim_frames);
 num_groups = regressor_obj.num_groups;
 	
 	global handles_roi_ts
+    if ~isempty(handles_roi_ts)
                 switch handles_roi_ts.type
                     case 'dff'
                         respones_vect = session_ca.dff(roi_id,:);
@@ -23,7 +24,7 @@ num_groups = regressor_obj.num_groups;
                         respones_vect = session_ca.rawRoiData(roi_id,:);
                     case 'deconv'
       					caES = session_ca.event_array{roi_id};
-                        rescale = 2;
+                        rescale = 5;
                         caES.decayTimeConstants = caES.decayTimeConstants/rescale;
                         respones_vect = getDffVectorFromEvents(caES, session_ca.time, 2);
                         caES.decayTimeConstants = caES.decayTimeConstants*rescale;
@@ -32,6 +33,9 @@ num_groups = regressor_obj.num_groups;
                     otherwise
                         respones_vect = session_ca.dff(roi_id,:);
                 end
+    else
+       respones_vect = session_ca.dff(roi_id,:);
+    end
 
 
 % if strcmp(keep_type_name,'openloop')

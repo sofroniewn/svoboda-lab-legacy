@@ -15,7 +15,7 @@ global session_ca;
                         respones_vect = session_ca.rawRoiData(roi_id,:);
                     case 'deconv'
       					caES = session_ca.event_array{roi_id};
-                        rescale = 2;
+                        rescale = 5;
                         caES.decayTimeConstants = caES.decayTimeConstants/rescale;
                         respones_vect = getDffVectorFromEvents(caES, session_ca.time, 2);
                         caES.decayTimeConstants = caES.decayTimeConstants*rescale;

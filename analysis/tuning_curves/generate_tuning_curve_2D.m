@@ -17,8 +17,12 @@ scim_frames = logical(session_bv.data_mat(24,:));
                     case 'raw'
                         respones_vect = session_ca.rawRoiData(roi_id,:);
                     case 'deconv'
-                        respones_vect = conv(session_ca.events(roi_id,:),linspace(1,0,10)/sum(linspace(1,0,10)),'same');
-                    case 'neuropil'
+      					caES = session_ca.event_array{roi_id};
+                        rescale = 5;
+                        caES.decayTimeConstants = caES.decayTimeConstants/rescale;
+                        respones_vect = getDffVectorFromEvents(caES, session_ca.time, 2);
+                        caES.decayTimeConstants = caES.decayTimeConstants*rescale;
+          		    case 'neuropil'
                         respones_vect = session_ca.neuropilData(roi_id,:);
                     otherwise
                         respones_vect = session_ca.dff(roi_id,:);

@@ -13,7 +13,13 @@ h_plot = plot(tuning_param.estPrs(:,1),r2_val,'.','Color',col_mat,'MarkerSize',1
 set(h_plot,'ButtonDownFcn',@update_tuning_summary_plot);
 
 ylim([0 .05+max(tuning_param.r2)])
-xlim([5*floor(min(tuning_param.estPrs(:,1))/5) 5*floor(max(tuning_param.estPrs(:,1))/5)])
+range_vals = [5*floor(min(tuning_param.estPrs(:,1))/5) 5*floor(max(tuning_param.estPrs(:,1))/5)];
+
+if range_vals(1) == range_vals(2)
+    range_vals(2) = range_vals(2) + .1;
+end
+
+xlim(range_vals)
 xlabel(tuning_param.x_label)
 ylabel('r2')
 title_handle = title(tuning_param.title);

@@ -29,6 +29,7 @@ title(title_str)
 
 subplot(1,2,2)
 hold on
+if ~isempty(tuning_curve.model_fit)
 h = imagesc(tuning_curve.x_fit_vals,tuning_curve.y_fit_vals,tuning_curve.model_fit.curve);
 
 plot([floor(min(tuning_curve.x_vals)) floor(min(tuning_curve.x_vals))],[floor(min(tuning_curve.y_vals)) ceil(max(tuning_curve.y_vals))],'k','LineWidth',2)
@@ -48,4 +49,4 @@ set(gca,'layer','top')
 %set(get(hcb,'ylabel'),'String','dff')
 title_str = tuning_curve.title;
 title(title_str)
-
+end
