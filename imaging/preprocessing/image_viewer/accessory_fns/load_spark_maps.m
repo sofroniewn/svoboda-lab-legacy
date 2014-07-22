@@ -54,5 +54,16 @@ if numel(output_files)>0
 				end
 			end
 		end
+		cur_name = ['tune_' im_session.spark_output.regressor.names{ij} '-1.mat'];
+		ind = find(strcmp(output_files,cur_name));
+		if ~isempty(ind) && (overwrite || ~isempty(im_session.spark_output.regressor.tune_var{ij}));
+			load(fullfile(data_dir,'spark',output_files{ind}));
+			im_session.spark_output.regressor.tune_var{ij} = cell(num_planes,num_chan);
+			for ik = 1:num_planes
+				for ih = 1:num_chan
+					im_session.spark_output.regressor.tune_var{ij}{ik,ih} = eval(sprintf('squeeze( %s (:,:,ik))''',['tune_' im_session.spark_output.regressor.names{ij} '1']));
+				end
+			end
+		end
 	end
 end

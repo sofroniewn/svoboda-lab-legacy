@@ -10,9 +10,11 @@ cur_ind = im_session.spark_output.regressor.cur_ind;
 if ~streaming_mode
 	im_array = im_session.spark_output.regressor.stats{cur_ind};
 	im_array_tune = im_session.spark_output.regressor.tune{cur_ind};
+	im_array_tune_var = im_session.spark_output.regressor.tune_var{cur_ind};
 else
 	im_array = im_session.spark_output.streaming.stats{cur_ind};
 	im_array_tune = im_session.spark_output.streaming.tune{cur_ind};
+	im_array_tune_var = im_session.spark_output.streaming.tune_var{cur_ind};
 end
 range_val = im_session.spark_output.regressor.range{cur_ind};
 
@@ -24,7 +26,8 @@ for ij = 1:num_planes
 	start_y = 1 + col_val*ref.im_props.height;
 	
     r = im_array{plot_planes(ij),chan_num};
-	r = (r - clim(1)/10000)/clim(2)*10000;
+    r = r.*(1-im_array_tune_var{plot_planes(ij),chan_num}/max(max(im_array_tune_var{plot_planes(ij),chan_num}))).^(clim(1)/256);
+    r = (r - clim(1)/10000)/clim(2)*10000;
 	
     tune = im_array_tune{plot_planes(ij),chan_num};
 	tune = (tune - min(range_val))/(max(range_val) - min(range_val));

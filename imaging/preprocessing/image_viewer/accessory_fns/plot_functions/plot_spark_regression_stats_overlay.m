@@ -8,8 +8,10 @@ cmap_str = 'gray';
 cur_ind = im_session.spark_output.regressor.cur_ind;
 if ~streaming_mode
 	im_array = im_session.spark_output.regressor.stats{cur_ind};
+	im_array_tune_var = im_session.spark_output.regressor.tune_var{cur_ind};
 else
 	im_array = im_session.spark_output.streaming.stats{cur_ind};
+	im_array_tune_var = im_session.spark_output.streaming.tune_var{cur_ind};
 end
 im_array_lc = im_session.spark_output.localcorr;
 
@@ -20,6 +22,7 @@ for ij = 1:num_planes
 	start_x = 1 + row_val*ref.im_props.height;
 	start_y = 1 + col_val*ref.im_props.height;
 	im_use = im_array{plot_planes(ij),chan_num}*10;
+    im_use = im_use.*(1-im_array_tune_var{plot_planes(ij),chan_num}/max(max(im_array_tune_var{plot_planes(ij),chan_num}))).^(clim(1)/256);
 	im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,1) = im_use;
 	%im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,2) = im_use;
 	im_use = im_array_lc{plot_planes(ij),chan_num};
@@ -31,7 +34,7 @@ end
 
 clim = clim/1000;
 c_lim_overlay = c_lim_overlay/1000;
-im_comb = im_comb - clim(1);
+im_comb = im_comb - clim(1)*0;
 im_comb(:,:,1) = im_comb(:,:,1)/c_lim_overlay;
 im_comb(:,:,3) = im_comb(:,:,3)/clim(2);
 im_comb(im_comb>1) = 1;
