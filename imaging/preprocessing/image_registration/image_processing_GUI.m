@@ -573,9 +573,11 @@ if value && isfield(im_session,'reg')
     
     use_cluser = get(handles.checkbox_use_cluster,'Value');
     overwrite = get(handles.checkbox_overwrite,'Value');
+    processedRoi = generate_roi_indices(im_session.ref.roi_array,neuropilDilationRange,im_session.ref.roi_array_fname,0);
+
     if use_cluser
-        processedRoi = generate_roi_indices(im_session.ref.roi_array,neuropilDilationRange,im_session.ref.roi_array_fname,overwrite);
         evalScript = prepare_roi_extract_cluster;
+        set(handles.togglebutton_gen_catsa,'value',0);
     else
         
         neuropilSubSF = -1;
@@ -632,6 +634,9 @@ if value && isfield(im_session,'reg')
                 set(handles.text_status,'String','Status: saving session')
                 drawnow
                 save_common_data_format(session_path,file_name_tag,overwrite,num_files,behaviour_on,session,im_session,session_ca);
+                
+                summary_ca = generate_neuron_summary(session_path,overwrite);
+
                 set(handles.text_status,'String','Status: waiting')
                 image_processing_gui_toggle_enable(handles,'on',[1 2])
                 set(handles.pushbutton_data_dir,'enable','on')

@@ -23,8 +23,6 @@ function session_ca = generate_session_ca(im_session,num_files,signalChannels,ne
 	    error('generateCalciumTimeSeriesArray::some roiIDs get repeated among roiArray objects passed; this is not allowed.  Aborting.');
 	end
 
-	processedRoi = generate_roi_indices(roiArray,neuropilDilationRange,roi_array_fname,overwrite);
-
 	num_frames = sum(im_session.reg.nFrames(1:num_files));
 	rawRoiData = zeros(length(roiIds),num_frames);
 	antiRoiFluoVec = zeros(numFOVs,num_frames);;
@@ -41,7 +39,7 @@ function session_ca = generate_session_ca(im_session,num_files,signalChannels,ne
 			end
 		end
 		fprintf('(caTSA)  file %g/%g \n',ij,num_files);
-		[rawRoiData_tmp_mat antiRoiFluoVec_tmp_mat neuropilData_tmp_mat] = roiF_extract_cluster(data_dir,num2str(ij),roi_array_fname,roi_name,signalChannels,num2str(overwrite));
+		[rawRoiData_tmp_mat antiRoiFluoVec_tmp_mat neuropilData_tmp_mat] = roiF_extract_cluster(data_dir,num2str(ij),roi_array_fname,roi_name,signalChannels,'0');
 	 	num_frame_file = size(rawRoiData_tmp_mat,2);
         rawRoiData(:,start_ind:start_ind+num_frame_file-1) = rawRoiData_tmp_mat;
 	 	antiRoiFluoVec(:,start_ind:start_ind+num_frame_file-1) = antiRoiFluoVec_tmp_mat;

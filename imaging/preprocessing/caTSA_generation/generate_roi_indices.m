@@ -7,6 +7,7 @@ if exist(fname) == 2 && overwrite == 0
 	load(fname)
 else
 
+			fprintf('Make neuropil array\n');
   	for ik=1:numel(roiArray)
 		% neuropil
 		neuropilRoiArray{ik} = roiArray{ik}.getNeuropilRoiArray (neuropilDilationRange(1), neuropilDilationRange(2));

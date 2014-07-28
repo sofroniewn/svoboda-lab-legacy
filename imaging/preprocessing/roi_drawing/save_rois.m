@@ -10,6 +10,9 @@ for ij = 1:num_planes
 end
 roi_array = im_session.ref.roi_array;
 save(fullfile(im_session.ref.path_name,['ROIs_' file_name_tag '.mat']),'roi_array')
+im_session.ref.roi_array_fname = fullfile(im_session.ref.path_name,['ROIs_' file_name_tag '.mat']);
+neuropilDilationRange = [3 8];
+processedRoi = generate_roi_indices(roi_array,neuropilDilationRange,im_session.ref.roi_array_fname,1);
 
 display('ROIs saved')
 end
