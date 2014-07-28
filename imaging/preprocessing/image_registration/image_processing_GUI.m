@@ -127,7 +127,7 @@ if folder_name ~= 0
     global session;
     session = [];
     session.data = [];
-
+    
     clear global remove_first;
     clear global scim_first_offset;
     global remove_first;
@@ -139,7 +139,7 @@ if folder_name ~= 0
         remove_first = sync_data.remove_first;
         scim_first_offset = sync_data.scim_first_offset;
     end
-
+    
     clear global session_ca;
     global session_ca;
     
@@ -283,7 +283,7 @@ if numel(ref_files) > 0
         set(handles.popupmenu_ref,'value',new_val)
     else
     end
-
+    
     global im_session
     load(fullfile(PathName,FileName));
     name = FileName(12:end);
@@ -362,14 +362,15 @@ if numel(roi_files) > 0
         set(handles.popupmenu_ref,'value',start_val)
     else
     end
-
+    
     load(fullfile(PathName,FileName));
     global im_session
     im_session.ref.roi_array = roi_array;
+    im_session.ref.roi_array_fname = fullfile(PathName,FileName);
     set(handles.togglebutton_gen_catsa,'enable','on')
     drawnow
 else
-        display('No rois found')
+    display('No rois found')
 end
 
 % --- Executes during object creation, after setting all properties.
@@ -523,7 +524,7 @@ else
         set(handles.togglebutton_gen_text,'enable','off')
         set(handles.togglebutton_gen_catsa,'enable','off')
         set(handles.pushbutton_prepare_spark,'enable','off')
-
+        
         % Setup timer
         handles.obj_t = timer('TimerFcn',{@update_im_processing,handles});
         set(handles.obj_t,'ExecutionMode','fixedSpacing');
@@ -543,7 +544,7 @@ else
         image_processing_gui_toggle_enable(handles,'on',[1 2])
         set(handles.pushbutton_data_dir,'enable','on')
         set(handles.pushbutton_prepare_spark,'enable','on')
-       
+        
         time_elapsed_str = sprintf('Time online %.1f s',0);
         set(handles.text_time,'String',time_elapsed_str)
         set(handles.text_time,'Enable','off')
@@ -569,82 +570,90 @@ global im_session;
 if value && isfield(im_session,'reg')
     
     neuropilDilationRange = [3 8];
-    neuropilSubSF = -1;
     
-    num_files = numel(im_session.basic_info.cur_files);
-    % Check if behaviour mode on
-    behaviour_on = get(handles.checkbox_behaviour,'Value');
-    global session;
-    if behaviour_on == 1
-        num_files = min(num_files,numel(session.data));
-    end
-    
-    num_files = min(num_files,length(im_session.reg.nFrames));
-    
-    signalChannels = str2num(get(handles.edit_analyze_chan,'string'));
+    use_cluser = get(handles.checkbox_use_cluster,'Value');
     overwrite = get(handles.checkbox_overwrite,'Value');
-    
-    roi_names =  get(handles.popupmenu_rois,'string');
-    roi_val =  get(handles.popupmenu_rois,'value');
-    roi_file_names = roi_names{roi_val};
-    file_name_tag = roi_file_names(6:end);
-    
-    global session_ca;
-    session_ca = [];
-    if num_files > 0
-        try
-            image_processing_gui_toggle_enable(handles,'off',[1 2])
-            set(handles.pushbutton_data_dir,'enable','off')
-            set(handles.togglebutton_register,'enable','off')
-            set(handles.text_status,'enable','on')
-            set(handles.text_registered_trials,'enable','on')
-            set(handles.togglebutton_gen_text,'enable','off')
-            set(handles.pushbutton_prepare_spark,'enable','off')
-
-            set(handles.text_status,'String','Status: extracting CaTSA')
-            drawnow
-            save_path = fileparts(im_session.basic_info.data_dir);
-            session_path = fullfile(save_path,'session');
-            
-            if exist(session_path) ~= 7
-                mkdir(session_path);
-            end
-            
-            caTSA_file_name = fullfile(session_path,['session_ca_data_' file_name_tag '.mat']);
-            session_ca = get_session_ca(caTSA_file_name,num_files,neuropilDilationRange,signalChannels,neuropilSubSF,file_name_tag,overwrite,handles);
-            
-            save_path = fileparts(im_session.basic_info.data_dir);
-            session_path = fullfile(save_path,'session');
-            if exist(session_path) ~= 7
-                mkdir(session_path);
-            end
-            
-            overwrite = get(handles.checkbox_overwrite,'Value');
-            set(handles.text_status,'String','Status: saving session')
-            drawnow
-            save_common_data_format(session_path,file_name_tag,overwrite,num_files,behaviour_on,session,im_session,session_ca);
-            set(handles.text_status,'String','Status: waiting')
-            image_processing_gui_toggle_enable(handles,'on',[1 2])
-            set(handles.pushbutton_data_dir,'enable','on')
-            set(handles.togglebutton_gen_text,'enable','on')
-            set(handles.pushbutton_prepare_spark,'enable','on')
-            set(hObject,'Value',0);
-            drawnow
-        catch
-            set(handles.text_status,'String','Status: canceled')
-            image_processing_gui_toggle_enable(handles,'on',[1 2])
-            set(handles.pushbutton_data_dir,'enable','on')
-            set(handles.togglebutton_gen_text,'enable','on')
-            set(handles.pushbutton_prepare_spark,'enable','on')
-            set(hObject,'Value',0);
-            drawnow
+    if use_cluser
+        processedRoi = generate_roi_indices(im_session.ref.roi_array,neuropilDilationRange,im_session.ref.roi_array_fname,overwrite);
+        evalScript = prepare_roi_extract_cluster;
+    else
+        
+        neuropilSubSF = -1;
+        
+        num_files = numel(im_session.basic_info.cur_files);
+        % Check if behaviour mode on
+        behaviour_on = get(handles.checkbox_behaviour,'Value');
+        global session;
+        if behaviour_on == 1
+            num_files = min(num_files,numel(session.data));
         end
         
-    else
-        set(hObject,'Value',0);
-        display('No files for CaTSA');
+        num_files = min(num_files,length(im_session.reg.nFrames));
+        
+        signalChannels = str2num(get(handles.edit_analyze_chan,'string'));
+        overwrite = get(handles.checkbox_overwrite,'Value');
+        
+        roi_names =  get(handles.popupmenu_rois,'string');
+        roi_val =  get(handles.popupmenu_rois,'value');
+        roi_file_names = roi_names{roi_val};
+        file_name_tag = roi_file_names(6:end);
+        
+        global session_ca;
+        session_ca = [];
+        if num_files > 0
+            try
+                image_processing_gui_toggle_enable(handles,'off',[1 2])
+                set(handles.pushbutton_data_dir,'enable','off')
+                set(handles.togglebutton_register,'enable','off')
+                set(handles.text_status,'enable','on')
+                set(handles.text_registered_trials,'enable','on')
+                set(handles.togglebutton_gen_text,'enable','off')
+                set(handles.pushbutton_prepare_spark,'enable','off')
+                
+                set(handles.text_status,'String','Status: extracting CaTSA')
+                drawnow
+                save_path = fileparts(im_session.basic_info.data_dir);
+                session_path = fullfile(save_path,'session');
+                
+                if exist(session_path) ~= 7
+                    mkdir(session_path);
+                end
+                
+                caTSA_file_name = fullfile(session_path,['session_ca_data_' file_name_tag '.mat']);
+                session_ca = get_session_ca(caTSA_file_name,num_files,neuropilDilationRange,signalChannels,neuropilSubSF,file_name_tag,overwrite,handles);
+                
+                save_path = fileparts(im_session.basic_info.data_dir);
+                session_path = fullfile(save_path,'session');
+                if exist(session_path) ~= 7
+                    mkdir(session_path);
+                end
+                
+                overwrite = get(handles.checkbox_overwrite,'Value');
+                set(handles.text_status,'String','Status: saving session')
+                drawnow
+                save_common_data_format(session_path,file_name_tag,overwrite,num_files,behaviour_on,session,im_session,session_ca);
+                set(handles.text_status,'String','Status: waiting')
+                image_processing_gui_toggle_enable(handles,'on',[1 2])
+                set(handles.pushbutton_data_dir,'enable','on')
+                set(handles.togglebutton_gen_text,'enable','on')
+                set(handles.pushbutton_prepare_spark,'enable','on')
+                set(hObject,'Value',0);
+                drawnow
+            catch
+                 set(handles.text_status,'String','Status: canceled')
+                 image_processing_gui_toggle_enable(handles,'on',[1 2])
+                 set(handles.pushbutton_data_dir,'enable','on')
+                 set(handles.togglebutton_gen_text,'enable','on')
+                 set(handles.pushbutton_prepare_spark,'enable','on')
+                 set(hObject,'Value',0);
+                 drawnow
+            end
+            
+        else
+            set(hObject,'Value',0);
+            display('No files for CaTSA');
+        end
     end
-    
 else
     if ~isfield(im_session,'reg')
         fprintf('(text)  first register images\n');
@@ -783,17 +792,17 @@ function pushbutton_prepare_spark_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-    overwrite = get(handles.checkbox_overwrite,'Value');
-    behaviour_on = get(handles.checkbox_behaviour,'Value');
+overwrite = get(handles.checkbox_overwrite,'Value');
+behaviour_on = get(handles.checkbox_behaviour,'Value');
 
-    
-    global im_session;
-    save_path = fileparts(im_session.basic_info.data_dir);
-    save_path = fullfile(save_path,'session');
-    save_path_bv = fullfile(save_path,['Text_behaviour.mat']);
 
-    if behaviour_on && exist(save_path_bv) ~= 2
-        fprintf('(spark) no behaviour matrix present please make\n');
-    else
-        prepare_spark(save_path,behaviour_on,overwrite)
-    end
+global im_session;
+save_path = fileparts(im_session.basic_info.data_dir);
+save_path = fullfile(save_path,'session');
+save_path_bv = fullfile(save_path,['Text_behaviour.mat']);
+
+if behaviour_on && exist(save_path_bv) ~= 2
+    fprintf('(spark) no behaviour matrix present please make\n');
+else
+    prepare_spark(save_path,behaviour_on,overwrite)
+end
