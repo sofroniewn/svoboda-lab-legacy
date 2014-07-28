@@ -20,10 +20,12 @@ else
     title_str = tuning_curve.title;
 end
 
+
 max_y = max(max_y(~isnan(max_y)));
-if isempty(max_y) || isnan(max_y)
+if isempty(max_y) || isnan(max_y) || max_y == 0
     max_y = 0.01;
 end
+
 %plot(tuning_curve.x_vals,tuning_curve.means,'LineWidth',2)
 %plot(tuning_curve.x_vals,(tuning_curve.means+tuning_curve.stds))
 %plot(tuning_curve.x_vals,(tuning_curve.means-tuning_curve.stds))

@@ -6,14 +6,16 @@ clear all
 close all
 drawnow
  
-base_dir = {'/Users/sofroniewn/Documents/DATA/ephys_ex/run_06'};
-sorted_name = 'klusters_data_again_concat';
-over_write_sorted = 1;
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_245918/2014_06_21/run_02';
+%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_06';
+
+sorted_name = 'klusters_data';
+over_write_sorted = 0;
 dir_num = 1;
 sorted_spikes = extract_sorted_units_klusters(base_dir,sorted_name,dir_num,over_write_sorted);
 
 % Load in behaviour data
-base_path_behaviour = fullfile(base_dir{dir_num}, 'behaviour');
+base_path_behaviour = fullfile(base_dir, 'behaviour');
 session = load_session_data(base_path_behaviour);
 session = parse_session_data(1,session);
 
@@ -21,9 +23,9 @@ session = parse_session_data(1,session);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Inspect sorted units across entire session
 
-trial_range = [0:1000];
+trial_range = [85:400];
 
-clust_id = 1;
+clust_id = 10;
 
 
 
@@ -169,9 +171,7 @@ if dir_num == 2
 group_ids = [0 2 3 4 Inf];
 groups = 10*session.trial_info.max_laser_power;
 col_mat = [0 0 0;.3 0 0; .6 0 0; 1 0 0];
-
-
-plot_spike_raster_groups(clust_id,sorted_spikes,trial_range,groups,group_ids,col_mat);
+plot_spike_raster_groups(1000*(dir_num-1)+12,clust_id,sorted_spikes,trial_range,groups,group_ids,col_mat);
 %plot([2 2],[0 200],'k')
 xlim([2 3])
 set(gcf,'Position',[385   194   389   345])
@@ -243,6 +243,59 @@ end
 
 
 
+trial_range;
+[laser_data] = func_extract_laser_power(base_dir, trial_range, 'lase_data', 1);
+
+
+plot_evoked_spike_probability(1000*(dir_num-1)+11,clust_id,sorted_spikes,trial_range,laser_data);
+%%
+
+%% 1 multi
+%% 3 act / inh --- interesting
+%% 5 act / inh
+%% 7 act
+%% 8 act
+%% 13 act
+%% 14 act trans on
+%% 15 inh trans 
+%% 17 act trans on
+%% 20 inh
+%% 21 act trans on
+%% 22 act
+%% 23 act trans off
+%% 24 act trans off
+%% 24 act
+%% 28 act trans both
+%% 29 act trans both
+%% 30 act trans both
+%% 31 act
+
+
+clust_id = 13;
+time_range = [0 4];
+plot_group_raster_summary(clust_id,dir_num,sorted_spikes,session,trial_range,time_range)
+
+
+
+
+group_ids = find(session.trial_config.processed_dat.vals.trial_type);
+groups = session.trial_info.inds;
+
+
+
+
+
+
+group_ids = [0 2 3 4 Inf];
+groups = 10*session.trial_info.max_laser_power;
+col_mat = [0 0 0;.3 0 0; .6 0 0; 1 0 0];
+plot_spike_raster_groups(1000*(dir_num-1)+12,clust_id,sorted_spikes,trial_range,groups,group_ids,col_mat);
+%plot([2 2],[0 200],'k')
+xlim([2 3])
+
+
+
+plot_spike_raster(1000*(dir_num-1)+1,clust_id,sorted_spikes,trial_range)
 
 
 
@@ -251,10 +304,99 @@ end
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+edges = [-40:4:40]; % each interval corresponds to one type
+x_vals = edges;
+
+x_vars = cell(7,1);
+x_vars{1}.str = 'session.data{trial_id}.processed_matrix(5,:)';
+x_vars{1}.name = 'Speed';
+x_vars{1}.vals = [5 Inf];
+x_vars{1}.type = 'range';
+x_vars{2}.str = 'session.data{trial_id}.trial_matrix(9,:)';
+x_vars{2}.name = 'ITI';
+x_vars{2}.vals = 0;
+x_vars{2}.type = 'equal';
+x_vars{3}.str = 'session.data{trial_id}.trial_matrix(5,:)/10';
+x_vars{3}.name = 'laser_power';
+x_vars{3}.vals = [0 0.5];
+x_vars{3}.type = 'range';
+x_vars{4}.str = 'session.data{trial_id}.processed_matrix(1,:)';
+x_vars{4}.name = 'Time';
+x_vars{4}.vals = [0 1000];
+x_vars{4}.type = 'range';
+x_vars{5}.str = 'smooth([0;500*diff(smooth(session.data{trial_id}.trial_matrix(3,:),25))],25)';
+%x_vars{5}.str = 'session.data{trial_id}.trial_matrix(3,:)';
+
+x_vars{5}.name = 'Cor_pos';
+x_vars{5}.vals = [0 30];
+x_vars{5}.type = 'range';
+x_vars{6}.str = 'session.data{trial_id}.trial_matrix(8,:)';
+x_vars{6}.name = 'Trial_id';
+x_vars{6}.vals = find(session.trial_config.processed_dat.vals.trial_type);
+x_vars{6}.type = 'equal';
+x_vars{7}.str = 'session.data{trial_id}.processed_matrix(8,:)';
+x_vars{7}.name = 'Trial_num';
+x_vars{7}.vals = trial_range;
+x_vars{7}.type = 'equal';
+
+var_tune = 5;
+t_window_inds = 10; % 200 ms window
+plot_on = 0;
 
 
+% make full variable array for small variable array
+[full_vars col_mat] = expand_behavioural_types(x_vars,var_tune,edges);
 
+% extract num spikes in each time window where conditions are true
+[extracted_times max_time] = extract_time_windows(session,full_vars,t_window_inds,trial_range);
 
+clust_id = 31;
+% either plot rasters or make tuning curves with error bars
+group_ids = [1:length(edges)];
+tuning_curve = plot_spike_raster_time_windows(clust_id,sorted_spikes,extracted_times,group_ids,max_time,col_mat,plot_on);
+tuning_curve.x_vals = x_vals+.5;
+tuning_curve.x_range = [edges(1) edges(end)];
+tuning_curve.model_fit = [];
+tuning_curve.title = ['Cluster Id ' num2str(clust_id)];
+tuning_curve.x_label = 'Wall distance (cm)';
+tuning_curve.y_label = 'Firing rate (Hz)';
+
+fig_id = 1000*(dir_num-1)+40;
+plot_tuning_curves(fig_id,tuning_curve,[0 .5 1])
+%text(25,0,['Trl Rng ' num2str(trial_range)])
+
+set(gcf,'Position',[395   446   367   360])
+%xlim([-3 8])
+
+trial_id = 84;
+clust_id = 13;
+spike_inds = sorted_spikes{clust_id}.ephys_time(sorted_spikes{clust_id}.trial_num == trial_id);
+
+figure(1); 
+clf(1)
+hold on;
+plot(smooth([0;500*diff(smooth(session.data{trial_id}.trial_matrix(3,:),25))],25))
+if ~isempty(spike_inds)
+	plot(spike_inds*500,0,'.r')
+end
+
+%% 14 act trans on
+%% 15 inh trans 
+%% 17 act trans on
+%% 20 inh
+%% 21 act trans on
+%% 22 act
+%% 23 act trans off
+%% 24 act trans off
+%% 24 act
+%% 28 act trans both
+%% 29 act trans both
+%% 30 act trans both
+%% 31 act
 
 
 

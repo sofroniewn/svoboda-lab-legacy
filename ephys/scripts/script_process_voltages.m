@@ -4,9 +4,10 @@ close all
 drawnow
 
 base_dir = '/Users/sofroniewn/Documents/DATA/WGNR_DATA/anm_0221172/2014_02_21/run_09';
-base_dir = '/Users/sofroniewn/Documents/DATA/ephys_ex/artifact/run_09/'
+base_dir = '/Users/sofroniewn/Documents/DATA/ephys_ex/artifact/run_06/'
 
 f_name = [base_dir '/ephys/raw/anm_235584_2014x05x22_run_09_trial_40.bin'];
+f_name = [base_dir '/ephys/raw/anm_anm_235585_2014x06x04_run_06_trial_1.bin'];
 
 %f_name = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_231090/2014_04_24/run_01/ephys/raw/anm_anm_231090_2014x04x24_run_01_trial_2.bin';
 
@@ -34,12 +35,13 @@ set(gca,'position',[ 0.1300    0.1100    0.7750    0.8150])
 xlim([0 d.TimeStamps(end)*1.1])
 
 %% INDIVIDUAL CHANNEL RAW VOLTAGES
-ch_id = 24;
+ch_id = 16;
 figure(31)
 clf(31)
 set(gcf,'Position',screen_position_across)
 hold on
 plot(d.TimeStamps,d.vlt_chan(:,ch_id))
+plot(d.TimeStamps,-(d.aux_chan(:,1)-d.aux_chan(1,1))/10000,'k')
 text(d.TimeStamps(end)*1.05,0,num2str(ch_id))
 set(gca,'position',[ 0.1300    0.1100    0.7750    0.8150])
 xlim([0 d.TimeStamps(end)*1.1])
@@ -80,16 +82,18 @@ xlim([0 d.TimeStamps(end)*1.1])
 set(gca,'position',[ 0.05    0.050    0.90    0.90])
 
 %% INDIVIDUAL CHANNEL FILETERED / DENOISED
-ch_id = 24;
-figure(33)
-clf(33)
+ch_id = 16;
+figure(34)
+clf(34)
 set(gcf,'Position',screen_position_across)
 hold on
+plot(d.TimeStamps,d.vlt_chan(:,ch_id))
 plot(d.TimeStamps,d.ch_MUA(:,ch_id),'g')
 %plot(d.TimeStamps,d.commonNoise(:,1),'k')
+plot(d.TimeStamps,(d.aux_chan(:,1)-d.aux_chan(1,1))/10000,'k')
 text(d.TimeStamps(end)*1.05,0,num2str(ch_id))
 set(gca,'position',[ 0.1300    0.1100    0.7750    0.8150])
-ylim([-.3 .3]*10^(-3))
+%ylim([-.3 .3]*10^(-3))
 xlim([0 d.TimeStamps(end)*1.1])
 
 
@@ -97,7 +101,16 @@ xlim([0 d.TimeStamps(end)*1.1])
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+        ex_trace = vlt_chan(:,i_ch);
+       if ~isempty(ch_ids.artifact)
+            ex_trace = interp1(find(~aux_chan(:,ch_ids.blank)),ex_trace(~aux_chan(:,ch_ids.blank)),[1:length(ex_trace)]);
+       end
+        ch_tmp = timeseries(ex_trace,TimeStamps);  
+        ch_tmp = idealfilter(ch_tmp,filter_range,'pass');
+
+
 aa = d.vlt_chan(:,ch_id);
+
 a_sm = smooth(aa',100,'sgolay',2);
 a_dm = aa - a_sm;
 

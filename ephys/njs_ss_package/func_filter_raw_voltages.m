@@ -8,7 +8,8 @@ function [ch_MUA aux_chan] = func_filter_raw_voltages(TimeStamps, vlt_chan, aux_
     for i_ch = 1:size(vlt_chan,2)
         ex_trace = vlt_chan(:,i_ch);
        if ~isempty(ch_ids.artifact)
-            ex_trace = interp1(find(~aux_chan(:,ch_ids.blank)),ex_trace(~aux_chan(:,ch_ids.blank)),[1:length(ex_trace)]);
+            %ex_trace = interp1(find(~aux_chan(:,ch_ids.blank)),ex_trace(~aux_chan(:,ch_ids.blank)),[1:length(ex_trace)]);
+            %ex_trace = pchip(find(~aux_chan(:,ch_ids.blank)),ex_trace(~aux_chan(:,ch_ids.blank)),[1:length(ex_trace)]);
        end
         ch_tmp = timeseries(ex_trace,TimeStamps);  
         ch_tmp = idealfilter(ch_tmp,filter_range,'pass');

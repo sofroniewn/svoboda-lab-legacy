@@ -13,7 +13,7 @@ if plot_on
 end
 
 tuning_curve.means = NaN(num_groups,1);
-tuning_curve.stds = NaN(num_groups,1);
+tuning_curve.std = NaN(num_groups,1);
 tuning_curve.num_pts = zeros(num_groups,1);
 tuning_curve.data = cell(num_groups,1);
 
@@ -31,7 +31,7 @@ for i_group = 1:num_groups
 		tuning_curve.data{i_group}(i_trial) = length(tmp)/max_time;
 	end
 	tuning_curve.means(i_group) = mean(tuning_curve.data{i_group});
-	tuning_curve.stds(i_group) = std(tuning_curve.data{i_group});
+	tuning_curve.std(i_group) = std(tuning_curve.data{i_group});
 	tuning_curve.num_pts(i_group) = length(tuning_curve.data{i_group});
 	[psth t] = func_getPSTH(spike_times_psth,0,max_time);
 	if plot_on

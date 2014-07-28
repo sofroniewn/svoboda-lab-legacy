@@ -1,4 +1,4 @@
-function plot_spike_raster_groups(clustnum,sorted_spikes,trial_range,groups,group_ids,col_mat)
+function [tuning_curve t psth_all] = plot_spike_raster_groups(fig_id,clustnum,sorted_spikes,trial_range,groups,group_ids,col_mat,time_range,mean_ds)
 
 num_groups = length(group_ids);
 
@@ -11,14 +11,26 @@ trials(~ismember(trials,trial_range)) = [];
 
 max_time = max(spike_times);
 
-figure(15)
-clf(15)
+figure(fig_id)
+clf(fig_id)
 hold on
+set(gcf,'Position',[11    67   556   408])
+
+tuning_curve.means = NaN(num_groups,1);
+tuning_curve.std = NaN(num_groups,1);
+tuning_curve.num_pts = zeros(num_groups,1);
+tuning_curve.data = cell(num_groups,1);
+
+
+
+
+
 
 tot_trials = 0;
 max_psth = 0;
-for i_group = 1:num_groups-1
-	trials_ids = find(groups >= group_ids(i_group) & groups < group_ids(i_group+1));
+psth_all = [];
+for i_group = 1:num_groups
+	trials_ids = find(groups == group_ids(i_group));
 	trials_ids(~ismember(trials_ids,trial_range)) = [];
 	spike_times_psth = {};
 	for i_trial = 1:length(trials_ids)
@@ -26,22 +38,45 @@ for i_group = 1:num_groups-1
 	end
 	[psth t] = func_getPSTH(spike_times_psth,0,max_time);
 	if ~isempty(psth)
-		plot(t(10:end-10),psth(10:end-10),'LineWidth',2,'Color',col_mat(i_group,:));
-    	max_psth = max(max_psth,max(psth(10:end-10)));
+		psth_all = [psth_all;psth];
+	else
+		psth_all = [psth_all;zeros(1,length(t))];
 	end
 	tot_trials = tot_trials + length(trials_ids);
 end
 
+col_map_all = col_mat;
+	psth_all = conv2(psth_all,ones(mean_ds,20)/mean_ds/20,'same');
+	psth_all = psth_all(1:mean_ds:end,:);
+	%col_map_all = conv2(col_map_all,ones(mean_ds,1)/mean_ds,'same');
+	col_map_all = col_map_all(1:mean_ds:end,:);
+
+for i_group = 1:size(psth_all,1)
+	plot(t(10:end-10),psth_all(i_group,10:end-10),'LineWidth',2,'Color',col_map_all(i_group,:));
+end
+    max_psth = max(psth_all(:));
+	
+
+
 prev_trials = ceil(max_psth*10)/10;
-for i_group = 1:num_groups-1
-	trials_ids = find(groups >= group_ids(i_group) & groups < group_ids(i_group+1));
+for i_group = 1:num_groups
+	trials_ids = find(groups == group_ids(i_group));
 	spike_times_psth = {};
 	trials_group = trials(ismember(trials,trials_ids));
 	trials_ids(~ismember(trials_ids,trial_range)) = [];
+	tot_spikes = zeros(length(trials_ids),1);
 	for i_trial = 1:length(trials_ids)
     	spike_times_psth{i_trial,1} = spike_times(trials == trials_ids(i_trial))';
 		trials_group(trials_group == trials_ids(i_trial)) = i_trial;
+	    tmp = spike_times(trials == trials_ids(i_trial))';
+    	tmp = tmp(tmp>time_range(1) & tmp<time_range(2));
+		tot_spikes(i_trial) = length(tmp)/(time_range(2) - time_range(1));
 	end
+	tuning_curve.data{i_group} = tot_spikes;
+	tuning_curve.means(i_group) = mean(tuning_curve.data{i_group});
+	tuning_curve.std(i_group) = std(tuning_curve.data{i_group});
+	tuning_curve.num_pts(i_group) = length(tuning_curve.data{i_group});
+
 	spike_times_group = spike_times(ismember(trials,trials_ids));
 	if ~isempty(spike_times_group)
 		plot(spike_times_group,prev_trials+(trials_group)*100/tot_trials,'.','Color',col_mat(i_group,:))
