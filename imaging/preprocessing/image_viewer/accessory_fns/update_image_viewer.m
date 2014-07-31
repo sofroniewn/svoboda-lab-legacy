@@ -5,12 +5,22 @@ update_plot = load_spark_maps_streaming(handles.output_dir);
 % Check imaging directory
 global im_session;
 
-if update_plot
-    plot_im_gui(handles,0);
+if ~isempty(im_session.spark_output.streaming.stats{1}{1,1})
+    num_spark_files = size(im_session.spark_output.streaming.stats{1}{1,1},3);
+    set(handles.text_streamed_files,'String',['Streamed ' num2str(num_spark_files) ' / ' num2str(max(im_session.spark_output.streaming.tot_num_files))])
+    if handles.trial_slider_spark
+        set(handles.slider_trial_num,'max',num_spark_files)
+        set(handles.slider_trial_num,'SliderStep',[1/(num_spark_files+1) 1/(num_spark_files+1)])
+        update_im = get(handles.checkbox_plot_images,'value');
+        if update_im == 1 && update_plot
+            set(handles.edit_trial_num,'String',num2str(num_spark_files));
+            set(handles.slider_trial_num,'Value',num_spark_files);
+        end
+    end
 end
 
-if ~isempty(im_session.spark_output.streaming.stats{1}{1,1})
-    set(handles.text_streamed_files,'String',['Streamed ' num2str(size(im_session.spark_output.streaming.stats{1}{1,1},3)) ' / ' num2str(max(im_session.spark_output.streaming.tot_num_files))])
+if update_plot
+    plot_im_gui(handles,0);
 end
 
 cur_files = dir(fullfile(im_session.basic_info.data_dir,'*_main_*.tif'));
@@ -122,13 +132,14 @@ for ij = num_old_files + 1: numel(cur_files_reg)
     %	trial_data = [];
     %end
     
-    if numel(cur_files_reg) > 0
+
+    if numel(cur_files_reg) > 0 && ~handles.trial_slider_spark
         set(handles.slider_trial_num,'max',ij)
         set(handles.slider_trial_num,'SliderStep',[1/(ij+1) 1/(ij+1)])
     end
     
     update_im = get(handles.checkbox_plot_images,'value');
-    if update_im == 1 && numel(cur_files_reg) > 0
+    if update_im == 1 && numel(cur_files_reg) > 0 && ~handles.trial_slider_spark
         set(handles.edit_trial_num,'String',num2str(ij));
         set(handles.slider_trial_num,'Value',ij);
         plot_im_gui(handles,0);

@@ -127,6 +127,8 @@ set(handles.axes_images,'HandleVisibility','on')
 imshow(zeros(512,512))
 handles.cbar_axes = [];
 
+handles.trial_slider_spark = 0;
+
 size_lateral_displacements = 20;
 edges_lateral_displacements= [-size_lateral_displacements:size_lateral_displacements];
 handles.edges_lateral_displacements = edges_lateral_displacements;
@@ -206,7 +208,55 @@ function popupmenu_list_plots_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns popupmenu_list_plots contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupmenu_list_plots
 
+contents = cellstr(get(hObject,'String'));
+plot_str = contents{get(hObject,'Value')};
+
+if strcmp(plot_str(1:10),'plot_spark')
+    handles.trial_slider_spark = 1;
+else
+    handles.trial_slider_spark = 0;    
+end
+
+
+cur_slider_val = get(handles.slider_trial_num,'Value');    
+cur_slider_max = get(handles.slider_trial_num,'max');    
+
+global im_session
+
+if handles.trial_slider_spark
+    if ~isempty(size(im_session.spark_output.streaming.stats{1}{1,1}))
+        cur_file_max = size(im_session.spark_output.streaming.stats{1}{1,1},3);
+    else
+        cur_file_max = 0;
+    end
+else
+    if ~isempty(im_session.reg)
+        cur_file_max = length(im_session.reg.nFrames);
+    else
+        cur_file_max = 0;
+    end
+end
+
+if cur_file_max ~= cur_slider_max
+    if cur_file_max == 0
+    set(handles.slider_trial_num,'max',1)
+    set(handles.slider_trial_num,'SliderStep',[1 1])
+    cur_slider_val = 0;
+    set(handles.slider_trial_num,'Value',cur_slider_val);
+    set(handles.edit_trial_num,'String',num2str(cur_slider_val));
+    else
+    set(handles.slider_trial_num,'max',cur_file_max)
+    set(handles.slider_trial_num,'SliderStep',[1/(cur_file_max+1) 1/(cur_file_max+1)])
+    cur_slider_val = round(cur_slider_val*cur_file_max/cur_slider_max);
+    set(handles.slider_trial_num,'Value',cur_slider_val);
+    set(handles.edit_trial_num,'String',num2str(cur_slider_val));
+    end
+end
+    
+guidata(hObject, handles);
+
 plot_im_gui(handles,0);
+
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu_list_plots_CreateFcn(hObject, eventdata, handles)
@@ -257,7 +307,9 @@ if folder_name ~= 0
   
     ref_val = get(handles.popupmenuspark_keep_inds,'UserData');
     set(handles.popupmenuspark_keep_inds,'Value',ref_val)
-      
+   
+    handles.trial_slider_spark = 0;
+
     % Prepare global variables
     clear global im_session
     global im_session;
@@ -268,7 +320,7 @@ if folder_name ~= 0
     clear global session_ca;
     clear global session;
 
-handles.base_path = folder_name;
+    handles.base_path = folder_name;
     handles.data_dir = fullfile(handles.base_path, 'scanimage');
     
     handles.output_dir = fullfile(handles.base_path, 'session');
@@ -1033,7 +1085,7 @@ folder_name = uigetdir(start_path);
 if folder_name ~= 0
     handles.output_dir = folder_name;
     load_spark_maps(handles.output_dir,1);
-    load_spark_maps_streaming(handles.output_dir);
+    %load_spark_maps_streaming(handles.output_dir);
 end
 guidata(hObject, handles);
 

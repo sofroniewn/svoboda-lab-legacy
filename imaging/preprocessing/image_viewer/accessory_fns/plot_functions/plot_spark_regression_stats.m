@@ -15,10 +15,11 @@ else
     im_array = im_session.spark_output.streaming.stats{cur_ind};
 	im_array_tune = im_session.spark_output.streaming.tune{cur_ind};
 	im_array_tune_var = im_session.spark_output.streaming.tune_var{cur_ind};
-    cur_trial = ceil((trial_num+.01)/(length(im_session.reg.nFrames)+.01)*size(im_session.spark_output.streaming.stats{cur_ind}{1},3));
+    %cur_trial = ceil((trial_num+.01)/(length(im_session.reg.nFrames)+.01)*size(im_session.spark_output.streaming.stats{cur_ind}{1},3));
+    cur_trial = trial_num;
 end
 
-if ~isempty(im_array{1,1})
+if ~isempty(im_array{1,1}) && cur_trial > 0
 for ij = 1:num_planes
 	row_val = mod(ij-1,plane_rep);
 	col_val = floor((ij-1)/plane_rep);

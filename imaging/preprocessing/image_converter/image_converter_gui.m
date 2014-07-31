@@ -27,11 +27,11 @@ function varargout = image_converter_gui(varargin)
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @image_converter_gui_OpeningFcn, ...
-                   'gui_OutputFcn',  @image_converter_gui_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @image_converter_gui_OpeningFcn, ...
+    'gui_OutputFcn',  @image_converter_gui_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -72,7 +72,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = image_converter_gui_OutputFcn(hObject, eventdata, handles) 
+function varargout = image_converter_gui_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -90,31 +90,30 @@ start_path = handles.datastr;
 folder_name = uigetdir(start_path);
 
 if folder_name ~= 0
-	handles.data_dir = folder_name;
-	handles.output_dir = fullfile(folder_name,'scanimage','streaming');
-
-% Check number of imaging files
-global im_conv_session;
-cur_files = dir(fullfile(handles.data_dir,'scanimage','summary','*_summary_*.mat'));
-im_conv_session.cur_files = cur_files;
-overwrite = get(handles.checkbox_overwrite,'value');
-if overwrite
-	im_conv_session.num_conv = 0;
-else
-	cur_files = dir(fullfile(handles.output_dir,'*.bin'));
-	im_conv_session.num_conv = numel(cur_files);
-end
-
+    handles.data_dir = folder_name;
+    handles.output_dir = fullfile(folder_name,'scanimage','streaming');
+    
+    % Check number of imaging files
+    global im_conv_session;
+    cur_files = dir(fullfile(handles.data_dir,'scanimage','summary','*_summary_*.mat'));
+    im_conv_session.cur_files = cur_files;
+    overwrite = get(handles.checkbox_overwrite,'value');
+    if overwrite
+        im_conv_session.num_conv = 0;
+    else
+        cur_files = dir(fullfile(handles.output_dir,'*.bin'));
+        im_conv_session.num_conv = numel(cur_files);
+    end
+    
     set(handles.text_done,'String',['Files converted ' num2str(im_conv_session.num_conv) '/' num2str(numel(im_conv_session.cur_files))]);
-
-	set(handles.togglebutton_start,'enable','on')
-	set(handles.pushbutton_set_output_dir,'enable','on')
-	%set(handles.edit_num_frames,'enable','on')
-	set(handles.checkbox_overwrite,'enable','on')
-	%set(handles.text_num_frames,'enable','on')
-	set(handles.text_done,'enable','on')
-
-	guidata(hObject, handles);
+    
+    set(handles.pushbutton_set_output_dir,'enable','on')
+    %set(handles.edit_num_frames,'enable','on')
+    set(handles.checkbox_overwrite,'enable','on')
+    %set(handles.text_num_frames,'enable','on')
+    set(handles.text_done,'enable','on')
+    
+    guidata(hObject, handles);
 end
 
 % --- Executes on button press in pushbutton_set_output_dir.
@@ -127,19 +126,43 @@ folder_name = uigetdir(start_path);
 
 if folder_name ~= 0
     handles.output_dir = fullfile(folder_name,'streaming');
-
-% Check number of imaging files
-global im_conv_session;
-overwrite = get(handles.checkbox_overwrite,'value');
-if overwrite
-	im_conv_session.num_conv = 0;
-else
-	cur_files = dir(fullfile(handles.output_dir,'*.bin'));
-	im_conv_session.num_conv = numel(cur_files);
-end
-
-
-guidata(hObject, handles);
+    
+    if exist(handles.output_dir) ~= 7
+        mkdir(handles.output_dir)
+    end
+    
+    if exist([handles.output_dir '_tmp']) ~= 7
+        mkdir([handles.output_dir '_tmp'])
+    end
+    
+    ref_files = dir(fullfile(handles.data_dir,'scanimage','ref_images_*.mat'));
+    if numel(ref_files) > 0
+        load(fullfile(handles.data_dir,'scanimage',ref_files(1).name));
+        im_props = ref.im_props;
+    else
+        display('No reference images found, use defaults')
+        im_props.nchans = 1;
+        im_props.numPlanes = 4;
+        im_props.height = 512;
+        im_props.width = 512;
+    end
+    
+    varNames = {'corPos'};
+    binVals = {[0:2:30]};
+    save_streaming_config(handles.output_dir,varNames,binVals,im_props);
+    
+    % Check number of imaging files
+    global im_conv_session;
+    overwrite = get(handles.checkbox_overwrite,'value');
+    if overwrite
+        im_conv_session.num_conv = 0;
+    else
+        cur_files = dir(fullfile(handles.output_dir,'*.bin'));
+        im_conv_session.num_conv = numel(cur_files);
+    end
+    
+    set(handles.togglebutton_start,'enable','on')  
+    guidata(hObject, handles);
 end
 
 % --- Executes on button press in togglebutton_start.
@@ -155,36 +178,12 @@ value = get(hObject,'Value');
 
 if value == 1
     tic;
-
-	if exist(handles.output_dir) ~= 7
-		mkdir(handles.output_dir)
-	end
-
-    if exist([handles.output_dir '_tmp']) ~= 7
-        mkdir([handles.output_dir '_tmp'])
-    end
-
-    ref_files = dir(fullfile(handles.data_dir,'scanimage','ref_images_*.mat'));
-    if numel(ref_files) > 0
-        load(fullfile(handles.data_dir,'scanimage',ref_files(1).name));
-        im_props = ref.im_props;
-    else
-        display('No reference images found, use defaults')
-        im_props.nchans = 1;
-	    im_props.numPlanes = 4;
-        im_props.height = 512;
-        im_props.width = 512;
-    end
-
-	varNames = {'corPos'};
-	binVals = {[0:2:30]};
-	save_streaming_config(handles.output_dir,varNames,binVals,im_props);
-
-	set(handles.pushbutton_set_dir,'enable','off')
-	set(handles.pushbutton_set_output_dir,'enable','off')
-	%set(handles.edit_num_frames,'enable','off')
-	set(handles.checkbox_overwrite,'enable','off')
-	%set(handles.text_num_frames,'enable','off')
+    
+    set(handles.pushbutton_set_dir,'enable','off')
+    set(handles.pushbutton_set_output_dir,'enable','off')
+    %set(handles.edit_num_frames,'enable','off')
+    set(handles.checkbox_overwrite,'enable','off')
+    %set(handles.text_num_frames,'enable','off')
     
     % Setup timer
     set(handles.text_time,'Enable','on')
@@ -204,11 +203,11 @@ else
     stop(handles.obj_t);
     delete(handles.obj_t);
     
- 	set(handles.pushbutton_set_dir,'enable','on')
-	set(handles.pushbutton_set_output_dir,'enable','on')
-	%set(handles.edit_num_frames,'enable','on')
-	set(handles.checkbox_overwrite,'enable','on')
-	%set(handles.text_num_frames,'enable','on')  
+    set(handles.pushbutton_set_dir,'enable','on')
+    set(handles.pushbutton_set_output_dir,'enable','on')
+    %set(handles.edit_num_frames,'enable','on')
+    set(handles.checkbox_overwrite,'enable','on')
+    %set(handles.text_num_frames,'enable','on')
     
     time_elapsed_str = sprintf('Time online %.1f s',0);
     set(handles.text_time,'String',time_elapsed_str)
@@ -227,9 +226,9 @@ function checkbox_overwrite_Callback(hObject, eventdata, handles)
 global im_conv_session;
 overwrite = get(handles.checkbox_overwrite,'value');
 if overwrite
-	im_conv_session.num_conv = 0;
+    im_conv_session.num_conv = 0;
 else
-	cur_files = dir(fullfile(handles.output_dir,'*.bin'));
-	im_conv_session.num_conv = numel(cur_files);
+    cur_files = dir(fullfile(handles.output_dir,'*.bin'));
+    im_conv_session.num_conv = numel(cur_files);
 end
-    set(handles.text_done,'String',['Files converted ' num2str(im_conv_session.num_conv) '/' num2str(numel(im_conv_session.cur_files))]);
+set(handles.text_done,'String',['Files converted ' num2str(im_conv_session.num_conv) '/' num2str(numel(im_conv_session.cur_files))]);
