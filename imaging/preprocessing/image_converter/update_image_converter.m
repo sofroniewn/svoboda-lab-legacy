@@ -20,9 +20,10 @@ if numel(cur_files) > im_conv_session.num_conv+1;
     base_name = base_name(1:replace_start-1);
     type_name = 'registered';
 
-    num_bytes = (im_summary.props.num_frames+4)*4;
+    num_bytes = (im_summary.props.num_frames+4)*2;
     file_name = [base_name type_name trial_str '_bytes' num2str(num_bytes)];
-    fname_output = fullfile(handles.output_dir,[file_name '.bin']);
+    fname_output = fullfile([handles.output_dir '_tmp'],[file_name '.bin']);
+    fname_output_move = fullfile([handles.output_dir],[file_name '.bin']);
     fid_output = fopen(fname_output,'w');
 
     for ij = 1:im_summary.props.num_planes
@@ -58,6 +59,10 @@ if numel(cur_files) > im_conv_session.num_conv+1;
     c = repmat(1,length(x),1);
     behaviour_var = [x y z c behaviour_var];
     fwrite(fid_output,behaviour_var','uint16');
+    fclose(fid_output);
+
+    evalString = sprintf('!mv %s %s',fname_output,fname_output_move);
+    eval(evalString);
 
     im_conv_session.num_conv = im_conv_session.num_conv + 1;
     set(handles.text_done,'String',['Files converted ' num2str(im_conv_session.num_conv) '/' num2str(numel(cur_files))]); 

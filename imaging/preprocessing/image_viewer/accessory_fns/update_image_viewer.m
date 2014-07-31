@@ -2,12 +2,17 @@ function update_image_viewer(obj,event,handles)
 
 % Check spark output directory
 update_plot = load_spark_maps_streaming(handles.output_dir);
+% Check imaging directory
+global im_session;
+
 if update_plot
     plot_im_gui(handles,0);
 end
 
-% Check imaging directory
-global im_session;
+if ~isempty(im_session.spark_output.streaming.stats{1}{1,1})
+    set(handles.text_streamed_files,'String',['Streamed ' num2str(size(im_session.spark_output.streaming.stats{1}{1,1},3)) ' / ' num2str(max(im_session.spark_output.streaming.tot_num_files))])
+end
+
 cur_files = dir(fullfile(im_session.basic_info.data_dir,'*_main_*.tif'));
 if numel(cur_files) <= numel(im_session.basic_info.cur_files)
     %    	disp('No new files')

@@ -109,9 +109,14 @@ im_session.spark_output.regressor.tune = cell(numel(stim_types),1);
 im_session.spark_output.regressor.tune_var = cell(numel(stim_types),1);
 im_session.spark_output.regressor.range = range_array;
 im_session.spark_output.regressor.cur_ind = ref_val;
-im_session.spark_output.streaming.tune = [];
-im_session.spark_output.streaming.stats = [];
-im_session.spark_output.streaming.tot_num_files = 0;
+im_session.spark_output.streaming.tune_var = cell(numel(stim_types),1);
+im_session.spark_output.streaming.tune = cell(numel(stim_types),1);
+im_session.spark_output.streaming.stats = cell(numel(stim_types),1);
+
+
+im_session.spark_output.streaming.tot_num_files = zeros(numel(stim_types),1);
+
+set(handles.text_streamed_files,'String',['Streamed ' num2str(0) ' / ' num2str(0)])
 
 % Disable buttons
 image_viewer_gui_toggle_enable(handles,'off',[1 3 4 5 6 7])
@@ -280,10 +285,13 @@ handles.base_path = folder_name;
     im_session.spark_output.regressor.tune_var = cell(numel(stim_types),1);
     im_session.spark_output.regressor.range = range_array;
     im_session.spark_output.regressor.cur_ind = get(handles.popupmenu_spark_regressors,'UserData');
-    im_session.spark_output.streaming.tune = [];
-    im_session.spark_output.streaming.stats = [];
-    im_session.spark_output.streaming.tot_num_files = 0;
-    
+    im_session.spark_output.streaming.tune = cell(numel(stim_types),1);
+    im_session.spark_output.streaming.tune_var = cell(numel(stim_types),1);
+    im_session.spark_output.streaming.stats = cell(numel(stim_types),1);
+ 
+    im_session.spark_output.streaming.tot_num_files = zeros(numel(stim_types),1);
+    set(handles.text_streamed_files,'String',['Streamed ' num2str(0) ' / ' num2str(0)])
+
     set(handles.text_anm,'Enable','on')
     set(handles.text_date,'Enable','on')
     set(handles.text_run,'Enable','on')

@@ -1,6 +1,6 @@
 function save_streaming_config(base_path,varNames,binVals,im_props)
 
- 
+base_path = fileparts(base_path);
 fid_config = fopen(fullfile(base_path,'streaming_config.txt'),'w');
 str = sprintf('dims: [%d,%d,%d,%d]',im_props.height,im_props.width,im_props.numPlanes,im_props.nchans);
 fprintf(fid_config,'%s\n',str);

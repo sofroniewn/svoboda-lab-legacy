@@ -160,6 +160,10 @@ if value == 1
 		mkdir(handles.output_dir)
 	end
 
+    if exist([handles.output_dir '_tmp']) ~= 7
+        mkdir([handles.output_dir '_tmp'])
+    end
+
     ref_files = dir(fullfile(handles.data_dir,'scanimage','ref_images_*.mat'));
     if numel(ref_files) > 0
         load(fullfile(handles.data_dir,'scanimage',ref_files(1).name));

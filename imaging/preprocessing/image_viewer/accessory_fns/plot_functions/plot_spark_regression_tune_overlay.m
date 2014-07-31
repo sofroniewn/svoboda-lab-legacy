@@ -8,28 +8,33 @@ cmap_str = 'jet';
 
 cur_ind = im_session.spark_output.regressor.cur_ind;
 if ~streaming_mode
-	im_array = im_session.spark_output.regressor.stats{cur_ind};
-	im_array_tune = im_session.spark_output.regressor.tune{cur_ind};
-	im_array_tune_var = im_session.spark_output.regressor.tune_var{cur_ind};
+    im_array = im_session.spark_output.regressor.stats{cur_ind};
+    im_array_tune = im_session.spark_output.regressor.tune{cur_ind};
+    im_array_tune_var = im_session.spark_output.regressor.tune_var{cur_ind};
+    cur_trial = 1;
 else
-	im_array = im_session.spark_output.streaming.stats{cur_ind};
-	im_array_tune = im_session.spark_output.streaming.tune{cur_ind};
-	im_array_tune_var = im_session.spark_output.streaming.tune_var{cur_ind};
+    im_array = im_session.spark_output.streaming.stats{cur_ind};
+    im_array_tune = im_session.spark_output.streaming.tune{cur_ind};
+    im_array_tune_var = im_session.spark_output.streaming.tune_var{cur_ind};
+    cur_trial = ceil((trial_num+.01)/(length(im_session.reg.nFrames)+.01)*size(im_session.spark_output.streaming.stats{cur_ind}{1},3));
 end
+
 range_val = im_session.spark_output.regressor.range{cur_ind};
 
-if ~isempty(im_array) && ~isempty(im_array_tune) && ~isempty(im_session.spark_output.mean)
+if ~isempty(im_array{1,1}) && ~isempty(im_array_tune{1,1}) && ~isempty(im_session.spark_output.mean)
 for ij = 1:num_planes
 	row_val = mod(ij-1,plane_rep);
 	col_val = floor((ij-1)/plane_rep);
 	start_x = 1 + row_val*ref.im_props.height;
 	start_y = 1 + col_val*ref.im_props.height;
 	
-    r = im_array{plot_planes(ij),chan_num};
-    r = r.*(1-im_array_tune_var{plot_planes(ij),chan_num}/max(max(im_array_tune_var{plot_planes(ij),chan_num}))).^(clim(1)/256);
+    r = im_array{plot_planes(ij),chan_num}(:,:,cur_trial);
+    if max(max(im_array_tune_var{plot_planes(ij),chan_num}(:,:,cur_trial)))~=0
+        r = r.*(1-im_array_tune_var{plot_planes(ij),chan_num}(:,:,cur_trial)/max(max(im_array_tune_var{plot_planes(ij),chan_num}(:,:,cur_trial)))).^(clim(1)/256);
+    end
     r = (r - clim(1)/10000)/clim(2)*10000;
 	
-    tune = im_array_tune{plot_planes(ij),chan_num};
+    tune = im_array_tune{plot_planes(ij),chan_num}(:,:,cur_trial);
 	tune = (tune - min(range_val))/(max(range_val) - min(range_val));
    
     tmp = jet(clip(tune,0,1));
