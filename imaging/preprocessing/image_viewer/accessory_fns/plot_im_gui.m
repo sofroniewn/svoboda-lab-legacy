@@ -12,6 +12,7 @@ function [im_data clim_data] = plot_im_gui(handles,plot_on)
     plot_val =  get(handles.popupmenu_list_plots,'value');
     plot_function = plot_names{plot_val};
     trial_num = get(handles.slider_trial_num,'Value');
+    trial_num = round(trial_num);
     chan_num = str2double(get(handles.edit_display_chan,'String'));
     prev_ref = get(handles.popupmenu_ref_selector,'Value')-1;
     if prev_ref 

@@ -4,7 +4,6 @@ disp(['--------------------------------------------']);
 lite = 1;
 f_name_laser_power = fullfile(base_dir,'ephys','sorted',laser_power_name);
 
-       
 
 if over_write == 0 && exist(f_name_laser_power) == 2
     disp(['LOAD LASER POWER']);
@@ -17,11 +16,13 @@ else
     file_list = func_list_files(base_dir,f_name_flag,file_nums);
 
     laser_data.trial = NaN(numel(file_list)-1,1);
+    laser_data.max_power = NaN(numel(file_list)-1,1);
     laser_data.powers = cell(numel(file_list)-1,1);
     laser_data.onset_inds = cell(numel(file_list)-1,1);
     laser_data.offset_inds = cell(numel(file_list)-1,1);
     laser_data.onset_times = cell(numel(file_list)-1,1);
     laser_data.offset_times = cell(numel(file_list)-1,1);
+    laser_data.raw_vlt = [];
     
     for i_trial = 1:numel(file_list)-1
         disp(file_list{i_trial});
@@ -62,15 +63,39 @@ else
 
         laser_data.onset_times{i_trial} = d.TimeStamps(laser_data.onset_inds{i_trial});
         laser_data.offset_times{i_trial} = d.TimeStamps(laser_data.offset_inds{i_trial});
-    
+
+        if i_trial == 1
+            num_chan = size(d.vlt_chan,2);
+            num_samps_pre = round(p.freqSampling*.025);
+            num_samps_post = round(p.freqSampling*.095);
+            window_range = -num_samps_pre:num_samps_post;
+            num_samples = num_samps_pre+num_samps_post+1;
+            laser_data.raw_vlt = zeros(numel(file_list)-1,num_chan,num_samples);
+            laser_data.time_window = window_range/p.freqSampling;
+        end
+
+    ch_LFP = NaN(size(d.vlt_chan));
+    for i_ch = 1:size(d.vlt_chan,2)
+        ch_tmp = timeseries(d.vlt_chan(:,i_ch),d.TimeStamps);  
+        ch_tmp = idealfilter(ch_tmp,[0 2000],'pass');
+        ch_LFP(:,i_ch) = ch_tmp.data;
+    end
+
+
+
         laser_data.powers{i_trial} = NaN(length(laser_data.onset_inds{i_trial}),1);
         for ij = 1:length(laser_data.onset_inds{i_trial})
             laser_data.powers{i_trial}(ij) = mean(d.aux_chan(laser_data.onset_inds{i_trial}(ij):laser_data.offset_inds{i_trial}(ij),laser_chan));
             if laser_data.offset_inds{i_trial}(ij) <= laser_data.onset_inds{i_trial}(ij)
                 error('offset does not follow onset')
             end
+            window = laser_data.onset_inds{i_trial}(ij) + window_range;
+            tmp_vlt = ch_LFP(window,:)';
+            cur_vlt = squeeze(laser_data.raw_vlt(i_trial,:,:));
+            laser_data.raw_vlt(i_trial,:,:) = cur_vlt + tmp_vlt/length(laser_data.onset_inds{i_trial});
         end
-    
+        laser_data.max_power(i_trial) = max(laser_data.powers{i_trial});
+        
         disp(['--------------------------------------------']);
     end
 

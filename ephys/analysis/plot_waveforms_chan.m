@@ -31,7 +31,28 @@ if strcmp(type,'avg')
     plot(time_vect,avg_spk,'Color','r','LineWidth',2)
     plot(time_vect,avg_spk + std_spk,'Color','c','LineWidth',1)
     plot(time_vect,avg_spk - std_spk,'Color','c','LineWidth',1)
-  
+    
+    time_vect_interp = ([1:.2:53]-20)/20833.33/2*1000;
+    avg_spk_interp = spline(time_vect,avg_spk,time_vect_interp);
+
+    [min_avg ind_min] = min(avg_spk_interp);
+    ind_first_half_min = find(avg_spk_interp<min_avg/2,1,'first');
+    ind_second_half_min = find(avg_spk_interp<min_avg/2,1,'last')+1;
+    tau_1 = time_vect_interp(ind_min) - time_vect_interp(ind_first_half_min);
+    tau_2 = time_vect_interp(ind_second_half_min) - time_vect_interp(ind_min);
+   
+    [max_avg ind_first_max] = max(avg_spk_interp(1:ind_min));
+    [max_avg ind_second_max] = max(avg_spk_interp(ind_min:end));
+    ind_second_max = ind_second_max + ind_min-1;
+    tau_3 = time_vect_interp(ind_second_max) - time_vect_interp(ind_first_max);
+    
+    %plot(time_vect_interp,avg_spk_interp,'Color','g','LineWidth',2)
+    
+    text(.7*(time_vect(end)),-180,sprintf('t1 %.0f us',1000*tau_1))
+    text(.7*(time_vect(end)),-220,sprintf('t2 %.0f us',1000*tau_2))
+    text(.7*(time_vect(end)),-260,sprintf('t3 %.0f us',1000*tau_3))
+    text(.7*(time_vect(end)),-300,sprintf('Max %.0f uV',min(avg_spk_interp)))
+ 
 else
     figure(fig_id+1)
     clf(fig_id+1)
@@ -42,7 +63,8 @@ end
 %plot(0,-.35*10^(-3),'.k','MarkerSize',30)
 title(['Cluster Id ' num2str(clust_id)])
 xlim([time_vect(1) 1.2*(time_vect(end))])
-ylim([-550 200])
+ylim([-500 150])
+set(gca,'ytick',[-400:100:100])
 xlabel('Time (ms)')
 ylabel('Amplitude (uV)')
 

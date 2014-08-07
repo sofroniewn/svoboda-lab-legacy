@@ -21,7 +21,7 @@ for ij = 1:numel(im_session.spark_output.regressor.names)
     output_files_r2 = dir(fullfile(data_dir,['r2-' im_session.spark_output.regressor.names{ij} '-*.bin']));
     output_files_tune = dir(fullfile(data_dir,['tuning-' im_session.spark_output.regressor.names{ij} '-*.bin']));
     if numel(output_files_r2) > im_session.spark_output.streaming.tot_num_files(ij) && numel(output_files_tune) > im_session.spark_output.streaming.tot_num_files(ij)
-        for ig = im_session.spark_output.streaming.tot_num_files(ij)+1:numel(output_files_r2)
+        for ig = im_session.spark_output.streaming.tot_num_files(ij)+1:numel(output_files_r2)-1
             r2_fid = fopen(fullfile(data_dir,output_files_r2(ig).name),'r');
             r2_mat = fread(r2_fid,'double','ieee-be');
             fclose(r2_fid);
@@ -54,8 +54,8 @@ for ij = 1:numel(im_session.spark_output.regressor.names)
                     end
                 end
             end
+	        im_session.spark_output.streaming.tot_num_files(ij) = im_session.spark_output.streaming.tot_num_files(ij) + 1;
         end
-        im_session.spark_output.streaming.tot_num_files(ij) = numel(output_files_r2);
         update_plot = 1;
     end
 end

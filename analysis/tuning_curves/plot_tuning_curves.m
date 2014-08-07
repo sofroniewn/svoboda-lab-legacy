@@ -15,7 +15,7 @@ end
 
 if ~isempty(tuning_curve.model_fit)
     plot(tuning_curve.x_fit_vals,tuning_curve.model_fit.curve,'LineWidth',2,'Color','k')
-    title_str = sprintf('%s     mean %.1f    r2 %.2f    dI %.2f',tuning_curve.title,tuning_curve.model_fit.estPrs(1),tuning_curve.model_fit.r2,tuning_curve.model_fit.dI);
+    title_str = sprintf('%s     mean %.1f    r2 %.2f',tuning_curve.title,tuning_curve.model_fit.estPrs(1),tuning_curve.model_fit.r2);
 else
     title_str = tuning_curve.title;
 end

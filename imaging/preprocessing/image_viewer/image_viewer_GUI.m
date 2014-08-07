@@ -239,12 +239,14 @@ end
 
 if cur_file_max ~= cur_slider_max
     if cur_file_max == 0
+    set(handles.slider_trial_num,'Value',0);
     set(handles.slider_trial_num,'max',1)
     set(handles.slider_trial_num,'SliderStep',[1 1])
     cur_slider_val = 0;
     set(handles.slider_trial_num,'Value',cur_slider_val);
     set(handles.edit_trial_num,'String',num2str(cur_slider_val));
     else
+    set(handles.slider_trial_num,'Value',0);
     set(handles.slider_trial_num,'max',cur_file_max)
     set(handles.slider_trial_num,'SliderStep',[1/(cur_file_max+1) 1/(cur_file_max+1)])
     cur_slider_val = round(cur_slider_val*cur_file_max/cur_slider_max);

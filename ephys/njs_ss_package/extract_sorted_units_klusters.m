@@ -1,7 +1,7 @@
 function sorted_spikes = extract_sorted_units_klusters(base_dir,sorted_name,dir_num,overwrite)
 
 disp(['--------------------------------------------']);
-f_name_sorted_units = fullfile(base_dir,'ephys','sorted',[sorted_name '_sorted.mat']);
+f_name_sorted_units = fullfile(base_dir,'ephys','sorted',[sorted_name '_sorted_' num2str(dir_num) '.mat']);
 
 if overwrite == 0 && exist(f_name_sorted_units) == 2
     disp(['LOAD SORTED UNITS']);
@@ -59,7 +59,13 @@ for clust_id = 1:num_clusters
 	sorted_spikes{clust_id}.clust_id = clust_id-1;
 	spike_inds = cluster_ids == clust_id-1 & sync_info(:,end) == dir_num;
 	if sum(spike_inds) > 0
-	sorted_spikes{clust_id}.detected_chan = mode(sync_info(spike_inds,6));
+		% Delete copies of the spike within two samples
+    	spike_inds = find(spike_inds);
+    	spike_times = spike_amp(spike_inds,end);
+    	ISI = diff(spike_times);
+    	spike_inds(ISI <= 4) = [];
+
+    sorted_spikes{clust_id}.detected_chan = mode(sync_info(spike_inds,6));
 	sorted_spikes{clust_id}.trial_num = sync_info(spike_inds,1);
 	sorted_spikes{clust_id}.session_id_num = sync_info(spike_inds,end);
 	sorted_spikes{clust_id}.ephys_index = sync_info(spike_inds,2);
@@ -67,8 +73,10 @@ for clust_id = 1:num_clusters
 	sorted_spikes{clust_id}.bv_index = sync_info(spike_inds,10);
 	sorted_spikes{clust_id}.laser_power = sync_info(spike_inds,9)/10^3;
 	sorted_spikes{clust_id}.spike_amp = spike_amp(spike_inds,sorted_spikes{clust_id}.detected_chan); %spike amplitude on detected channel
+	sorted_spikes{clust_id}.session_time = spike_amp(spike_inds,end); %session time
 %	sorted_spikes{clust_id}.spike_waves = squeeze(spike_waves(sorted_spikes{clust_id}.detected_chan,:,spike_inds))'; %spike wave forms
 	sorted_spikes{clust_id}.spike_waves = spike_waves(spike_inds,:); %spike wave forms
+	sorted_spikes{clust_id}.mean_spike_amp = mean(spike_amp(spike_inds,:),1)'; %spike amplitude on detected channel
 	end
 end
 	save(f_name_sorted_units,'sorted_spikes');

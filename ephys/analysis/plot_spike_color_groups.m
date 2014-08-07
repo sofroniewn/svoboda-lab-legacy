@@ -1,4 +1,4 @@
-function [tuning_curve t psth_all] = plot_spike_raster_groups(fig_id,clustnum,sorted_spikes,trial_range,groups,group_ids,col_mat,time_range,mean_ds)
+function [tuning_curve t psth_all] = plot_spike_color_groups(fig_id,clustnum,sorted_spikes,trial_range,groups,group_ids,col_mat,time_range,mean_ds)
 
 num_groups = length(group_ids);
 
@@ -45,8 +45,8 @@ for i_group = 1:num_groups
 	tot_trials = tot_trials + length(trials_ids);
 end
 
-	col_map_all = col_mat;
-	psth_all = conv2(psth_all,ones(mean_ds,40)/mean_ds/40,'same');
+col_map_all = col_mat;
+	psth_all = conv2(psth_all,ones(mean_ds,20)/mean_ds/20,'same');
 	psth_all = psth_all(1:mean_ds:end,:);
 	%col_map_all = conv2(col_map_all,ones(mean_ds,1)/mean_ds,'same');
 	col_map_all = col_map_all(1:mean_ds:end,:);

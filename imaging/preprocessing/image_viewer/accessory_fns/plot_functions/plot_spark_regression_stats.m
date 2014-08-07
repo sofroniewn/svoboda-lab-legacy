@@ -19,6 +19,7 @@ else
     cur_trial = trial_num;
 end
 
+if ~isempty(im_array)
 if ~isempty(im_array{1,1}) && cur_trial > 0
 for ij = 1:num_planes
 	row_val = mod(ij-1,plane_rep);
@@ -30,6 +31,7 @@ for ij = 1:num_planes
     im_use = im_use.*(1-im_array_tune_var{plot_planes(ij),chan_num}(:,:,cur_trial)/max(max(im_array_tune_var{plot_planes(ij),chan_num}(:,:,cur_trial)))).^(c_lim_overlay/256);
     end
 	im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1) = im_use;
+end
 end
 end
 

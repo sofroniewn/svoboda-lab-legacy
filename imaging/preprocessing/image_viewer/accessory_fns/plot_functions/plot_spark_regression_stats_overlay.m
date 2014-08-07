@@ -21,6 +21,7 @@ end
 
 im_array_lc = im_session.spark_output.localcorr;
 
+if ~isempty(im_array)
 if ~isempty(im_array{1,1}) && ~isempty(im_array_lc) && cur_trial > 0
 for ij = 1:num_planes
 	row_val = mod(ij-1,plane_rep);
@@ -37,6 +38,7 @@ for ij = 1:num_planes
 	%im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,2) = im_use;
 	im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,3) = im_use;
 
+end
 end
 end
 

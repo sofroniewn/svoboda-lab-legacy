@@ -22,6 +22,7 @@ end
 
 range_val = im_session.spark_output.regressor.range{cur_ind};
 
+if ~isempty(im_array) && ~isempty(im_array_tune)
 if ~isempty(im_array{1,1}) && ~isempty(im_array_tune{1,1}) && ~isempty(im_session.spark_output.mean) && cur_trial > 0
 for ij = 1:num_planes
 	row_val = mod(ij-1,plane_rep);
@@ -65,6 +66,7 @@ for ij = 1:num_planes
     im_use(im_use<0) = 0;
     
 	im_comb(start_y:start_y+ref.im_props.height-1,start_x:start_x+ref.im_props.width-1,:) = im_use;
+end
 end
 end
 

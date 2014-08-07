@@ -14,6 +14,7 @@ if start_trial == 1
     session.trial_info.time = zeros(num_trials,1);
     session.trial_info.length = zeros(num_trials,1);
     session.trial_info.forward_distance = zeros(num_trials,1);
+    session.trial_info.lateral_distance = zeros(num_trials,1);
     session.trial_info.frac = zeros(num_trials,1);
     session.trial_info.completed = zeros(num_trials,1);
     session.trial_info.rewarded = zeros(num_trials,1);
@@ -25,6 +26,7 @@ if start_trial == 1
     session.trial_info.firstFrameNumberRelTrigger = zeros(num_trials,1);
     session.trial_info.max_laser_power = zeros(num_trials,1);
     session.trial_info.mean_speed = zeros(num_trials,1);
+
 end
 
 for ij = start_trial:num_trials
@@ -75,6 +77,7 @@ for ij = start_trial:num_trials
     session.trial_info.trial_num(ij) = ij;
     session.trial_info.time(ij) = session.data{ij}.processed_matrix(1,end); % trial time
     session.trial_info.forward_distance(ij) = session.data{ij}.processed_matrix(2,end); % forward distance
+    session.trial_info.lateral_distance(ij) = session.data{ij}.processed_matrix(3,end); % forward distance
     session.trial_info.frac(ij) = session.data{ij}.processed_matrix(4,end); % fraction of trial completed
     
     session.trial_info.completed(ij) = session.trial_info.frac(ij)>.95; % if more than 95% of trial completed

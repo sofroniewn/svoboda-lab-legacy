@@ -67,7 +67,7 @@ end
 
 if fit_model_on
     full_x = [];
-full_y = [];
+    full_y = [];
 for ij = 1:length(tuning_curve.x_vals)
 	full_x = [full_x;repmat(tuning_curve.x_vals(ij),length(tuning_curve.data{ij}),1)];
 	full_y = [full_y;tuning_curve.data{ij}'];

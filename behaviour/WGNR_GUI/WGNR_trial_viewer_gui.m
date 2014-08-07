@@ -419,8 +419,8 @@ function popupmenu_plot_options_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns popupmenu_plot_options contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupmenu_plot_options
 
-contents = cellstr(get(hObject,'String'));
-value = get(hObject,'Value');
+contents = cellstr(get(hObject,'String'))
+value = get(hObject,'Value')
 set(handles.uitable_plotting,'Data',handles.trial_config.plot_options.dat{value});
 set(handles.edit_plot_options_name,'String',contents(value));
 

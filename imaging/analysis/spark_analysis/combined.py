@@ -3,13 +3,10 @@ import argparse
 import glob
 import re
 
-from thunder.regression.util import RegressionModel
-from thunder.util.load import load
-from thunder.util.save import save
-from thunder.sigprocessing.stats import stats
-from thunder.sigprocessing.localcorr import localcorr
-from thunder.regression.tuning import tuning
-from thunder.regression.regress import regress
+from thunder.utils import load
+from thunder.utils import save
+from thunder.regression import RegressionModel, TuningModel
+from thunder.timeseries import Stats, LocalCorr
 
 from pyspark import SparkContext
 
@@ -43,12 +40,12 @@ if __name__ == "__main__":
     data.cache()
 
     # compute mean map
-    vals = stats(data,"mean")
+    vals = Stats("mean").calc(data)
     save(vals,outputdir,"mean_vals","matlab")
 
     # compute local cor
     if args.neighbourhood != 0:
-        cor = localcorr(data,args.neighbourhood)
+        cor = LocalCorr(neighborhood=args.neighbourhood).calc(data)
         save(cor,outputdir,"local_corr","matlab")
 
     # if stim argument is not default
@@ -60,8 +57,10 @@ if __name__ == "__main__":
         # compute regression
         for i in range(len(stims)):
             modelfile = os.path.join(args.datafolder, args.basename + stims[i])
-            stats, betas = regress(data, modelfile, args.regressmode)
-            tune = tuning(betas,modelfile, args.tuningmode)
+            m = RegressionModel.load(modelfile, args.regressmode)
+            betas, stats, resid = m.fit(data)
+            t = TuningModel.load(modelfile, args.tuningmode)
+            tune = t.fit(betas)
             out_name = "stats_" + stims[i]
             save(stats, outputdir, out_name, "matlab")
             out_name = "tune_" + stims[i]

@@ -32,6 +32,7 @@ if numel(cur_files) > im_conv_session.num_conv+1;
             registered_file_name = fullfile(handles.data_dir,'scanimage',type_name,[file_name '.bin']); 
             fid_reg = fopen(registered_file_name,'r');
             key_values = fread(fid_reg,[im_summary.props.num_frames+4, im_summary.props.height*im_summary.props.width],'uint16');
+            key_values = uint16(key_values);
             fwrite(fid_output,key_values,'uint16');        
         end
     end

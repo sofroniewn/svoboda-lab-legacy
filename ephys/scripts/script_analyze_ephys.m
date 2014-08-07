@@ -6,8 +6,8 @@ clear all
 close all
 drawnow
  
-base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_245918/2014_06_21/run_02';
-%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_06';
+%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_245918/2014_06_21/run_02';
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_06';
 
 sorted_name = 'klusters_data';
 over_write_sorted = 0;
@@ -22,22 +22,52 @@ session = parse_session_data(1,session);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Inspect sorted units across entire session
+[laser_data] = func_extract_laser_power(base_dir, trial_range, 'laser_data', 0);
 
 trial_range = [85:400];
+clust_id = 3;
+time_range = [.8 1.3];
 
-clust_id = 10;
+time_range = [.8 1.3];
+time_range = [0 4];
+
+trial_range = [85:400];
+group_ids = find(~session.trial_config.processed_dat.vals.trial_type);
+groups = session.trial_info.inds;
+keep_trials = find(ismember(groups,group_ids) & session.trial_info.mean_speed>5);
+trial_range_bv = trial_range(ismember(trial_range,keep_trials));
+%behaviour_vector = session.trial_info.run_angle - mean(session.trial_info.run_angle(ismember(groups,[11:13])));
+behaviour_vector = session.trial_info.run_angle - mean(session.trial_info.run_angle(ismember(groups,[11:13])));
+%behaviour_vector = session.trial_info.forward_distance;
+color_vector = session.trial_info.inds;
+plot_behaviour_corr(11,clust_id,sorted_spikes,behaviour_vector,trial_range_bv,time_range,color_vector)
 
 
+
+plot_group_raster_summary(clust_id,dir_num,sorted_spikes,session,trial_range,time_range)
+
+
+
+session.trial_info.lateral_distance = zeros(size(session.trial_info.forward_distance));
+for ij = 1:numel(session.data)
+    session.trial_info.lateral_distance(ij) = session.data{ij}.processed_matrix(3,end); % forward distance
+end
+session.trial_info.run_angle = 180/pi*atan2(session.trial_info.lateral_distance,session.trial_info.forward_distance);
+
+
+plot_spike_pair_corr(32,11,17,sorted_spikes,trial_range,[0 1 0])
 
 
 plot_spike_raster(1000*(dir_num-1)+1,clust_id,sorted_spikes,trial_range)
-plot_isi_full(1000*(dir_num-1)+10,clust_id,sorted_spikes,trial_range)
+plot_isi_full(1000*(dir_num-1)+10,clust_id,sorted_spikes,trial_range,[])
 plot_waveforms_chan(1000*(dir_num-1)+20,clust_id,sorted_spikes,trial_range,'avg')
 %plot_waveforms_chan(clust_id,sorted_spikes,trial_range,'')
 %plot_waveforms_chan_norm(clust_id,sorted_spikes,trial_range)
-behaviour_vector = 20*session.trial_info.mean_speed;
-plot_stability_full(1000*(dir_num-1)+30,clust_id,sorted_spikes,behaviour_vector)
-xlim([min(trial_range) max(trial_range)])
+behaviour_vector = session.trial_info.mean_speed;
+[h_ax_rast h_ax_bv] = plot_stability_full_sub(1000*(dir_num-1)+30,clust_id,sorted_spikes,behaviour_vector,trial_range)
+axes(h_ax_bv)
+ylabel('Mean run speed (cm/s)')
+ylim([0 30])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -243,11 +273,59 @@ end
 
 
 
-trial_range;
-[laser_data] = func_extract_laser_power(base_dir, trial_range, 'lase_data', 1);
+trial_range = [1:20];
+[laser_data] = func_extract_laser_power(base_dir, trial_range, 'laser_data_short', 1);
+
+laser_onset = find(laser_data.time_window == 0);
+avg_vlt = squeeze(mean(laser_data.raw_vlt(:,:,:),1));
+%avg_vlt = squeeze(laser_data.raw_vlt(2,:,:));
+avg_vlt = bsxfun(@minus,avg_vlt,mean(avg_vlt(:,(laser_onset-50):laser_onset),2));
+
+CSD = diff(avg_vlt,2,1);
+avg_vlt(end,:) = [];
+avg_vlt(end,:) = [];
+avg_vlt(1,:) = [];
+CSD(end,:) = [];
+CSD = conv2(CSD,ones(30,1),'same');
+
+offset_shift = repmat([1:size(avg_vlt,1)]',1,size(avg_vlt,2));
+figure(4); plot(laser_data.time_window,avg_vlt'+offset_shift'*10^-4)
+figure(5); imagesc([laser_data.time_window(1) laser_data.time_window(end)],[1 size(avg_vlt,1)],flipdim(avg_vlt,1))
+figure(6); imagesc([laser_data.time_window(1) laser_data.time_window(end)],[1 size(avg_vlt,1)],flipdim(CSD,1))
 
 
-plot_evoked_spike_probability(1000*(dir_num-1)+11,clust_id,sorted_spikes,trial_range,laser_data);
+
+
+avg_vlt = aa.pot1;
+%avg_vlt = squeeze(laser_data.raw_vlt(2,:,:));
+CSD = diff(avg_vlt,2,1);
+avg_vlt(end,:) = [];
+avg_vlt(end,:) = [];
+avg_vlt(1,:) = [];
+CSD(end,:) = [];
+CSD = conv2(CSD,ones(4,4),'same');
+
+offset_shift = repmat([1:size(avg_vlt,1)]',1,size(avg_vlt,2));
+figure(4); plot(avg_vlt'+offset_shift'*10^3)
+figure(5); imagesc([laser_data.time_window(1) laser_data.time_window(end)],[1 size(avg_vlt,1)],flipdim(avg_vlt,1))
+figure(6); imagesc([laser_data.time_window(1) laser_data.time_window(end)],[1 size(avg_vlt,1)],flipdim(CSD,1))
+
+
+
+
+
+aa = avg_vlt(:,laser_onset+100);
+aa = 
+figure; plot(aa)
+hold on
+plot(diff(aa,2),'r')
+
+
+laser_data.raw_vlt(2,:,:) - laser_data.raw_vlt(1,:,:)
+
+clust_id = 13;
+first_only = 0;
+plot_evoked_spike_probability(1000*(dir_num-1)+11,clust_id,sorted_spikes,trial_range,laser_data,first_only);
 %%
 
 %% 1 multi
@@ -271,8 +349,8 @@ plot_evoked_spike_probability(1000*(dir_num-1)+11,clust_id,sorted_spikes,trial_r
 %% 31 act
 
 
-clust_id = 13;
-time_range = [0 4];
+clust_id = 3;
+time_range = [2 3];
 plot_group_raster_summary(clust_id,dir_num,sorted_spikes,session,trial_range,time_range)
 
 
@@ -289,7 +367,7 @@ groups = session.trial_info.inds;
 group_ids = [0 2 3 4 Inf];
 groups = 10*session.trial_info.max_laser_power;
 col_mat = [0 0 0;.3 0 0; .6 0 0; 1 0 0];
-plot_spike_raster_groups(1000*(dir_num-1)+12,clust_id,sorted_spikes,trial_range,groups,group_ids,col_mat);
+plot_spike_raster_groups(1000*(dir_num-1)+12,clust_id,sorted_spikes,trial_range,groups,group_ids,col_mat,1);
 %plot([2 2],[0 200],'k')
 xlim([2 3])
 

@@ -51,6 +51,8 @@ else
 	fprintf('  %s\n',evalScript)
 	evalScript = sprintf('/usr/local/spark-current/bin/pyspark %s $MASTER %s %s %s',analysis_str,directory,image_names,regress_str);
 	fprintf('  %s\n',evalScript)
+	evalScript = 'qdel -u sofroniewn';
+	fprintf('  %s\n',evalScript)
 	fprintf('\n')
 
 end

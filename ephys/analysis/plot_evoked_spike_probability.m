@@ -1,4 +1,4 @@
-function plot_evoked_spike_probability(fig_id,clustnum,sorted_spikes,trial_range,laser_data)
+function plot_evoked_spike_probability(fig_id,clustnum,sorted_spikes,trial_range,laser_data,first_only)
 
 spike_times = sorted_spikes{clustnum}.ephys_time;
 trials = sorted_spikes{clustnum}.trial_num;
@@ -7,7 +7,6 @@ spike_times(~ismember(trials,trial_range)) = [];
 trials(~ismember(trials,trial_range)) = [];
 
 
-first_only = 0;
 if first_only
 	min_time = -.25;
 	max_time = 2.25;
