@@ -5,7 +5,7 @@ if isempty(opt_session) == 1
 else
     session = opt_session;
 end
-processed_matrix_names = {'Time','X_position','Y_position','Frac','Speed','Scim_trigs','Scim_frames','Trial_number'};
+processed_matrix_names = {'Time','X_position','Y_position','Frac','Speed','Scim_trigs','Scim_frames','Trial_number','Wall_velocity'};
 
 num_trials = numel(session.data);
 if start_trial == 1
@@ -43,7 +43,10 @@ for ij = start_trial:num_trials
     session.data{ij}.processed_matrix(1,:) = session.data{ij}.processed_matrix(1,:) - session.data{ij}.processed_matrix(1,session.trial_info.trial_start(ij));
     session.data{ij}.processed_matrix(2,:) = session.data{ij}.processed_matrix(2,:) - session.data{ij}.processed_matrix(2,session.trial_info.trial_start(ij));
     session.data{ij}.processed_matrix(3,:) = session.data{ij}.processed_matrix(3,:) - session.data{ij}.processed_matrix(3,session.trial_info.trial_start(ij));
-    
+
+    session.data{ij}.processed_matrix(9,:) = smooth(session.data{ij}.trial_matrix(3,:),25,'sgolay',1);
+    session.data{ij}.processed_matrix(9,:) = session.rig_config.sample_freq*[0 diff(session.data{ij}.processed_matrix(9,:))];
+
     if session.trial_config.processed_dat.vals.trial_type(session.trial_info.inds(ij)) == 1 % Distance trial
         session.data{ij}.processed_matrix(4,:) = session.data{ij}.processed_matrix(2,:)/session.trial_config.processed_dat.vals.trial_dur(session.trial_info.inds(ij));
     else % Time trial

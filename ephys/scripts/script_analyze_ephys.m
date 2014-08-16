@@ -7,7 +7,8 @@ close all
 drawnow
  
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_245918/2014_06_21/run_02';
-base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_06';
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_03';
+%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_237723/2014_06_17/run_03';
 
 sorted_name = 'klusters_data';
 over_write_sorted = 0;
@@ -22,29 +23,417 @@ session = parse_session_data(1,session);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Inspect sorted units across entire session
-[laser_data] = func_extract_laser_power(base_dir, trial_range, 'laser_data', 0);
+%[laser_data] = func_extract_laser_power(base_dir, trial_range, 'laser_data', 0);
+
+
 
 trial_range = [85:400];
-clust_id = 3;
-time_range = [.8 1.3];
+clust_id = 1;
 
-time_range = [.8 1.3];
-time_range = [0 4];
+ephys_sampling_rate = 20833.33;
+spike_times = sorted_spikes{clust_id}.session_time/ephys_sampling_rate;
 
-trial_range = [85:400];
-group_ids = find(~session.trial_config.processed_dat.vals.trial_type);
+mean_spike_amp = sorted_spikes{clust_id}.mean_spike_amp(1:32);
+
+spike_wave_detect = sorted_spikes{clust_id}.spike_waves;
+spike_trials = sorted_spikes{clust_id}.trial_num;
+spike_amps = sorted_spikes{clust_id}.spike_amp;
+trial_times = session.trial_info.time(min(trial_range):max(trial_range))';
+spike_times_ephys = sorted_spikes{clust_id}.ephys_time;
+
+
+fig_props.id = 1000; fig_props.position = [10 560 250 250];
+
+peak_channel = get_cluster_peak_channel(mean_spike_amp,[]);
+
+ISI = get_isi(spike_times,[]); plot_isi(fig_props,ISI);
+WAVEFORMS = get_spk_waveforms(spike_wave_detect,ephys_sampling_rate); plot_spk_waveforms(fig_props,WAVEFORMS);
+AMPLITUDES = get_spk_amplitude(spike_amps,spike_trials,trial_times,trial_range); plot_stability(fig_props,AMPLITUDES)
+BEHAVIOUR_VECT = get_behaviour_vect(session,'speed',trial_range); plot_behaviour_vect(fig_props,BEHAVIOUR_VECT)
+
+
 groups = session.trial_info.inds;
-keep_trials = find(ismember(groups,group_ids) & session.trial_info.mean_speed>5);
-trial_range_bv = trial_range(ismember(trial_range,keep_trials));
-%behaviour_vector = session.trial_info.run_angle - mean(session.trial_info.run_angle(ismember(groups,[11:13])));
-behaviour_vector = session.trial_info.run_angle - mean(session.trial_info.run_angle(ismember(groups,[11:13])));
-%behaviour_vector = session.trial_info.forward_distance;
-color_vector = session.trial_info.inds;
-plot_behaviour_corr(11,clust_id,sorted_spikes,behaviour_vector,trial_range_bv,time_range,color_vector)
+groups = groups-1;
+groups(groups==0) = 20;
+groups(groups>12) = 13;
+group_ids = unique(groups);
+keep_trials = trial_range;
+keep_trials = keep_trials(ismember(keep_trials,find(session.trial_info.mean_speed > 5)));
+
+RASTER = get_spk_raster(spike_times_ephys,spike_trials,keep_trials,groups,group_ids,time_range); plot_spk_raster(fig_props,RASTER)
+plot_spk_psth(fig_props,RASTER);
+
+
+max_length_trial = 2001;
+[r_ntk s_ctk s_labels u_ck u_labels] = convert_rsu_format(sorted_spikes,session,keep_trials,group_ids,groups,max_length_trial);
 
 
 
-plot_group_raster_summary(clust_id,dir_num,sorted_spikes,session,trial_range,time_range)
+
+
+
+
+
+
+
+wall_pos = flipdim(squeeze(s_ctk(1,:,:))',1);
+for_vel = flipdim(squeeze(s_ctk(2,:,:))',1);
+lat_vel = flipdim(squeeze(s_ctk(3,:,:))',1);
+
+fil = triang(100)';
+figure(114)
+clf(114)
+subplot(4,3,1)
+imagesc(wall_pos)
+subplot(4,3,2)
+imagesc(for_vel)
+subplot(4,3,3)
+imagesc(lat_vel)
+subplot(4,3,4)
+imagesc(conv2(flipdim(squeeze(r_ntk(26,:,:))',1),fil,'same'));
+subplot(4,3,5)
+imagesc(conv2(flipdim(squeeze(r_ntk(13,:,:))',1),fil,'same'));
+subplot(4,3,6)
+imagesc(conv2(flipdim(squeeze(r_ntk(1,:,:))',1),fil,'same'));
+subplot(4,3,7)
+imagesc(conv2(flipdim(squeeze(r_ntk(6,:,:))',1),fil,'same'));
+subplot(4,3,8)
+imagesc(conv2(flipdim(squeeze(r_ntk(11,:,:))',1),fil,'same'));
+subplot(4,3,9)
+imagesc(conv2(flipdim(squeeze(r_ntk(17,:,:))',1),fil,'same'));
+subplot(4,3,10)
+imagesc(conv2(flipdim(squeeze(r_ntk(12,:,:))',1),fil,'same'));
+subplot(4,3,11)
+imagesc(conv2(flipdim(squeeze(r_ntk(25,:,:))',1),fil,'same'));
+subplot(4,3,12)
+imagesc(conv2(flipdim(squeeze(r_ntk(22,:,:))',1),fil,'same'));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+mean_lat = nanmean(lat_vel(trial_plt_range,:));
+mean_wall = nanmean(wall_pos(trial_plt_range,:));
+mean_for = nanmean(for_vel(trial_plt_range,:));
+mean_angle = atan2(mean_lat,mean_for)*180/pi;
+mean_angle = mean_angle - mean_angle(1);
+mean_angle_sm = smooth(mean_angle,250,'sgolay',1);
+diff_angle = 500*[0;diff(mean_angle_sm)];
+
+
+mean_lat = mean_lat(100:end-100);
+mean_wall = mean_wall(100:end-100);
+mean_for = mean_for(100:end-100);
+mean_angle = mean_angle(100:end-100);
+diff_angle = diff_angle(100:end-100);
+
+%diff_angle = abs(diff_angle);
+%figure; hold on; plot(mean_angle_sm); plot(mean_angle,'r'); plot(diff_angle,'g');
+
+mean_fr = zeros(size(r_ntk,1)-2,length(diff_angle));
+pks = zeros(size(r_ntk,1)-2,6);
+onset = zeros(size(r_ntk,1)-2,1);
+
+for ij = 3:size(r_ntk,1)
+	avg_fr = conv2(flipdim(squeeze(r_ntk(ij,:,:))',1),fil,'same');
+	mean_curve = nanmean(avg_fr(trial_plt_range,100:end-100));
+%	mean_fr(ij-2,:) = mean_curve/max(abs(mean_curve));
+	mean_fr(ij-2,:) = zscore(mean_curve);
+%	mean_fr(ij,:) = mean_fr(ij,:) - mean(mean_fr(ij,1:50));
+	% [pk1 loc1] = max(abs(mean_fr(ij,200:end)));
+	% [pk2 loc2] = max(-mean_fr(ij,200:end));
+	% [pk3 loc3] = max(abs(mean_fr(ij,200:end)));
+	% pks(ij,:) = [loc1 pk1 loc2 pk2 loc3 pk3];
+	% if(loc1==loc2)
+	% 	onset(ij) = loc2 + 10000;
+	% 	3
+	% else
+	% 	onset(ij) = loc1;
+	% end
+	
+	mean_curve = zscore(mean_curve);
+	loc = find(mean_curve > 1.5,1,'first');
+	if loc > 50
+		onset(ij-2) = loc;
+	else
+		loc = find(mean_curve < .5,1,'first');
+		onset(ij-2) = loc - 10000;
+	end
+
+	% loc = find(mean_fr(ij,:) > 2.2,1,'first');
+	% if ~isempty(loc)
+	% 	onset(ij) = loc;
+	% 	[pk1 loc1] = max(abs(mean_fr(ij,:)));
+	% 	if pk1<3
+	% 		onset(ij) = onset(ij) + 20000;
+	% 		23
+	% 	end
+
+	% 	if onset(ij) > 1000 && onset(ij) < 10000
+	% 		onset(ij) = onset(ij) + 2000;
+	% 	end
+
+	% 	pk = mean(mean_fr(ij,800:1200))
+	% 	if pk > 1
+	% 		onset(ij) = onset(ij)-500;
+	% 	end
+	% else
+	% 	loc = find(mean_fr(ij,:) < -1,1,'first');
+	% 	onset(ij) = 10000 + loc;
+	% end
+end
+
+%onset(onset>1000) = onset(onset>1000) - 10000;
+
+[vals order] = sort(onset);
+
+mean_reorder = mean_fr(order,:);
+
+figure;
+imagesc(cat(1,.4*zscore(mean_wall),.4*zscore(diff_angle'),0*zscore(diff_angle'),0*zscore(diff_angle'),0*zscore(diff_angle'),mean_reorder))
+
+
+figure(333);
+clf(333)
+set(gcf,'Position',[5   229   861   569])
+%subplot(2,2,1)
+hold on
+% avg_fr = conv2(flipdim(squeeze(r_ntk(1,:,:))',1),fil,'same');
+% mean_curve = mean(avg_fr(30:end,100:end-100));
+% plot(zscore(mean_curve),'linewidth',2)
+for ij = 1:10 %size(r_ntk,1)
+%	plot(mean_reorder(ij,:),'b','linewidth',1)
+end
+for ij = 11:19 %size(r_ntk,1)
+	%plot(mean_reorder(ij,:),'c','linewidth',1)
+end
+for ij = 20:size(r_ntk,1)
+	%plot(mean_reorder(ij,:),'r','linewidth',1)
+end
+
+plot(zscore(diff_angle),'k','linewidth',4)
+plot(zscore(mean(mean_reorder))+1,'r')
+plot(zscore(mean_wall),'g','linewidth',2)
+
+subplot(2,2,2)
+hold on
+scatter(diff_angle,mean_curve,[],-mean_wall)
+
+subplot(2,2,3)
+hold on
+imagesc(flipdim(avg_fr,1))
+axis tight
+
+subplot(2,2,4)
+hold on
+scatter(mean_wall,mean_curve,[],diff_angle)
+
+
+mean_curve = mean(avg_fr(13:25,:));
+mean_vel = mean(avg_vel(13:25,:));
+mean_wall = mean(avg_wall(13:25,:));
+mean_for = mean(avg_for_speed(13:25,:));
+
+
+%%
+firing_rate = conv2(flipdim(squeeze(r_ntk(7,:,:))',1),fil,'same');
+figure(43);
+clf(43);
+scatter3(wall_pos(:),lat_vel(:),firing_rate(:),[],firing_rate(:))
+
+
+
+
+subplot(1,2,2)
+hold on
+plot(zscore(mean_curve),'linewidth',2)
+plot(zscore(mean_vel)+1,'r')
+plot(zscore(mean_wall),'g')
+plot(zscore(mean_for)+1,'k')
+
+
+fil = triang(100)';
+mean_vel = mean(avg_vel(30:end,:));
+mean_wall = mean(avg_wall(30:end,:));
+mean_for = mean(avg_for_speed(30:end,:));
+
+figure(334);
+clf(334)
+hold on
+avg_fr = conv2(flipdim(squeeze(r_ntk(24,:,:))',1),fil,'same');
+mean_curve = mean(avg_fr(30:end,:));
+plot(zscore(mean_curve),'linewidth',2)
+
+
+avg_fr = conv2(flipdim(squeeze(r_ntk(1,:,:))',1),fil,'same');
+mean_curve = mean(avg_fr(30:end,:));
+plot(zscore(mean_curve),'linewidth',2,'Color','k')
+
+avg_fr = conv2(flipdim(squeeze(r_ntk(13,:,:))',1),fil,'same');
+mean_curve = mean(avg_fr(30:end,:));
+plot(zscore(mean_curve),'linewidth',2,'Color','g')
+
+avg_fr = conv2(flipdim(squeeze(r_ntk(6,:,:))',1),fil,'same');
+mean_curve = mean(avg_fr(30:end,:));
+plot(zscore(mean_curve),'linewidth',2,'Color','c')
+
+
+plot(zscore(mean_vel)+1,'r')
+%plot(zscore(mean_wall),'g')
+%plot(zscore(mean_for)+1,'k')
+
+
+
+
+
+
+
+
+
+%%
+firing_rate = conv2(flipdim(squeeze(r_ntk(26,:,:))',1),fil,'same');
+figure(43);
+clf(43);
+scatter(wall_pos(1:5:end),lat_vel(1:5:end),[],firing_rate(1:5:end))
+
+
+
+
+
+%psth_all = flipdim(psth_all,1);
+
+psth_all_conv = conv2(psth_all,ones(1,100)/100,'same');
+
+psth_all_conv = psth_all;
+
+x_vel = conv2(500*diff(x_pos,1,2),ones(1,50)/50,'same');
+y_vel = conv2(500*diff(y_pos,1,2),ones(1,50)/50,'same');
+
+
+x_acc = conv2(500*diff(x_vel,1,2),ones(1,50)/50,'same');
+y_acc = conv2(500*diff(y_vel,1,2),ones(1,50)/50,'same');
+
+
+
+run_angle = 180/pi*atan2(x_vel,y_vel);
+run_speed = sqrt(x_vel.^2 + y_vel.^2);
+run_acc = 500*conv2(diff(run_angle,1,2),ones(1,50)/50,'same');
+run_acc(run_acc>500) = 500;
+run_acc(run_acc<-500) = -500;
+
+figure(13);
+clf(13)
+hold on
+%imagesc(conv2(diff(wall_dist,1,2),ones(1,50)/50,'same'));
+%imagesc(-conv2(diff(y_pos,2,2),ones(1,50)/50,'same'));
+%imagesc(wall_dist);
+h = imagesc(run_speed);
+%set(h, 'AlphaData', run_speed>5)
+axis tight
+for ij = 1:size(psth_all,1)
+	spks = find(psth_all(ij,:)>0);
+	if ~isempty(spks)
+		hh = plot(spks,ij,'.','MarkerEdgeColor',[0.5 .5 .5],'MarkerSize',6,'MarkerFaceColor','none');
+	end
+end
+
+
+%%%
+fil = ones(1,100)/100;
+
+psth_all_7 = psth_all;
+
+
+s_ctk %c behav var, t time pts, k trials
+r_ntk %n neurons, t time pts, k trials
+
+
+
+
+
+
+
+all_spk = psth_all(:,2:end-1);
+all_spk = all_spk(:);
+all_dat = round(run_acc(:)/20);
+all_dat = all_dat + 1 - min(all_dat);
+spk_hist = accumarray(all_dat,all_spk,[],[],0);
+
+all_spk = psth_all(:,1:end-1);
+all_spk = all_spk(:);
+all_dat = round(y_vel(:));
+all_dat = all_dat + 1 - min(all_dat);
+spk_hist = accumarray(all_dat,all_spk,[],[],0);
+cnt_hist = accumarray(all_dat,ones(size(all_dat)),[],[],0);
+
+figure; plot(spk_hist./cnt_hist)
+
+run_speed
+
+figure;
+hold on
+imagesc(wall_dist);
+h = image(psth_all_conv);
+axis off
+set(h, 'AlphaData', psth_all_conv)
+
+
+
+figure;
+%imagesc(flipdim(wall_dist,1))
+plot(psth_all>0,'.r')
+
+% time_comb = session.data{1}.processed_matrix(1,501:end);
+% 
+% figure(323);
+% clf(323)
+% set(gcf,'Position',[13   549   560   257])
+% 
+% hold on
+% for ij = 1:length(group_ids)
+% 	trial_id = find(groups == group_ids(ij),1,'first');
+% 	plot(session.data{trial_id}.processed_matrix(1,:),session.data{trial_id}.trial_matrix(3,:),'color',col_mat(ij,:),'LineWidth',3)
+% end
+% xlim([0 4])
+
+% 
+% %figure(324);
+% %clf(324)
+% %hold on
+% for ij = 1:size(psth_all,1)
+% 	trial_id = find(groups == group_ids(ij),1,'first');
+% 	all_sensory_curves(ij,:) = session.data{trial_id}.trial_matrix(3,501:end);
+% 	%plot(time_comb,all_sensory_curves(ij,:),'color',col_mat(ij,:),'LineWidth',3)
+% 	all_psth_curves(ij,:) = interp1(time_vec,psth_all(ij,:),time_comb);
+% 	%plot(time_comb,all_psth_curves(ij,:)/100,'color',col_mat(ij,:));
+% end
+% %xlim([0 4])
+
+
+
+
+
+
+
+
+
 
 
 
@@ -315,7 +704,7 @@ figure(6); imagesc([laser_data.time_window(1) laser_data.time_window(end)],[1 si
 
 
 aa = avg_vlt(:,laser_onset+100);
-aa = 
+aa = smooth(aa,2,'sgolay');
 figure; plot(aa)
 hold on
 plot(diff(aa,2),'r')
@@ -591,3 +980,17 @@ t_window_inds = [-200 100]; % window range
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+
+
+%% RETIRED
+plot_spike_pair_corr(32,11,17,sorted_spikes,trial_range,[0 1 0])
