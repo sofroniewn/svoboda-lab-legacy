@@ -9,6 +9,9 @@ end
 cla
 hold on
 
+if isfield(RASTER,'laser_on')
+	plot(RASTER.laser_on,RASTER.laser_on_trial,'-','Color','c')
+end
 
 num_groups = numel(RASTER.spikes);
 col_mat = zeros(num_groups,3);

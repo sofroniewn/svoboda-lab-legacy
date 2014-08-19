@@ -8,7 +8,7 @@ drawnow
  
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_245918/2014_06_21/run_02';
 base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_03';
-base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_06'; % laser data
+%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_06'; % laser data
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_246702/2014_08_14/run_03';
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_237723/2014_06_17/run_03';
 
@@ -102,87 +102,30 @@ imagesc(conv2(flipdim(squeeze(r_ntk(22,:,:))',1),fil,'same'));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-
+%% CSD
 
 trial_range = [1:20];
 [laser_data] = func_extract_laser_power(base_dir, trial_range, 'laser_data_short', 1);
 
-laser_onset = find(laser_data.time_window == 0);
-avg_vlt = squeeze(mean(laser_data.raw_vlt(:,:,:),1));
-%avg_vlt = squeeze(laser_data.raw_vlt(2,:,:));
-avg_vlt = bsxfun(@minus,avg_vlt,mean(avg_vlt(:,(laser_onset-50):laser_onset),2));
+power_values = round(laser_data.max_power*10);
+power_range = unique(power_values);
+keep_powers = power_range;
 
-avg_vlt(end,:) = [];
-avg_vlt(1,:) = [];
-
-%avg_vlt = cat(1,avg_vlt,zeros(size(avg_vlt)));
-
-CSD = zeros(size(avg_vlt));
-for ij = 1:size(CSD,2)
-	tmp = avg_vlt(:,ij);
-	tmp = csaps([1:size(CSD,1)],tmp,.1);
-	tmp = fnder(tmp,1);
-	tmp = fnval(tmp,[1:size(CSD,1)]);
-	CSD(:,ij) = tmp;
-end
-
-offset_shift = repmat([1:size(avg_vlt,1)]',1,size(avg_vlt,2));
-figure(4); plot(laser_data.time_window,avg_vlt'+offset_shift'*10^-4); xlim([-.005 .025])
-figure(5); imagesc([laser_data.time_window(1) laser_data.time_window(end)],[1 size(avg_vlt,1)],flipdim(avg_vlt,1)); xlim([-.005 .025])
-figure(6); imagesc([laser_data.time_window(1) laser_data.time_window(end)],[1 size(avg_vlt,1)],flipdim(CSD,1)); xlim([-.005 .025])
-%figure(16); imagesc([laser_data.time_window(1) laser_data.time_window(end)],[1 size(avg_vlt,1)],flipdim(CSD,1))
+CSD = get_CSD(laser_data,trial_range,power_values,keep_powers);
+figure('Position',[73   620   338   186]); plot_CSD([],CSD,'CSD')
+figure('Position',[73   361   338   186]); plot_CSD([],CSD,'LFP')
+figure('Position',[73   103   338   186]); plot_CSD([],CSD,'traces')
 
 
-figure(8); plot(avg_vlt'+offset_shift'*10^-4)
-
-
-
-
-time_ind = 600;
-figure(7); clf(7); hold on; plot(avg_vlt(:,300),'r'); plot(avg_vlt(:,time_ind),'b'); plot(ab,'g');
-figure(9); clf(9); hold on; plot(CSD(:,300),'r'); plot(CSD(:,time_ind),'b');
-
-
-avg_vlt = squeeze(laser_data.raw_vlt(2,:,:));
-CSD = diff(avg_vlt,2,1);
-avg_vlt(end,:) = [];
-avg_vlt(end,:) = [];
-avg_vlt(1,:) = [];
-CSD(end,:) = [];
-CSD = conv2(CSD,ones(4,4),'same');
-
-offset_shift = repmat([1:size(avg_vlt,1)]',1,size(avg_vlt,2));
-figure(4); plot(avg_vlt'+offset_shift'*10^3)
-figure(5); imagesc([laser_data.time_window(1) laser_data.time_window(end)],[1 size(avg_vlt,1)],flipdim(avg_vlt,1))
-figure(6); imagesc([laser_data.time_window(1) laser_data.time_window(end)],[1 size(avg_vlt,1)],flipdim(CSD,1))
-
-
-
-
-
-aa = avg_vlt(:,laser_onset+100);
-aa = smooth(aa,2,'sgolay');
-figure; plot(aa)
-hold on
-plot(diff(aa,2),'r')
-
-
-laser_data.raw_vlt(2,:,:) - laser_data.raw_vlt(1,:,:)
-
+%% Evoked potentials
 clust_id = 13;
+
+spike_times = sorted_spikes{clust_id}.ephys_time;
+spike_trials = sorted_spikes{clust_id}.trial_num;
 first_only = 0;
-plot_evoked_spike_probability(1000*(dir_num-1)+11,clust_id,sorted_spikes,trial_range,laser_data,first_only);
-%%
-
-
-
-
-
-
-
+RASTER = get_evoked_spike_probability(spike_times,spike_trials,trial_range,laser_data,first_only)
+figure; plot_spk_psth([],RASTER)
+figure; plot_spk_raster([],RASTER)
 
 
 

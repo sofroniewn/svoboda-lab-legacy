@@ -1,10 +1,8 @@
-function plot_evoked_spike_probability(fig_id,clustnum,sorted_spikes,trial_range,laser_data,first_only)
+function RASTER = get_evoked_spike_probability(spike_times,spike_trials,trial_range,laser_data,first_only)
+% Computes spike raster and psth
 
-spike_times = sorted_spikes{clustnum}.ephys_time;
-trials = sorted_spikes{clustnum}.trial_num;
-
-spike_times(~ismember(trials,trial_range)) = [];
-trials(~ismember(trials,trial_range)) = [];
+spike_times(~ismember(spike_trials,trial_range)) = [];
+spike_trials(~ismember(spike_trials,trial_range)) = [];
 
 
 if first_only
@@ -14,11 +12,6 @@ else
 	min_time = -20/1000;
 	max_time = 80/1000;
 end
-
-figure(fig_id)
-clf(fig_id)
-hold on
-set(gcf,'Position',[13   192   556   348])
 
 trial_tmp = [];
 spike_times_all = [];
@@ -30,11 +23,11 @@ offset_times_all = [];
 offset_reps_all = [];
 
 n_rep = 0;
-for i_trial = min(trials):max(trials)
+for i_trial = min(spike_trials):max(spike_trials)
     n_trial = find(laser_data.trial == i_trial);
     if ~isempty(n_trial)
     	if ~isempty(laser_data.onset_times{n_trial})
-		    spike_times_trial = spike_times(trials==i_trial)';
+		    spike_times_trial = spike_times(spike_trials==i_trial)';
 		    if first_only
 		    	tmp = spike_times_trial - laser_data.onset_times{n_trial}(1);
 		    	tmp = tmp(tmp>min_time & tmp < max_time);
@@ -66,14 +59,18 @@ end
 
 time = min_time:.001:max_time;
 psth = hist(spike_times_all,time);
-bar(time,psth,'k');
-plot([onset_times_all offset_times_all]',[onset_reps_all/10+ceil(max(psth))+20 onset_reps_all/10+ceil(max(psth))+20]','-','Color','c')
-%plot(offset_times_all,offset_reps_all/10+ceil(max(psth))+20,'.','Color','c')
-plot(spike_times_all,ind_rep_all/10+ceil(max(psth))+20,'.','Color','k')
 
-xlim([min_time max_time])
+RASTER.spikes = cell(1,1);
+RASTER.trials = cell(1,1);
 
+RASTER.time_range = [min_time max_time];
+RASTER.spikes{1} = spike_times_all;
+RASTER.trials{1} = ind_rep_all;
+RASTER.psth = psth;
+RASTER.time = time;
 
+RASTER.trial_range = [1 n_rep];
 
-
+RASTER.laser_on = [onset_times_all offset_times_all]';
+RASTER.laser_on_trial = [onset_reps_all onset_reps_all]';
 
