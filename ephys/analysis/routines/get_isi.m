@@ -28,7 +28,7 @@ ISI.peak = ISI.edges(start_ind-1 + ind);
 
 
 % calculate percent ISI violations
-ISI.violations = 100*sum(ISI_times<ISI.refractory_period)/(ISI.num_spikes-1)/2;
+ISI.violations = 100*sum(ISI_times>0 & ISI_times<ISI.refractory_period)/(ISI.num_spikes-1);
 end
 
 

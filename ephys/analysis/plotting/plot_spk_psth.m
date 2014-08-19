@@ -10,12 +10,12 @@ cla
 hold on
 
 
-num_groups = numel(RASTER.spikes);
+num_groups = size(RASTER.psth,1);
 col_mat = zeros(num_groups,3);
 col_mat(1:end,3) = 1-linspace(0,1,num_groups);
 
 for i_group = 1:num_groups
-	plot(RASTER.time,RASTER.psth{i_group},'Color',col_mat(i_group,:))
+	plot(RASTER.time,RASTER.psth(i_group,:),'Color',col_mat(i_group,:),'linewidth',2)
 end
 
 xlim(RASTER.time_range)

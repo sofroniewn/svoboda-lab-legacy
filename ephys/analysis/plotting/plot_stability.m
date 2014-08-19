@@ -11,7 +11,7 @@ hold on
 
 trials = AMPLITUDES.trial_range(1):AMPLITUDES.trial_range(2);
 bar(trials,AMPLITUDES.trial_firing_rate);
-plot(AMPLITUDES.trial_spks, AMPLITUDES.norm_vals,'.k');
+plot(AMPLITUDES.trial_spks, AMPLITUDES.norm_vals,'.k','MarkerSize',10);
 %title(['Cluster Id ' num2str(clust_id)])
 xlabel('Trial Number')
 ylabel('Firing rate (Hz)')

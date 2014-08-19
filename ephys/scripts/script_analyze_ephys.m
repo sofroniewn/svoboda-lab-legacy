@@ -8,72 +8,58 @@ drawnow
  
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_245918/2014_06_21/run_02';
 base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_03';
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_06'; % laser data
+%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_246702/2014_08_14/run_03';
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_237723/2014_06_17/run_03';
 
+% Load in ephys data
 sorted_name = 'klusters_data';
 over_write_sorted = 0;
 dir_num = 1;
+global sorted_spikes;
 sorted_spikes = extract_sorted_units_klusters(base_dir,sorted_name,dir_num,over_write_sorted);
 
 % Load in behaviour data
 base_path_behaviour = fullfile(base_dir, 'behaviour');
+global session;
 session = load_session_data(base_path_behaviour);
 session = parse_session_data(1,session);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% PUBLISH PLOTS OF CLUSTERS
+global trial_range; trial_range = [50:485];
+global exp_type; exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
+global id_type; id_type = 'olR';
+
+publish_file_name = 'publish_ephys_new.m'; % 'publish_ephys.m' or 'publish_ephys_new.m'
+outputDir = 'test5';
+
+publish(publish_file_name,'showCode',false,'outputDir',outputDir); close all;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Inspect sorted units across entire session
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% LOAD summary data without plotting
+global id_type; id_type = 'olR';
+all_clust_ids = 3 %[3:numel(sorted_spikes)];
+plot_on = 1;
+d = summarize_cluster(all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on);
+%%
+
+
+
+figure(88)
+clf(88)
+plot(d.p_nj(:,5),d.p_nj(:,7),'.k');
+
+figure(99)
+hist(d.p_nj(:,5),10)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Inspect sorted units across entire session
 %[laser_data] = func_extract_laser_power(base_dir, trial_range, 'laser_data', 0);
-
-
-
-trial_range = [85:400];
-clust_id = 1;
-
-ephys_sampling_rate = 20833.33;
-spike_times = sorted_spikes{clust_id}.session_time/ephys_sampling_rate;
-
-mean_spike_amp = sorted_spikes{clust_id}.mean_spike_amp(1:32);
-
-spike_wave_detect = sorted_spikes{clust_id}.spike_waves;
-spike_trials = sorted_spikes{clust_id}.trial_num;
-spike_amps = sorted_spikes{clust_id}.spike_amp;
-trial_times = session.trial_info.time(min(trial_range):max(trial_range))';
-spike_times_ephys = sorted_spikes{clust_id}.ephys_time;
-
-
-fig_props.id = 1000; fig_props.position = [10 560 250 250];
-
-peak_channel = get_cluster_peak_channel(mean_spike_amp,[]);
-
-ISI = get_isi(spike_times,[]); plot_isi(fig_props,ISI);
-WAVEFORMS = get_spk_waveforms(spike_wave_detect,ephys_sampling_rate); plot_spk_waveforms(fig_props,WAVEFORMS);
-AMPLITUDES = get_spk_amplitude(spike_amps,spike_trials,trial_times,trial_range); plot_stability(fig_props,AMPLITUDES)
-BEHAVIOUR_VECT = get_behaviour_vect(session,'speed',trial_range); plot_behaviour_vect(fig_props,BEHAVIOUR_VECT)
-
-
-groups = session.trial_info.inds;
-groups = groups-1;
-groups(groups==0) = 20;
-groups(groups>12) = 13;
-group_ids = unique(groups);
-keep_trials = trial_range;
-keep_trials = keep_trials(ismember(keep_trials,find(session.trial_info.mean_speed > 5)));
-
-RASTER = get_spk_raster(spike_times_ephys,spike_trials,keep_trials,groups,group_ids,time_range); plot_spk_raster(fig_props,RASTER)
-plot_spk_psth(fig_props,RASTER);
-
-
-max_length_trial = 2001;
-[r_ntk s_ctk s_labels u_ck u_labels] = convert_rsu_format(sorted_spikes,session,keep_trials,group_ids,groups,max_length_trial);
-
-
-
-
-
-
-
-
 
 
 wall_pos = flipdim(squeeze(s_ctk(1,:,:))',1);
@@ -113,6 +99,83 @@ imagesc(conv2(flipdim(squeeze(r_ntk(22,:,:))',1),fil,'same'));
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+trial_range = [1:20];
+[laser_data] = func_extract_laser_power(base_dir, trial_range, 'laser_data_short', 1);
+
+laser_onset = find(laser_data.time_window == 0);
+avg_vlt = squeeze(mean(laser_data.raw_vlt(:,:,:),1));
+%avg_vlt = squeeze(laser_data.raw_vlt(2,:,:));
+avg_vlt = bsxfun(@minus,avg_vlt,mean(avg_vlt(:,(laser_onset-50):laser_onset),2));
+
+avg_vlt(end,:) = [];
+avg_vlt(1,:) = [];
+
+%avg_vlt = cat(1,avg_vlt,zeros(size(avg_vlt)));
+
+CSD = zeros(size(avg_vlt));
+for ij = 1:size(CSD,2)
+	tmp = avg_vlt(:,ij);
+	tmp = csaps([1:size(CSD,1)],tmp,.1);
+	tmp = fnder(tmp,1);
+	tmp = fnval(tmp,[1:size(CSD,1)]);
+	CSD(:,ij) = tmp;
+end
+
+offset_shift = repmat([1:size(avg_vlt,1)]',1,size(avg_vlt,2));
+figure(4); plot(laser_data.time_window,avg_vlt'+offset_shift'*10^-4); xlim([-.005 .025])
+figure(5); imagesc([laser_data.time_window(1) laser_data.time_window(end)],[1 size(avg_vlt,1)],flipdim(avg_vlt,1)); xlim([-.005 .025])
+figure(6); imagesc([laser_data.time_window(1) laser_data.time_window(end)],[1 size(avg_vlt,1)],flipdim(CSD,1)); xlim([-.005 .025])
+%figure(16); imagesc([laser_data.time_window(1) laser_data.time_window(end)],[1 size(avg_vlt,1)],flipdim(CSD,1))
+
+
+figure(8); plot(avg_vlt'+offset_shift'*10^-4)
+
+
+
+
+time_ind = 600;
+figure(7); clf(7); hold on; plot(avg_vlt(:,300),'r'); plot(avg_vlt(:,time_ind),'b'); plot(ab,'g');
+figure(9); clf(9); hold on; plot(CSD(:,300),'r'); plot(CSD(:,time_ind),'b');
+
+
+avg_vlt = squeeze(laser_data.raw_vlt(2,:,:));
+CSD = diff(avg_vlt,2,1);
+avg_vlt(end,:) = [];
+avg_vlt(end,:) = [];
+avg_vlt(1,:) = [];
+CSD(end,:) = [];
+CSD = conv2(CSD,ones(4,4),'same');
+
+offset_shift = repmat([1:size(avg_vlt,1)]',1,size(avg_vlt,2));
+figure(4); plot(avg_vlt'+offset_shift'*10^3)
+figure(5); imagesc([laser_data.time_window(1) laser_data.time_window(end)],[1 size(avg_vlt,1)],flipdim(avg_vlt,1))
+figure(6); imagesc([laser_data.time_window(1) laser_data.time_window(end)],[1 size(avg_vlt,1)],flipdim(CSD,1))
+
+
+
+
+
+aa = avg_vlt(:,laser_onset+100);
+aa = smooth(aa,2,'sgolay');
+figure; plot(aa)
+hold on
+plot(diff(aa,2),'r')
+
+
+laser_data.raw_vlt(2,:,:) - laser_data.raw_vlt(1,:,:)
+
+clust_id = 13;
+first_only = 0;
+plot_evoked_spike_probability(1000*(dir_num-1)+11,clust_id,sorted_spikes,trial_range,laser_data,first_only);
+%%
 
 
 
@@ -120,6 +183,36 @@ imagesc(conv2(flipdim(squeeze(r_ntk(22,:,:))',1),fil,'same'));
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
@@ -447,217 +540,12 @@ session.trial_info.run_angle = 180/pi*atan2(session.trial_info.lateral_distance,
 plot_spike_pair_corr(32,11,17,sorted_spikes,trial_range,[0 1 0])
 
 
-plot_spike_raster(1000*(dir_num-1)+1,clust_id,sorted_spikes,trial_range)
-plot_isi_full(1000*(dir_num-1)+10,clust_id,sorted_spikes,trial_range,[])
-plot_waveforms_chan(1000*(dir_num-1)+20,clust_id,sorted_spikes,trial_range,'avg')
-%plot_waveforms_chan(clust_id,sorted_spikes,trial_range,'')
-%plot_waveforms_chan_norm(clust_id,sorted_spikes,trial_range)
-behaviour_vector = session.trial_info.mean_speed;
-[h_ax_rast h_ax_bv] = plot_stability_full_sub(1000*(dir_num-1)+30,clust_id,sorted_spikes,behaviour_vector,trial_range)
-axes(h_ax_bv)
-ylabel('Mean run speed (cm/s)')
-ylim([0 30])
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% PLOT SPEED
-x_vars = cell(7,1);
-x_vars{1}.str = 'session.data{trial_id}.processed_matrix(5,:)';
-x_vars{1}.name = 'Speed';
-x_vars{1}.vals = [0 Inf];
-x_vars{1}.type = 'range';
-x_vars{2}.str = 'session.data{trial_id}.trial_matrix(9,:)';
-x_vars{2}.name = 'ITI';
-x_vars{2}.vals = 0;
-x_vars{2}.type = 'equal';
-x_vars{3}.str = 'session.data{trial_id}.trial_matrix(5,:)/10';
-x_vars{3}.name = 'laser_power';
-x_vars{3}.vals = [0 Inf];
-x_vars{3}.type = 'range';
-x_vars{4}.str = 'session.data{trial_id}.processed_matrix(1,:)';
-x_vars{4}.name = 'Time';
-x_vars{4}.vals = [1 4];
-x_vars{4}.type = 'range';
-x_vars{5}.str = 'session.data{trial_id}.trial_matrix(3,:)';
-x_vars{5}.name = 'Cor_pos';
-x_vars{5}.vals = [0 30];
-x_vars{5}.type = 'range';
-x_vars{6}.str = 'session.data{trial_id}.trial_matrix(8,:)';
-x_vars{6}.name = 'Trial_id';
-x_vars{6}.vals = find(~session.trial_config.processed_dat.vals.trial_type);
-x_vars{6}.type = 'equal';
-x_vars{7}.str = 'session.data{trial_id}.processed_matrix(8,:)';
-x_vars{7}.name = 'Trial_num';
-x_vars{7}.vals = trial_range;
-x_vars{7}.type = 'range';
 
 
-var_tune = 1;
-edges = [0 5 Inf]; % each interval corresponds to one type
-t_window_inds = 25; % 200 ms window
-plot_on = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-x_vals = edges(1:end-1);
-
-% make full variable array for small variable array
-[full_vars col_mat] = expand_behavioural_types(x_vars,var_tune,edges);
-
-% extract num spikes in each time window where conditions are true
-[extracted_times max_time] = extract_time_windows(session,full_vars,t_window_inds,trial_range);
-
-% either plot rasters or make tuning curves with error bars
-group_ids = [1:length(edges)-1];
-tuning_curve = plot_spike_raster_time_windows(clust_id,sorted_spikes,extracted_times,group_ids,max_time,col_mat,plot_on);
-tuning_curve.x_vals = x_vals;
-fig_id = 1000*(dir_num-1)+60;
-plot_tuning_curves(fig_id,tuning_curve)
-set(gcf,'Position',[785   637   367   360])
-xlim([-3 8])
-xlabel('Not running / Running')
-ylabel('Firing rate')
-set(gca,'xtick',[])
-title(['Cluster Id ' num2str(clust_id)])
-
-% PLOT CORRIDOR TUNING OL
-if dir_num == 1
-edges = find(~session.trial_config.processed_dat.vals.trial_type); % each interval corresponds to one type
-x_vals = session.trial_config.processed_dat.vals.trial_ol_vals(2:13,2);
-
-%edges = find(session.trial_config.processed_dat.vals.trial_type); % each interval corresponds to one type
-%x_vals = [1:length(edges)];
-
-x_vars = cell(7,1);
-x_vars{1}.str = 'session.data{trial_id}.processed_matrix(5,:)';
-x_vars{1}.name = 'Speed';
-x_vars{1}.vals = [5 Inf];
-x_vars{1}.type = 'range';
-x_vars{2}.str = 'session.data{trial_id}.trial_matrix(9,:)';
-x_vars{2}.name = 'ITI';
-x_vars{2}.vals = 0;
-x_vars{2}.type = 'equal';
-x_vars{3}.str = 'session.data{trial_id}.trial_matrix(5,:)/10';
-x_vars{3}.name = 'laser_power';
-x_vars{3}.vals = [0 0.5];
-x_vars{3}.type = 'range';
-x_vars{4}.str = 'session.data{trial_id}.processed_matrix(1,:)';
-x_vars{4}.name = 'Time';
-x_vars{4}.vals = [1 4];
-x_vars{4}.type = 'range';
-x_vars{5}.str = 'session.data{trial_id}.trial_matrix(3,:)';
-x_vars{5}.name = 'Cor_pos';
-x_vars{5}.vals = [0 30];
-x_vars{5}.type = 'range';
-x_vars{6}.str = 'session.data{trial_id}.trial_matrix(8,:)';
-x_vars{6}.name = 'Trial_id';
-x_vars{6}.vals = find(~session.trial_config.processed_dat.vals.trial_type);
-x_vars{6}.type = 'equal';
-x_vars{7}.str = 'session.data{trial_id}.processed_matrix(8,:)';
-x_vars{7}.name = 'Trial_num';
-x_vars{7}.vals = trial_range;
-x_vars{7}.type = 'range';
-
-var_tune = 6;
-t_window_inds = 25; % 200 ms window
-plot_on = 0;
-
-
-% make full variable array for small variable array
-[full_vars col_mat] = expand_behavioural_types(x_vars,var_tune,edges);
-
-% extract num spikes in each time window where conditions are true
-[extracted_times max_time] = extract_time_windows(session,full_vars,t_window_inds,trial_range);
-
-% either plot rasters or make tuning curves with error bars
-group_ids = [1:length(edges)];
-tuning_curve = plot_spike_raster_time_windows(clust_id,sorted_spikes,extracted_times,group_ids,max_time,col_mat,plot_on);
-tuning_curve.x_vals = x_vals;
-fig_id = 1000*(dir_num-1)+40;
-plot_tuning_curves(fig_id,tuning_curve)
-text(25,0,['Trl Rng ' num2str(trial_range)])
-
-set(gcf,'Position',[1170         637         367         360])
-%xlim([-3 8])
-xlabel('Wall distance')
-ylabel('Firing rate')
-title(['Cluster Id ' num2str(clust_id)])
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-end
-
-if dir_num == 2
-% Plot spike raster's, splitting according to trial types
-% LASER POWER
-group_ids = [0 2 3 4 Inf];
-groups = 10*session.trial_info.max_laser_power;
-col_mat = [0 0 0;.3 0 0; .6 0 0; 1 0 0];
-plot_spike_raster_groups(1000*(dir_num-1)+12,clust_id,sorted_spikes,trial_range,groups,group_ids,col_mat);
-%plot([2 2],[0 200],'k')
-xlim([2 3])
-set(gcf,'Position',[385   194   389   345])
-%xlim([-3 8])
-xlabel('Wall distance')
-ylabel('Firing rate')
-title(['Cluster Id ' num2str(clust_id)])
-
-% PLOT LASER POWER TUNING
-
-
-edges = [1:session.trial_config.processed_dat.vals.num_trial_types]; % each interval corresponds to one type
-
-x_vars = cell(6,1);
-x_vars{1}.str = 'session.data{trial_id}.processed_matrix(5,:)';
-x_vars{1}.name = 'Speed';
-x_vars{1}.vals = [0 Inf];
-x_vars{1}.type = 'range';
-x_vars{2}.str = 'session.data{trial_id}.trial_matrix(9,:)';
-x_vars{2}.name = 'ITI';
-x_vars{2}.vals = 0;
-x_vars{2}.type = 'equal';
-x_vars{3}.str = 'session.data{trial_id}.trial_matrix(5,:)/10';
-x_vars{3}.name = 'laser_power';
-x_vars{3}.vals = [0 Inf];
-x_vars{3}.type = 'range';
-x_vars{4}.str = 'session.data{trial_id}.processed_matrix(1,:)';
-x_vars{4}.name = 'Time';
-x_vars{4}.vals = [2 3];
-x_vars{4}.type = 'range';
-x_vars{5}.str = 'session.data{trial_id}.trial_matrix(3,:)';
-x_vars{5}.name = 'Cor_pos';
-x_vars{5}.vals = [0 30];
-x_vars{5}.type = 'range';
-x_vars{6}.str = 'session.data{trial_id}.trial_matrix(8,:)';
-x_vars{6}.name = 'Trial_num';
-x_vars{6}.vals = find(~session.trial_config.processed_dat.vals.trial_type);
-x_vars{6}.type = 'equal';
-
-var_tune = 6;
-t_window_inds = 25; % 200 ms window
-plot_on = 0;
-
-x_vals = edges;
-
-% make full variable array for small variable array
-[full_vars col_mat] = expand_behavioural_types(x_vars,var_tune,edges);
-
-% extract num spikes in each time window where conditions are true
-[extracted_times max_time] = extract_time_windows(session,full_vars,t_window_inds,trial_range);
-
-% either plot rasters or make tuning curves with error bars
-group_ids = [1:length(edges)];
-tuning_curve = plot_spike_raster_time_windows(clust_id,sorted_spikes,extracted_times,group_ids,max_time,col_mat,plot_on);
-tuning_curve.x_vals = x_vals;
-fig_id = 1000*(dir_num-1)+50;
-plot_tuning_curves(fig_id,tuning_curve)
-set(gcf,'Position',[789   186   367   360])
-%xlim([-3 8])
-xlabel('Trial ID')
-ylabel('Firing rate ratio')
-title(['Cluster Id ' num2str(clust_id)])
-text(0,15,sprintf('%f',tuning_curve.means(end)/tuning_curve.means(1)))
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-end
 
 
 

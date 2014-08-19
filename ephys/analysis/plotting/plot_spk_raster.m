@@ -15,9 +15,10 @@ col_mat = zeros(num_groups,3);
 col_mat(1:end,3) = 1-linspace(0,1,num_groups);
 
 for i_group = 1:num_groups
-	plot(RASTER.spikes{i_group},RASTER.trials{i_group},'.','Color',col_mat(i_group,:))
+	plot(RASTER.spikes{i_group},RASTER.trials{i_group},'.','Color',col_mat(i_group,:),'MarkerSize',10)
 end
 
+ylim(RASTER.trial_range)
 xlim(RASTER.time_range)
 ylabel('Trial number')
 xlabel('Time (s)')

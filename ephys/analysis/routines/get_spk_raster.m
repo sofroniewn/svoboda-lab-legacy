@@ -1,4 +1,4 @@
-function RASTER = get_spk_raster(spike_times,spike_trials,trial_range,groups,group_ids,time_range)
+function RASTER = get_spk_raster(spike_times,spike_trials,trial_range,groups,group_ids,time_range,mean_ds,temp_smooth)
 % Computes spike raster and psth for each trial, grouped according to groups
 
 spike_times(~ismember(spike_trials,trial_range)) = [];
@@ -36,7 +36,15 @@ for i_group = 1:num_groups
 	RASTER.time = t;
 end
 
+psth_all = zeros(num_groups,length(RASTER.time));
+for i_group = 1:num_groups
+	psth_all(i_group,:) = RASTER.psth{i_group};
+end
+psth_all = conv2(psth_all,ones(mean_ds,temp_smooth)/mean_ds/temp_smooth,'same');
+psth_all = psth_all(1:mean_ds:end,:);
+RASTER.psth = psth_all;
 
+RASTER.trial_range = [1 prev_max];
 
 function [PSTH time] = func_getPSTH(SpikeTimes, PSTH_StartTime, PSTH_EndTime)
 

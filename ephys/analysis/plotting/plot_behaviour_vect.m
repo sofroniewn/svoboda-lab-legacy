@@ -10,7 +10,7 @@ cla
 hold on
 
 trials = BEHAVIOUR_VECT.trial_range(1):BEHAVIOUR_VECT.trial_range(2);
-plot(trials, BEHAVIOUR_VECT.vals,'r','linewidth',2);
+plot(trials, BEHAVIOUR_VECT.vals,'b','linewidth',2);
 %title(['Cluster Id ' num2str(clust_id)])
 xlabel('Trial Number')
 ylabel(BEHAVIOUR_VECT.ylabel)
