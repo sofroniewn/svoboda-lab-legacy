@@ -29,6 +29,10 @@ for i_group = 1:num_groups
 	plot(RASTER.time,RASTER.psth(i_group,:),'Color',col_mat(i_group,:),'linewidth',2)
 end
 
+if ymax == 0 || isnan(ymax) || isempty(ymax)
+    ymax = 1;
+end
+
 xlim(RASTER.time_range)
 ylabel('Firing rate')
 xlabel('Time (s)')

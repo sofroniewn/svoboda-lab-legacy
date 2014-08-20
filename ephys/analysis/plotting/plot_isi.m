@@ -14,7 +14,13 @@ set(phandle,'FaceColor',[0 0 0]);
 xlabel('Time between events (milliseconds)');
 ylabel('Number of events');
 xlim([-40 40])
-ylim([0 max(ISI.dist)]);
+
+ymax = max(ISI.dist);
+if ymax == 0 || isnan(ymax) || isempty(ymax)
+    ymax = 1;
+end
+
+ylim([0 ymax]);
 
 %title(['Cluster Id ' num2str(clust_id)])
 text(.725,.89,sprintf('%.0f ms',1000*ISI.peak),'Color','r','units','normalized')

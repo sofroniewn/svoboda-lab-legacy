@@ -53,7 +53,7 @@ if fit_model_on
             tuning_curve.model_fit = fitSigmoid(full_x,full_y,initPrs);
             tuning_curve.model_fit.curve = fitSigmoid_modelFun(tuning_curve.regressor_obj.x_fit_vals,tuning_curve.model_fit.estPrs);
         case 'Smooth'
-            p = .001;
+            p = .0001;
             tuning_curve.model_fit.curve = csaps(full_x,full_y,p,tuning_curve.regressor_obj.x_fit_vals);
             [pks loc] = max(tuning_curve.model_fit.curve);
             tuning_curve.model_fit.estPrs = tuning_curve.regressor_obj.x_fit_vals(loc);
