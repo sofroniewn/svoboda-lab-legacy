@@ -1,5 +1,7 @@
 function d = summarize_cluster_new(all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on)
 
+trial_range(trial_range>numel(session.data)) = [];
+
 ephys_sampling_rate = 20833.33;
 num_chan = 32;
 
@@ -96,7 +98,7 @@ for ij = 1:length(all_clust_ids)
     
     time_range = [0 4];
     % Make running tuning
-    stim_name = 'speed';
+    stim_name = 'running';
     keep_name = 'ol_base';
     id_type_speed_tuning = 'outOfReach';
     tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type_speed_tuning,time_range);
@@ -152,7 +154,7 @@ for ij = 1:length(all_clust_ids)
     end
 
     % Make trial Raster
-    id_type_wall_tuning = 'clB';
+    id_type_wall_tuning = 'olB';
     [group_ids_RASTER groups_RASTER] = define_group_ids(exp_type,id_type_wall_tuning,trial_inds);
     keep_trials = trial_range;
     keep_trials = keep_trials(ismember(keep_trials,find(session.trial_info.mean_speed > 5 & ismember(groups_RASTER,group_ids_RASTER))));
@@ -174,7 +176,7 @@ for ij = 1:length(all_clust_ids)
     % Make touch tuning
     stim_name = 'corPos';
     keep_name = 'ol_running';
-    id_type_wall_tuning = 'clB';
+    id_type_wall_tuning = 'olB';
     tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type_wall_tuning,time_range);
     [peak_rate loc] = max(tuning_curve.model_fit.curve);
     peak_dist = tuning_curve.regressor_obj.x_fit_vals(loc);
@@ -190,7 +192,7 @@ for ij = 1:length(all_clust_ids)
     end
     
     % Make trial Raster
-    id_type_wall_tuning = 'clR';
+    id_type_wall_tuning = 'olL';
     [group_ids_RASTER groups_RASTER] = define_group_ids(exp_type,id_type_wall_tuning,trial_inds);
     keep_trials = trial_range;
     keep_trials = keep_trials(ismember(keep_trials,find(session.trial_info.mean_speed > 5 & ismember(groups_RASTER,group_ids_RASTER))));
@@ -212,7 +214,7 @@ for ij = 1:length(all_clust_ids)
     % Make touch tuning
     stim_name = 'corPos';
     keep_name = 'ol_running';
-    id_type_wall_tuning = 'clR';
+    id_type_wall_tuning = 'olL';
     tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type_wall_tuning,time_range);
     [peak_rate loc] = max(tuning_curve.model_fit.curve);
     peak_dist = tuning_curve.regressor_obj.x_fit_vals(loc);

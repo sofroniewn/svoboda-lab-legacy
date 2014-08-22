@@ -1,5 +1,7 @@
 function d = summarize_cluster(all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on)
 
+trial_range(trial_range>numel(session.data)) = [];
+
 ephys_sampling_rate = 20833.33;
 num_chan = 32;
 
@@ -113,7 +115,7 @@ for ij = 1:length(all_clust_ids)
     assignin('base','RASTER',RASTER);
 
     % Make running tuning
-    stim_name = 'speed';
+    stim_name = 'running';
     keep_name = 'ol_base';
     id_type_speed_tuning = 'outOfReach';
     tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type_speed_tuning,time_range);
@@ -129,7 +131,7 @@ for ij = 1:length(all_clust_ids)
         text(.05,.96,sprintf('Baseline %.2f Hz',baseline_rate),'Units','Normalized','Color','r')
         text(.05,.89,sprintf('Modulation %.2fx',running_modulation),'Units','Normalized','Color','r')
     end
-    assignin('base','tuning_curve',tuning_curve);
+    %assignin('base','tuning_curve',tuning_curve);
     
     % Make touch tuning
     stim_name = 'corPos';
@@ -147,5 +149,5 @@ for ij = 1:length(all_clust_ids)
         text(.05,.96,sprintf('Peak rate %.2f Hz',peak_rate),'Units','Normalized','Color','r')
         text(.05,.89,sprintf('Peak distance %.1f mm',peak_dist),'Units','Normalized','Color','r')
     end
-%    assignin('base','tuning_curve',tuning_curve);
+    assignin('base','tuning_curve',tuning_curve);
 end

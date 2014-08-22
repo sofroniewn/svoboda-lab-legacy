@@ -22,15 +22,13 @@ case 'LFP'
 	ylim([2 size(CSD.vlt_cmap,1)+1])
 case 'traces'
 	plot(1000*CSD.time_window,CSD.vlt_trace);
-	ylim([1 size(CSD.vlt_cmap,1)+2])
-	ytick_vals = [0:5:size(CSD.vlt_cmap,1)+2];
-	set(gca,'ytick',ytick_vals - 2 - mod(size(CSD.vlt_cmap,1),5))
-	set(gca,'yticklabel',{5+max(ytick_vals) - ytick_vals})
+	set(gca, 'ydir', 'rev')
+	ylim([0 size(CSD.vlt_cmap,1)+4])
 otherwise
 	error('WGNR :: unrecognized plot type for CSD')
 end
 
-plot([0 0],[1 size(CSD.vlt_cmap,1)+2],'LineStyle','--','Color','k')
+plot([0 0],[-2 size(CSD.vlt_cmap,1)+5],'LineStyle','--','Color','k')
 
 xlim(1000*CSD.time_range)
 xlabel('Time (ms)')

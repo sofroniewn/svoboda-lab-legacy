@@ -3,6 +3,15 @@ function regressor_obj = define_regression_var_ephys(stim_type_name)
 switch stim_type_name
 	case 'speed'
 		regressor_obj.var_tune = 'speed';
+		regressor_obj.bin_vals = [0:5:50]; 
+		regressor_obj.bin_type = 'edges';
+		regressor_obj.x_label = 'Speed (cm/s)';
+		regressor_obj.x_range = [0 50];
+		regressor_obj.x_tick = [0:5:50];
+		regressor_obj.tune_type = '';
+		regressor_obj.x_fit_vals = [0:1:50];
+	case 'running'
+		regressor_obj.var_tune = 'speed';
 		regressor_obj.bin_vals = [0 5 Inf]; 
 		regressor_obj.bin_type = 'edges';
 		regressor_obj.x_label = 'Not running / running';
@@ -10,6 +19,33 @@ switch stim_type_name
 		regressor_obj.x_tick = [];
 		regressor_obj.tune_type = '';
 		regressor_obj.x_fit_vals = [0 10];
+	case 'lateral_speed'
+		regressor_obj.var_tune = 'lateral_speed';
+		regressor_obj.bin_vals = [-10:5:50]; 
+		regressor_obj.bin_type = 'edges';
+		regressor_obj.x_label = 'Lateral speed (cm/s)';
+		regressor_obj.x_range = [-10 50];
+		regressor_obj.x_tick = [-10:5:50];
+		regressor_obj.tune_type = '';
+		regressor_obj.x_fit_vals = [-10:1:50];
+	case 'run_angle'
+		regressor_obj.var_tune = 'run_angle';
+		regressor_obj.bin_vals = [-180:5:180]; 
+		regressor_obj.bin_type = 'edges';
+		regressor_obj.x_label = 'Run angle (deg)';
+		regressor_obj.x_range = [-180 180];
+		regressor_obj.x_tick = [-180:5:180];
+		regressor_obj.tune_type = '';
+		regressor_obj.x_fit_vals = [-180:1:180];
+	case 'wall_vel'
+		regressor_obj.var_tune = 'wall_vel';
+		regressor_obj.bin_vals = [-35:5:35]; 
+		regressor_obj.bin_type = 'edges';
+		regressor_obj.x_label = 'Wall velocity (mm/s)';
+		regressor_obj.x_range = [-35 35];
+		regressor_obj.x_tick = [-35:5:35];
+		regressor_obj.tune_type = '';
+		regressor_obj.x_fit_vals = [-35:1:35];
 	case 'corPos'
 		regressor_obj.var_tune = 'wall_pos';
 		regressor_obj.bin_vals = [0:2:30]; 

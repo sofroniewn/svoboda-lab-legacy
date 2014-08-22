@@ -45,7 +45,7 @@ r_in_mm = 0.1;
 vid_file_list = dir([base_dir '*.mp4']);
 vid_file_num = ceil(numel(vid_file_list)/2);
 vid_file_name = fullfile(base_dir, vid_file_list(vid_file_num).name);
-vid_frame = 20;
+vid_frame = 3;
 vid_file = mmread(vid_file_name,vid_frame);
 
 imagePixelDimsXY = [size(vid_file.frames.cdata,2) size(vid_file.frames.cdata,1)];

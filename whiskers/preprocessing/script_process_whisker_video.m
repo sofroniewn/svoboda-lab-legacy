@@ -1,21 +1,24 @@
 %% start matlab pool
 
-matlabpool(4);
+%matlabpool(4);
 
 %% PROCESS WHISKER VIDEO - generate parameters
-base_dir = cell(10,1);
-base_dir{1} = 'Y:\processed\sofroniewn\an220126bvG\2014_01_14-1\';
-base_dir{2} = 'Y:\processed\sofroniewn\an220126bvG\2014_01_14-2\';
-base_dir{3} = 'Y:\processed\sofroniewn\an220126bvG\2014_01_15-1\';
-base_dir{4} = 'Y:\processed\sofroniewn\an220125bvG\2014_01_14-1\';
-base_dir{5} = 'Y:\processed\sofroniewn\an220125bvG\2014_01_15-2\';
-base_dir{6} = 'Y:\processed\sofroniewn\an217490bvG\2014_01_14-1\';
-base_dir{7} = 'Y:\processed\sofroniewn\an217490bvG\2014_01_15-1\';
-base_dir{8} = 'Y:\processed\sofroniewn\an217490bvG\2014_01_15-2\';
-base_dir{9} = 'Y:\processed\sofroniewn\an217489bvG\2014_01_14-2\';
-base_dir{10} = 'Y:\processed\sofroniewn\an217489bvG\2014_01_15-1\';
+base_dir = cell(1,1);
+% base_dir{1} = 'Y:\processed\sofroniewn\an220126bvG\2014_01_14-1\';
+% base_dir{2} = 'Y:\processed\sofroniewn\an220126bvG\2014_01_14-2\';
+% base_dir{3} = 'Y:\processed\sofroniewn\an220126bvG\2014_01_15-1\';
+% base_dir{4} = 'Y:\processed\sofroniewn\an220125bvG\2014_01_14-1\';
+% base_dir{5} = 'Y:\processed\sofroniewn\an220125bvG\2014_01_15-2\';
+% base_dir{6} = 'Y:\processed\sofroniewn\an217490bvG\2014_01_14-1\';
+% base_dir{7} = 'Y:\processed\sofroniewn\an217490bvG\2014_01_15-1\';
+% base_dir{8} = 'Y:\processed\sofroniewn\an217490bvG\2014_01_15-2\';
+% base_dir{9} = 'Y:\processed\sofroniewn\an217489bvG\2014_01_14-2\';
+% base_dir{10} = 'Y:\processed\sofroniewn\an217489bvG\2014_01_15-1\';
 
-for ik = 1:10
+base_dir{1} = '/Volumes/wdbp/processed/sofroniewn/an237723bvH/2014_06_17-3/';
+
+ik = 1;
+%for ik = 1:1
 %clear all
 %close all
 %drawnow
@@ -41,7 +44,7 @@ wa = func_cleanup_whisker_traces(wl);
 wv = func_extract_whisking_variables(wa);
 
 save(fullfile(base_dir{ik},'whisker_variables_A.mat'),'wv');
-end
+%end
 %%
 figure(43)
 clf(43)

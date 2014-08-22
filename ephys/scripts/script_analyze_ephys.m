@@ -6,13 +6,12 @@ clear all
 close all
 drawnow
  
-%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_245918/2014_06_21/run_02';
-%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_03';
-%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_06'; % laser data
-%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_246702/2014_08_14/run_03';
-%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_237723/2014_06_17/run_03';
-
-base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250492/2014_08_15/run_02';
+%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_245918/2014_06_21/run_02'; %anm #1 for olR and old cl
+%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_03'; %anm #2 for olR and old cl
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_06'; % laser data
+%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_237723/2014_06_17/run_03'; %anm #3 for olR and old cl
+%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250492/2014_08_15/run_02'; %anm #1 for olR and olB and olL
+%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250495/2014_08_14/run_03'; %anm #2 for olR and olB and olL
 
 % Load in ephys data
 sorted_name = 'klusters_data';
@@ -29,13 +28,15 @@ session = parse_session_data(1,session);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PUBLISH PLOTS OF CLUSTERS
-global trial_range; trial_range = [50:980];
+global trial_range; trial_range = [1:4000];
 global exp_type; exp_type = 'bilateral_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
 global id_type; id_type = 'olR';
 
 publish_file_name = 'publish_ephys_new.m'; % 'publish_ephys.m' or 'publish_ephys_new.m'
-outputDir = 'test_cl';
+%outputDir = 'anm_250492_olB';
+outputDir = 'test';
 
+cd('/Users/sofroniewn/Documents/DATA/ephys_summary');
 publish(publish_file_name,'showCode',false,'outputDir',outputDir); close all;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -43,11 +44,10 @@ publish(publish_file_name,'showCode',false,'outputDir',outputDir); close all;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% LOAD summary data without plotting
 global id_type; id_type = 'olR';
-all_clust_ids = 3 %[3:numel(sorted_spikes)];
+all_clust_ids = 4 %[3:numel(sorted_spikes)];
 plot_on = 1;
 d = summarize_cluster_new(all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on);
 %%
-
 
 
 figure(88)
@@ -63,10 +63,13 @@ hist(d.p_nj(:,5),10)
 %%% Inspect sorted units across entire session
 %[laser_data] = func_extract_laser_power(base_dir, trial_range, 'laser_data', 0);
 
+[group_ids groups] = define_group_ids(exp_type,'clR',[]);
+%group_ids = 3;
+keep_trials = ismember(d.u_ck(1,:),group_ids) & d.u_ck(2,:) > 5;
 
-wall_pos = flipdim(squeeze(d.s_ctk(1,:,:))',1);
-for_vel = flipdim(squeeze(d.s_ctk(2,:,:))',1);
-lat_vel = flipdim(squeeze(d.s_ctk(3,:,:))',1);
+wall_pos = flipdim(squeeze(d.s_ctk(1,:,keep_trials))',1);
+for_vel = flipdim(squeeze(d.s_ctk(2,:,keep_trials))',1);
+lat_vel = flipdim(squeeze(d.s_ctk(3,:,keep_trials))',1);
 
 fil = triang(100)';
 figure(114)
@@ -78,23 +81,23 @@ imagesc(for_vel)
 subplot(4,3,3)
 imagesc(lat_vel)
 subplot(4,3,4)
-imagesc(conv2(flipdim(squeeze(d.r_ntk(26,:,:))',1),fil,'same'));
+imagesc(conv2(flipdim(squeeze(d.r_ntk(26,:,keep_trials))',1),fil,'same'));
 subplot(4,3,5)
-imagesc(conv2(flipdim(squeeze(d.r_ntk(13,:,:))',1),fil,'same'));
+imagesc(conv2(flipdim(squeeze(d.r_ntk(13,:,keep_trials))',1),fil,'same'));
 subplot(4,3,6)
-imagesc(conv2(flipdim(squeeze(d.r_ntk(1,:,:))',1),fil,'same'));
+imagesc(conv2(flipdim(squeeze(d.r_ntk(1,:,keep_trials))',1),fil,'same'));
 subplot(4,3,7)
-imagesc(conv2(flipdim(squeeze(d.r_ntk(6,:,:))',1),fil,'same'));
+imagesc(conv2(flipdim(squeeze(d.r_ntk(3,:,keep_trials))',1),fil,'same'));
 subplot(4,3,8)
-imagesc(conv2(flipdim(squeeze(d.r_ntk(11,:,:))',1),fil,'same'));
+imagesc(conv2(flipdim(squeeze(d.r_ntk(11,:,keep_trials))',1),fil,'same'));
 subplot(4,3,9)
-imagesc(conv2(flipdim(squeeze(d.r_ntk(17,:,:))',1),fil,'same'));
+imagesc(conv2(flipdim(squeeze(d.r_ntk(17,:,keep_trials))',1),fil,'same'));
 subplot(4,3,10)
-imagesc(conv2(flipdim(squeeze(d.r_ntk(12,:,:))',1),fil,'same'));
+imagesc(conv2(flipdim(squeeze(d.r_ntk(12,:,keep_trials))',1),fil,'same'));
 subplot(4,3,11)
-imagesc(conv2(flipdim(squeeze(d.r_ntk(25,:,:))',1),fil,'same'));
+imagesc(conv2(flipdim(squeeze(d.r_ntk(25,:,keep_trials))',1),fil,'same'));
 subplot(4,3,12)
-imagesc(conv2(flipdim(squeeze(d.r_ntk(22,:,:))',1),fil,'same'));
+imagesc(conv2(flipdim(squeeze(d.r_ntk(22,:,keep_trials))',1),fil,'same'));
 
 
 
@@ -107,13 +110,14 @@ imagesc(conv2(flipdim(squeeze(d.r_ntk(22,:,:))',1),fil,'same'));
 %% CSD
 
 trial_range = [1:20];
-[laser_data] = func_extract_laser_power(base_dir, trial_range, 'laser_data_short', 1);
+[laser_data] = func_extract_laser_power(base_dir, trial_range, 'laser_data_short', 0);
 
 power_values = round(laser_data.max_power*10);
 power_range = unique(power_values);
 keep_powers = power_range;
+ch_exclude = [3:13];
 
-CSD = get_CSD(laser_data,trial_range,power_values,keep_powers);
+CSD = get_CSD(laser_data,trial_range,power_values,keep_powers,ch_exclude);
 figure('Position',[73   620   338   186]); plot_CSD([],CSD,'CSD')
 figure('Position',[73   361   338   186]); plot_CSD([],CSD,'LFP')
 figure('Position',[73   103   338   186]); plot_CSD([],CSD,'traces')
@@ -146,6 +150,23 @@ figure; plot_spk_raster([],RASTER)
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%% 2D plots %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%keep_name = 'ol_running';
+keep_name = 'ol_base';
+exp_type = 'bilateral_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
+id_type = 'olR';
+time_range = [0 4];
+
+stim_name = 'run_angle';
+stim_name2 = 'corPos';
+clust_id = 3;
+
+
+tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
+figure; plot_tuning_curve_2D_ephys([],tuning_curve)
 
 
 
