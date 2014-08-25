@@ -25,10 +25,10 @@ for ij = 1:numel(wl.data)
     wv.data{ij}.theta_amp = NaN(size(wv.data{ij}.theta));
     wv.data{ij}.theta_phase = NaN(size(wv.data{ij}.theta));
     for ik = 1:nWhisk
-        wv.data{ij}.theta_bp(ik,:) = filtfilt(b_bp,a_bp,wv.data{ij}.theta(ik,:));
-        tmp = hilbert(wv.data{ij}.theta_bp(ik,:));
-        wv.data{ij}.theta_amp(ik,:) = abs(tmp);
-        wv.data{ij}.theta_phase(ik,:) = angle(tmp);
+            wv.data{ij}.theta_bp(ik,:) = filtfilt(b_bp,a_bp,wv.data{ij}.theta(ik,:));
+            tmp = hilbert(wv.data{ij}.theta_bp(ik,:));
+            wv.data{ij}.theta_amp(ik,:) = abs(tmp);
+            wv.data{ij}.theta_phase(ik,:) = angle(tmp);
     end
     tmp = [repmat(wv.data{ij}.theta_amp(:,1),1,125) wv.data{ij}.theta_amp repmat(wv.data{ij}.theta_amp(:,end),1,125)];
     tmp = conv2(tmp,smooth_window,'same');
