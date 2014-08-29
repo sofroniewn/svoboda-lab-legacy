@@ -5,11 +5,22 @@
 clear all
 close all
 drawnow
- 
-%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_245918/2014_06_21/run_02'; %anm #1 for olR and old cl
-%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_03'; %anm #2 for olR and old cl
-base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_06'; % laser data
-%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_237723/2014_06_17/run_03'; %anm #3 for olR and old cl
+
+
+anm_id = '235885';
+
+switch anm_id
+	case '235885'
+		base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_03'; %anm #2 for olR and old cl
+		%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_06'; % laser data
+	case '245918'
+		base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_245918/2014_06_21/run_02'; %anm #1 for olR and old cl
+	case '237723'
+		base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_237723/2014_06_17/run_03'; %anm #3 for olR and old cl
+	otherwise
+		error('Unrecognized animal id')
+end
+
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250492/2014_08_15/run_02'; %anm #1 for olR and olB and olL
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250495/2014_08_14/run_03'; %anm #2 for olR and olB and olL
 
@@ -26,15 +37,26 @@ global session;
 session = load_session_data(base_path_behaviour);
 session = parse_session_data(1,session);
 
+% Load in summary data
+global ephys_summary;
+f_name_summary = fullfile(base_dir,'ephys',['summary_data.mat']);
+if exist(f_name_summary) == 2
+	load(f_name_summary,'summary_data','summary_data_labels');
+	ephys_summary.d = summary_data;
+	ephys_summary.labels = summary_data_labels;
+else
+	ephys_summary = [];
+end
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PUBLISH PLOTS OF CLUSTERS
-global trial_range; trial_range = [1:4000];
-global exp_type; exp_type = 'bilateral_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
+global trial_range; trial_range = [40:4000];
+global exp_type; exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
 global id_type; id_type = 'olR';
 
-publish_file_name = 'publish_ephys_new.m'; % 'publish_ephys.m' or 'publish_ephys_new.m'
-%outputDir = 'anm_250492_olB';
-outputDir = 'test';
+publish_file_name = 'publish_ephys_new_wall_dist.m'; % 'publish_ephys.m' or 'publish_ephys_new.m'
+outputDir = ['anm_' anm_id '_summary_new2'];
 
 cd('/Users/sofroniewn/Documents/DATA/ephys_summary');
 publish(publish_file_name,'showCode',false,'outputDir',outputDir); close all;
@@ -46,7 +68,9 @@ publish(publish_file_name,'showCode',false,'outputDir',outputDir); close all;
 global id_type; id_type = 'olR';
 all_clust_ids = 4 %[3:numel(sorted_spikes)];
 plot_on = 1;
-d = summarize_cluster_new(all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on);
+d = [];
+
+d = summarize_cluster(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on);
 %%
 
 
@@ -63,24 +87,33 @@ hist(d.p_nj(:,5),10)
 %%% Inspect sorted units across entire session
 %[laser_data] = func_extract_laser_power(base_dir, trial_range, 'laser_data', 0);
 
-[group_ids groups] = define_group_ids(exp_type,'clR',[]);
+[group_ids groups] = define_group_ids(exp_type,'olR',[]);
 %group_ids = 3;
 keep_trials = ismember(d.u_ck(1,:),group_ids) & d.u_ck(2,:) > 5;
 
 wall_pos = flipdim(squeeze(d.s_ctk(1,:,keep_trials))',1);
-for_vel = flipdim(squeeze(d.s_ctk(2,:,keep_trials))',1);
-lat_vel = flipdim(squeeze(d.s_ctk(3,:,keep_trials))',1);
+run_var = flipdim(squeeze(d.s_ctk(6,:,keep_trials))',1);
+
+run_var = run_var - mean(run_var(:));
+run_var(run_var>100) = 100;
+run_var(run_var<-100) = -100;
+
+        gap = [0.0355 0.0355];
+        marg_h = [0.08 0.03];
+        marg_w = [0.03 0.01];
 
 fil = triang(100)';
 figure(114)
 clf(114)
-subplot(4,3,1)
+subtightplot(2,2,1,gap,marg_h,marg_w)
 imagesc(wall_pos)
-subplot(4,3,2)
-imagesc(for_vel)
-subplot(4,3,3)
-imagesc(lat_vel)
-subplot(4,3,4)
+subtightplot(2,2,2,gap,marg_h,marg_w)
+h = imagesc(run_var-5);
+%set(h, 'AlphaData', run_speed>1)
+colormap('gray')
+
+
+
 imagesc(conv2(flipdim(squeeze(d.r_ntk(26,:,keep_trials))',1),fil,'same'));
 subplot(4,3,5)
 imagesc(conv2(flipdim(squeeze(d.r_ntk(13,:,keep_trials))',1),fil,'same'));
@@ -99,10 +132,36 @@ imagesc(conv2(flipdim(squeeze(d.r_ntk(25,:,keep_trials))',1),fil,'same'));
 subplot(4,3,12)
 imagesc(conv2(flipdim(squeeze(d.r_ntk(22,:,keep_trials))',1),fil,'same'));
 
+ % cmap = ones(60,3);
+ % cmap(:,2) = linspace(1,0,60);
+ % cmap(:,1) = linspace(1,0,60);
+ % colormap(flipdim(cmap,1));
 
 
 
+figure(114)
+clf(114)
+imagesc(wall_pos)
+axis off
+ cmap = ones(60,3);
+ cmap(:,2) = linspace(1,0,60);
+ cmap(:,1) = linspace(1,0,60);
+ colormap(flipdim(cmap,1));
 
+
+figure(121)
+clf(121)
+hold on
+aa = unique(wall_pos(:,1000))
+cmap = zeros(length(aa),3);
+cmap(:,3) = linspace(1,0,length(aa));
+for ij = 1:length(aa)
+	ind = find(wall_pos(:,1000) == aa(ij),1,'first');
+	plot(d.t,wall_pos(ind,:),'color',cmap(ij,:),'linewidth',2)
+end
+xlim([0 4])
+xlabel('Time (s)')
+ylabel('Wall distance (mm)')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -141,32 +200,106 @@ figure; plot_spk_raster([],RASTER)
 
 
 
-
-
-
-
-
-
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%% 2D plots %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%keep_name = 'ol_running';
-keep_name = 'ol_base';
-exp_type = 'bilateral_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
+fig_props = []
+% wall dist when wall moving
+clust_id = 5;
+
+keep_name = 'ol_running';
+exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
 id_type = 'olR';
 time_range = [0 4];
-
-stim_name = 'run_angle';
+stim_name = 'wall_direction';
 stim_name2 = 'corPos';
-clust_id = 3;
-
-
 tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
-figure; plot_tuning_curve_2D_ephys([],tuning_curve)
+figure(4);clf(4); plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
+
+% wall dist when running left / right
+clust_id = 5;
+
+keep_name = 'ol_running';
+exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
+id_type = 'olR';
+time_range = [0 4];
+stim_name = 'run_direction';
+stim_name2 = 'corPos';
+tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
+figure(4);clf(4); plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
+
+% wall dist when not running, running slow & fast
+clust_id = 5;
+
+keep_name = 'ol_base';
+exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
+id_type = 'olR';
+time_range = [0 4];
+stim_name = 'running_fast';
+stim_name2 = 'corPos';
+tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
+figure(4);clf(4); plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
+
+% wall dist when running, whisking slow & fast
+clust_id = 5;
+keep_name = 'ol_running';
+exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
+id_type = 'olR';
+time_range = [0 4];
+stim_name = 'whisking';
+stim_name2 = 'corPos';
+tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
+figure(4);clf(4); plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
+
+% wall dist when not running, whisking slow & fast
+clust_id = 5;
+keep_name = 'ol_not_running';
+exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
+id_type = 'olR';
+time_range = [0 4];
+stim_name = 'whisking';
+stim_name2 = 'corPos';
+tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
+figure(4);clf(4); plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
+
+
+
+
+
+clust_id = 5;
+keep_name = 'ol_base';
+exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
+id_type = 'olR';
+time_range = [0 4];
+stim_name = 'speed';
+stim_name2 = 'corPos';
+tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
+figure(3);clf(3); plot_tuning_curve_2D_ephys([],tuning_curve)
+
+
+% wall dist when not running, whisking slow & fast
+clust_id = 21;
+keep_name = 'ol_base';
+exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
+id_type = 'olR';
+time_range = [0 4];
+stim_name = 'touch';
+stim_name2 = 'speed';
+tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
+figure(5);clf(5); plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
+
+
+% wall dist when not running, whisking slow & fast
+clust_id = 21;
+keep_name = 'ol_base';
+exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
+id_type = 'olR';
+time_range = [0 4];
+stim_name = 'touch';
+stim_name2 = 'whisker_amp';
+tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
+figure(4);clf(4); plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
 
 
 
@@ -174,6 +307,79 @@ figure; plot_tuning_curve_2D_ephys([],tuning_curve)
 
 
 
+
+
+
+
+
+fig_props = []
+% wall dist when wall moving
+clust_id = 23;
+
+id_type = 'olR';
+keep_name = 'ol_base';
+exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
+
+time_range = [0 4];
+stim_name = 'whisker_amp';
+stim_name2 = 'corPos';
+tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
+figure(4);clf(4); set(gcf,'Position',[440   590   282   208])
+plot_tuning_curve_2D_ephys(fig_props,tuning_curve)
+
+
+
+
+15 26 3 23
+25 18 12 5
+
+
+
+
+clust_id = 18;
+
+figure(2)
+clf(2)
+set(gcf,'Position',[90   474   346   332])
+
+fig_props = [];
+gap = 0.1;
+marg_h = [0.1 0.03];
+marg_w = [0.1 0.1];
+
+
+   	exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
+	id_type = 'olR';
+	 stim_name = 'speed';
+    keep_name = 'ol_whisking';
+    time_range = [0 4];
+    tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range);
+    %[peak_rate loc] = max(tuning_curve.model_fit.curve);
+    %peak_dist = tuning_curve.regressor_obj.x_fit_vals(loc);
+    %s_ind = find(strcmp(d.p_labels,'peak_rate'));
+    %s_ind = find(strcmp(d.p_labels,'peak_distance'));
+     tuning_curve.col_mat = [1 0 0]; 
+        subtightplot(3,2,[1 2],gap,marg_h,marg_w);
+        plot_tuning_curve_ephys(fig_props,tuning_curve)
+     %   text(.05,.96,sprintf('Peak rate %.2f Hz',peak_rate),'Units','Normalized','Color','r')
+     %   text(.05,.89,sprintf('Peak distance %.1f mm',peak_dist),'Units','Normalized','Color','r')
+
+ stim_name = 'whisker_amp';
+    keep_name = 'ol_whisking';
+    time_range = [0 4];
+    tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range);
+     tuning_curve.col_mat = [0 1 0];
+     subtightplot(3,2,[3 4],gap,marg_h,marg_w);
+        plot_tuning_curve_ephys(fig_props,tuning_curve)
+     
+
+ stim_name = 'corPos';
+    keep_name = 'ol_whisking';
+    time_range = [0 4];
+    tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range);
+     subtightplot(3,2,[5 6],gap,marg_h,marg_w);
+        plot_tuning_curve_ephys(fig_props,tuning_curve)
+     
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -182,83 +388,39 @@ figure; plot_tuning_curve_2D_ephys([],tuning_curve)
 
 
 
+[group_ids groups] = define_group_ids(exp_type,'olR',[]);
+%group_ids = 3;
+keep_trials = ismember(d.u_ck(1,:),group_ids) & d.u_ck(2,:) > 5;
 
+wall_pos = flipdim(squeeze(d.s_ctk(1,:,keep_trials))',1);
+run_var = flipdim(squeeze(d.s_ctk(6,:,keep_trials))',1);
 
+trial_plt_range = 240:300;
+%trial_plt_range = 150:200;
 
-
-
-
-mean_lat = nanmean(lat_vel(trial_plt_range,:));
+mean_run = nanmean(run_var(trial_plt_range,:));
 mean_wall = nanmean(wall_pos(trial_plt_range,:));
-mean_for = nanmean(for_vel(trial_plt_range,:));
-mean_angle = atan2(mean_lat,mean_for)*180/pi;
-mean_angle = mean_angle - mean_angle(1);
-mean_angle_sm = smooth(mean_angle,250,'sgolay',1);
-diff_angle = 500*[0;diff(mean_angle_sm)];
+mean_run_sm = smooth(mean_run,100,'sgolay',1);
+mean_run_sm = mean_run_sm - mean(mean_run_sm(1:100));
+mean_run_sm = -mean_run_sm;
+mean_wall = mean_wall - min(mean_wall);
+mean_wall = mean_wall*100/mean_wall(1);
 
-
-mean_lat = mean_lat(100:end-100);
-mean_wall = mean_wall(100:end-100);
-mean_for = mean_for(100:end-100);
-mean_angle = mean_angle(100:end-100);
-diff_angle = diff_angle(100:end-100);
-
-%diff_angle = abs(diff_angle);
-%figure; hold on; plot(mean_angle_sm); plot(mean_angle,'r'); plot(diff_angle,'g');
-
-mean_fr = zeros(size(r_ntk,1)-2,length(diff_angle));
-pks = zeros(size(r_ntk,1)-2,6);
-onset = zeros(size(r_ntk,1)-2,1);
-
-for ij = 3:size(r_ntk,1)
-	avg_fr = conv2(flipdim(squeeze(r_ntk(ij,:,:))',1),fil,'same');
-	mean_curve = nanmean(avg_fr(trial_plt_range,100:end-100));
-%	mean_fr(ij-2,:) = mean_curve/max(abs(mean_curve));
-	mean_fr(ij-2,:) = zscore(mean_curve);
-%	mean_fr(ij,:) = mean_fr(ij,:) - mean(mean_fr(ij,1:50));
-	% [pk1 loc1] = max(abs(mean_fr(ij,200:end)));
-	% [pk2 loc2] = max(-mean_fr(ij,200:end));
-	% [pk3 loc3] = max(abs(mean_fr(ij,200:end)));
-	% pks(ij,:) = [loc1 pk1 loc2 pk2 loc3 pk3];
-	% if(loc1==loc2)
-	% 	onset(ij) = loc2 + 10000;
-	% 	3
-	% else
-	% 	onset(ij) = loc1;
-	% end
-	
-	mean_curve = zscore(mean_curve);
-	loc = find(mean_curve > 1.5,1,'first');
-	if loc > 50
-		onset(ij-2) = loc;
-	else
-		loc = find(mean_curve < .5,1,'first');
-		onset(ij-2) = loc - 10000;
-	end
-
-	% loc = find(mean_fr(ij,:) > 2.2,1,'first');
-	% if ~isempty(loc)
-	% 	onset(ij) = loc;
-	% 	[pk1 loc1] = max(abs(mean_fr(ij,:)));
-	% 	if pk1<3
-	% 		onset(ij) = onset(ij) + 20000;
-	% 		23
-	% 	end
-
-	% 	if onset(ij) > 1000 && onset(ij) < 10000
-	% 		onset(ij) = onset(ij) + 2000;
-	% 	end
-
-	% 	pk = mean(mean_fr(ij,800:1200))
-	% 	if pk > 1
-	% 		onset(ij) = onset(ij)-500;
-	% 	end
-	% else
-	% 	loc = find(mean_fr(ij,:) < -1,1,'first');
-	% 	onset(ij) = 10000 + loc;
-	% end
+figure(17); clf(17);
+hold on; 
+for ij = [4 8 5 6 15 19 25]  %11 22 23 24 %1:size(d.r_ntk,1)
+	avg_fr = conv2(flipdim(squeeze(d.r_ntk(ij,:,keep_trials))',1),fil,'same');
+	mean_curve = nanmean(avg_fr(trial_plt_range,:));
+	mean_curve = mean_curve - mean(mean_curve(20:120));
+	plot(d.t,100*mean_curve/max(abs(mean_curve)),'r','Linewidth',2)
 end
+plot(d.t,mean_wall,'b','Linewidth',4);
+%plot(d.t,mean_run,'k');
+plot(d.t,mean_run_sm,'k','Linewidth',4);
 
+ylim([-10 100])
+xlabel('Time (s)')
+xlim([0 1.5])
 %onset(onset>1000) = onset(onset>1000) - 10000;
 
 [vals order] = sort(onset);

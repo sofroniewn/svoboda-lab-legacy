@@ -1,4 +1,4 @@
-function d = summarize_cluster_new(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on)
+function d = summarize_cluster_new_wall_dist(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on)
 
 trial_range(trial_range>numel(session.data)) = [];
 
@@ -68,8 +68,23 @@ for ij = 1:length(all_clust_ids)
         plot_isi(fig_props,ISI);
         text(.04,.96,sprintf('Id %d',clust_id),'Units','Normalized','FontSize',18,'Color','r','FontWeight','Bold')
         text(.04,.87,sprintf('Chan %.1f',peak_channel),'Units','Normalized','Color','r')
+        if ~isempty(ephys_summary)
+            text(.725,.80,sprintf('ANM %.0f',ephys_summary.d(1,1)),'Units','Normalized','Color','r')
+            ind = find(ephys_summary.d(:,2) == clust_id,1,'first');
+            if ~isempty(ind)
+               text(.04,.80,sprintf('Depth %.0f um',ephys_summary.d(ind,3)),'Units','Normalized','Color','r')
+                if ephys_summary.d(ind,4)
+                    text(.04,.73,sprintf('Fast spiking'),'Units','Normalized','Color','r')
+                else
+                    text(.04,.73,sprintf('Regular spiking'),'Units','Normalized','Color','r')
+                end
+            else
+               text(.04,.80,sprintf('Rejected'),'Units','Normalized','Color','r')
+            end
+        end
     end
-    
+    xlabel('');
+
     % get spike waveform information
     WAVEFORMS = get_spk_waveforms(spike_wave_detect,ephys_sampling_rate);
     s_ind = find(strcmp(d.p_labels,'spk_amplitude'));
@@ -96,6 +111,7 @@ for ij = 1:length(all_clust_ids)
         subtightplot(4,8,[11 12],gap,marg_h,marg_w)
         plot_behaviour_vect(fig_props,BEHAVIOUR_VECT)
     end
+    xlabel('');
     
     time_range = [0 4];
     % Make running tuning
@@ -117,8 +133,9 @@ for ij = 1:length(all_clust_ids)
     end
     assignin('base','tuning_curve',tuning_curve);
   
-    % Make trial Raster
+    % Make trial Raster to running and contra touch
     id_type_wall_tuning = 'olR';
+    keep_name = 'ol_running';
     [group_ids_RASTER groups_RASTER] = define_group_ids(exp_type,id_type_wall_tuning,trial_inds);
     keep_trials = trial_range;
     keep_trials = keep_trials(ismember(keep_trials,find(session.trial_info.mean_speed > 5 & ismember(groups_RASTER,group_ids_RASTER))));
@@ -154,13 +171,15 @@ for ij = 1:length(all_clust_ids)
         text(.05,.89,sprintf('Peak distance %.1f mm',peak_dist),'Units','Normalized','Color','r')
     end
 
-    % Make trial Raster
-    id_type_wall_tuning = 'olB';
+    % Make trial Raster to not running and contra touch
+    id_type_wall_tuning = 'olR';
+    stim_name = 'corPos';
+    keep_name = 'ol_not_running';
     [group_ids_RASTER groups_RASTER] = define_group_ids(exp_type,id_type_wall_tuning,trial_inds);
     keep_trials = trial_range;
-    keep_trials = keep_trials(ismember(keep_trials,find(session.trial_info.mean_speed > 5 & ismember(groups_RASTER,group_ids_RASTER))));
+    keep_trials = keep_trials(ismember(keep_trials,find(session.trial_info.mean_speed <= 5 & ismember(groups_RASTER,group_ids_RASTER))));
     time_range = [0 4];
-    mean_ds = 1;
+    mean_ds = 2;
     temp_smooth = 80;
     RASTER = get_spk_raster(spike_times_ephys,spike_trials,keep_trials,groups_RASTER,group_ids_RASTER,time_range,mean_ds,temp_smooth);
     if plot_on
@@ -174,17 +193,17 @@ for ij = 1:length(all_clust_ids)
     end
     assignin('base','RASTER',RASTER);
 
-    % Make touch tuning
+    % Make touch tuning when not running
     stim_name = 'corPos';
-    keep_name = 'ol_running';
-    id_type_wall_tuning = 'olB';
+    keep_name = 'ol_not_running';
+    id_type_wall_tuning = 'olR';
     tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type_wall_tuning,time_range);
     [peak_rate loc] = max(tuning_curve.model_fit.curve);
     peak_dist = tuning_curve.regressor_obj.x_fit_vals(loc);
-    s_ind = find(strcmp(d.p_labels,'peak_rate'));
-    d.p_nj(ij,s_ind) = peak_rate;
-    s_ind = find(strcmp(d.p_labels,'peak_distance'));
-    d.p_nj(ij,s_ind) = peak_dist;
+    %s_ind = find(strcmp(d.p_labels,'peak_rate'));
+    %d.p_nj(ij,s_ind) = peak_rate;
+    %s_ind = find(strcmp(d.p_labels,'peak_distance'));
+    %d.p_nj(ij,s_ind) = peak_dist;
     if plot_on
         subtightplot(4,8,[24 32],gap,marg_h,marg_w)
         plot_tuning_curve_ephys(fig_props,tuning_curve)
@@ -192,42 +211,55 @@ for ij = 1:length(all_clust_ids)
         text(.05,.89,sprintf('Peak distance %.1f mm',peak_dist),'Units','Normalized','Color','r')
     end
     
-    % Make trial Raster
-    id_type_wall_tuning = 'olL';
-    [group_ids_RASTER groups_RASTER] = define_group_ids(exp_type,id_type_wall_tuning,trial_inds);
-    keep_trials = trial_range;
-    keep_trials = keep_trials(ismember(keep_trials,find(session.trial_info.mean_speed > 5 & ismember(groups_RASTER,group_ids_RASTER))));
-    time_range = [0 4];
-    mean_ds = 1;
-    temp_smooth = 80;
-    RASTER = get_spk_raster(spike_times_ephys,spike_trials,keep_trials,groups_RASTER,group_ids_RASTER,time_range,mean_ds,temp_smooth);
-    if plot_on
-        subtightplot(4,8,16+[3 4],gap,marg_h,marg_w)
-        plot_spk_raster(fig_props,RASTER)
-        set(gca,'xticklabel',[])
-        xlabel('')
-        subtightplot(4,8,16+[11 12],gap,marg_h,marg_w)
-        plot_spk_psth(fig_props,RASTER);
-        text(.02,.93,sprintf('%s',id_type_wall_tuning),'Units','Normalized','Color','r')
-    end
-    assignin('base','RASTER',RASTER);
-
-    % Make touch tuning
-    stim_name = 'corPos';
+    % Make touch tuning when wall moving
     keep_name = 'ol_running';
-    id_type_wall_tuning = 'olL';
-    tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type_wall_tuning,time_range);
-    [peak_rate loc] = max(tuning_curve.model_fit.curve);
-    peak_dist = tuning_curve.regressor_obj.x_fit_vals(loc);
-    s_ind = find(strcmp(d.p_labels,'peak_rate'));
-    d.p_nj(ij,s_ind) = peak_rate;
-    s_ind = find(strcmp(d.p_labels,'peak_distance'));
-    d.p_nj(ij,s_ind) = peak_dist;
+    stim_name = 'wall_direction';
+    stim_name2 = 'corPos';
+    tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
+    if plot_on
+        subtightplot(4,8,[17 25],gap,marg_h,marg_w)
+        plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
+    end
+
+    % Make touch tuning when running left/right
+    keep_name = 'ol_running';
+    stim_name = 'run_direction';
+    stim_name2 = 'corPos';
+    tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
+    if plot_on
+        subtightplot(4,8,[20 28],gap,marg_h,marg_w)
+        plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
+    end
+
+    % Make touch tuning when running slow / fast
+    keep_name = 'ol_running';
+    stim_name = 'running_fast_only';
+    stim_name2 = 'corPos';
+    tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
+    if plot_on
+        subtightplot(4,8,[19 27],gap,marg_h,marg_w)
+        plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
+    end
+
+    % Make touch tuning when wall moving
+    keep_name = 'ol_running';
+    stim_name = 'whisking';
+    stim_name2 = 'corPos';
+    tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
+    if plot_on
+        subtightplot(4,8,[18 26],gap,marg_h,marg_w)
+        plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
+    end
+
+  % Make touch tuning when wall moving
+    keep_name = 'ol_not_running';
+    stim_name = 'whisking';
+    stim_name2 = 'corPos';
+    tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
     if plot_on
         subtightplot(4,8,[21 29],gap,marg_h,marg_w)
-        plot_tuning_curve_ephys(fig_props,tuning_curve)
-        text(.05,.96,sprintf('Peak rate %.2f Hz',peak_rate),'Units','Normalized','Color','r')
-        text(.05,.89,sprintf('Peak distance %.1f mm',peak_dist),'Units','Normalized','Color','r')
+        plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
     end
+
 %    assignin('base','tuning_curve',tuning_curve);
 end

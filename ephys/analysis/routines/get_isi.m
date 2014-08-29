@@ -7,7 +7,7 @@ max_isi = .3; % in seconds
 
 % if refractory_period not given use default
 if isempty(refractory_period)
-	refractory_period = 0.002; % in seconds
+	refractory_period = 0.0025; % in seconds
 end
 ISI.refractory_period = refractory_period;
 

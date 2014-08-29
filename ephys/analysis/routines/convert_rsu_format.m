@@ -5,8 +5,8 @@ num_clusters = numel(sorted_spikes);
 keep_trials = find(ismember(groups,group_ids));
 keep_trials(~ismember(keep_trials,trial_range)) = [];
 
-d.s_labels = {'wall_pos';'wall_vel';'speed';'lateral_speed';'forward_speed';'run_angle'};
-d.u_labels = {'group_id';'mean_speed';'trial_length';'trial_duration'};
+d.s_labels = {'wall_pos';'wall_vel';'speed';'lateral_speed';'forward_speed';'run_angle';'whisker_amp'};
+d.u_labels = {'group_id';'mean_speed';'trial_length';'trial_duration';'whisker_data'};
 
 d.r_ntk = zeros(num_clusters,max_length_trial,length(keep_trials));
 d.s_ctk = zeros(length(d.s_labels),max_length_trial,length(keep_trials));
@@ -44,6 +44,12 @@ for i_group = 1:length(group_ids)
 		d.u_ck(2,i_ind) = session.trial_info.mean_speed(trial_id(i_trial));
 		d.u_ck(3,i_ind) = session.trial_info.length(trial_id(i_trial));
 		d.u_ck(4,i_ind) = session.trial_info.time(trial_id(i_trial));
+		if isfield(session.trial_info,'whisker_data')
+			d.u_ck(5,i_ind) = session.trial_info.whisker_data(trial_id(i_trial));
+		 	d.s_ctk(7,1:cur_trial_length,i_ind) = session.data{trial_id(i_trial)}.processed_matrix(10,start_ind:(start_ind+cur_trial_length-1));
+		else
+			d.u_ck(5,i_ind) = 0;
+		end
 	end
 end
 

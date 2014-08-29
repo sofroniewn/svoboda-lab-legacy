@@ -35,5 +35,6 @@ WAVEFORMS.tau_4 = time_vect_interp(ind_second_max) - time_vect_interp(ind_min);
   
  % extract average amplitude
 WAVEFORMS.amp = min(avg_spk_interp);
- 
+
+WAVEFORMS.SNR = (max(avg_spk_interp) - min(avg_spk_interp))/mean(WAVEFORMS.std);
  end

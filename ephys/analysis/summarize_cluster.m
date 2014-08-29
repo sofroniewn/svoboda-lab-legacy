@@ -1,4 +1,4 @@
-function d = summarize_cluster(all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on)
+function d = summarize_cluster(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on)
 
 trial_range(trial_range>numel(session.data)) = [];
 
@@ -14,8 +14,9 @@ id_type_base = 'base';
 [group_ids groups] = define_group_ids(exp_type,id_type_base,trial_inds);
 
 max_length_trial = 2001;
-d = convert_rsu_format(sorted_spikes,session,trial_range,group_ids,groups,max_length_trial);
-
+if isempty(d)
+    d = convert_rsu_format(sorted_spikes,session,trial_range,group_ids,groups,max_length_trial);
+end
 
 d.p_labels = {'clust_id';'chan_depth';'isi';'spk_amplitude';'spike_tau';'baseline_rate';'running_modulation';'peak_rate';'peak_distance'};
 d.p_nj = NaN(length(all_clust_ids),numel(d.p_labels));

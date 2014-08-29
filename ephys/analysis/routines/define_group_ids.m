@@ -12,6 +12,8 @@ switch exp_type
 				group_ids = [1:12];
 			case 'outOfReach'
 				group_ids = [10:12];
+			case 'olMax'
+				group_ids = [6:9];
 			case 'clB'
 				group_ids = 13;
 			otherwise

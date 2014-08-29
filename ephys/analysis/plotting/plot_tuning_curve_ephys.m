@@ -9,7 +9,11 @@ end
 cla
 hold on
 
-col_mat = [0 0 1];
+if isfield(tuning_curve,'col_mat')
+	col_mat = tuning_curve.col_mat;
+else
+	col_mat = [0 0 1];
+end
 
 hb = bar(tuning_curve.regressor_obj.x_vals,tuning_curve.means);
 set(hb,'FaceColor',col_mat)
