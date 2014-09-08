@@ -19,9 +19,9 @@ switch stim_type_name
 		regressor_obj.x_tick = [];
 		regressor_obj.tune_type = '';
 		regressor_obj.x_fit_vals = [0 10];
-	case 'running_fast'
+	case 'running_grouped'
 		regressor_obj.var_tune = 'speed';
-		regressor_obj.bin_vals = [0 2 18 Inf]; 
+		regressor_obj.bin_vals = [0 5 18 Inf]; 
 		regressor_obj.bin_type = 'edges';
 		regressor_obj.x_label = 'Not running / running';
 		regressor_obj.x_range = [0 20];
@@ -111,7 +111,7 @@ switch stim_type_name
 		regressor_obj.x_fit_vals = [0:1:18];
 	case 'whisking'
 		regressor_obj.var_tune = 'whisker_amp';
-		regressor_obj.bin_vals = [2 7 Inf]; 
+		regressor_obj.bin_vals = [0 2 7 Inf]; 
 		regressor_obj.bin_type = 'edges';
 		regressor_obj.x_label = 'Whisking small / large';
 		regressor_obj.x_range = [0 10];

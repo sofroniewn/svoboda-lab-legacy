@@ -7,7 +7,7 @@ f_name_sorted_units = fullfile(base_dir,'ephys','sorted',[sorted_name '_sorted.m
 
 disp(['ADD PCA FEATURES']);
 
-f_name_sync = fullfile(base_dir,'ephys','sorted',sorted_name,[sorted_name '.sync.1']);
+f_name_sync = fullfile(base_dir,'ephys','sorted',sorted_name,[sorted_name '.sync.1'])
 sync_info = dlmread(f_name_sync);
 
 f_name_fet = fullfile(base_dir,'ephys','sorted',sorted_name,[sorted_name '.fet.1']);

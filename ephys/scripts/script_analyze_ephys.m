@@ -7,16 +7,19 @@ close all
 drawnow
 
 
-anm_id = '235885';
+anm_id = '237723';
 
 switch anm_id
 	case '235885'
 		base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_03'; %anm #2 for olR and old cl
-		%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_06'; % laser data
+		base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_06'; % laser data
+		trial_range_start = 85;
 	case '245918'
 		base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_245918/2014_06_21/run_02'; %anm #1 for olR and old cl
+		trial_range_start = 40;
 	case '237723'
 		base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_237723/2014_06_17/run_03'; %anm #3 for olR and old cl
+		trial_range_start = 40;
 	otherwise
 		error('Unrecognized animal id')
 end
@@ -51,12 +54,12 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PUBLISH PLOTS OF CLUSTERS
-global trial_range; trial_range = [40:4000];
+global trial_range; trial_range = [trial_range_start:4000];
 global exp_type; exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
 global id_type; id_type = 'olR';
 
 publish_file_name = 'publish_ephys_new_wall_dist.m'; % 'publish_ephys.m' or 'publish_ephys_new.m'
-outputDir = ['anm_' anm_id '_summary_new2'];
+outputDir = ['anm_' anm_id '_summary_3'];
 
 cd('/Users/sofroniewn/Documents/DATA/ephys_summary');
 publish(publish_file_name,'showCode',false,'outputDir',outputDir); close all;
@@ -70,7 +73,7 @@ all_clust_ids = 4 %[3:numel(sorted_spikes)];
 plot_on = 1;
 d = [];
 
-d = summarize_cluster(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on);
+d = summarize_cluster_new_wall_dist(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on);
 %%
 
 

@@ -8,8 +8,9 @@ drawnow
 batch_mode = cell(1,1);
 
 
-batch_mode{1}.base_dir = {'/Users/sofroniewn/Documents/DATA/ephys_ex/artifact/run_09/'};
-batch_mode{1}.file_nums = {[1:4]};
+%batch_mode{1}.base_dir = {'/Users/sofroniewn/Documents/DATA/ephys_ex/artifact/run_09/'};
+batch_mode{1}.base_dir = {'/Volumes/svoboda-1/users/Sofroniewn/EPHYS_RIG/DATA/anm_252776/2014_09_02/run_04/'};
+batch_mode{1}.file_nums = {[1:2000]};
 batch_mode{1}.cluster_name = 'klusters_data';
 
 %batch_mode{2}.base_dir = {'/Users/sofroniewn/Documents/DATA/ephys_ex/run_06'};
@@ -42,3 +43,5 @@ merge_klusters_files(batch_mode,i_batch);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+               
+ add_pca_features(batch_mode{1}.base_dir{1},batch_mode{1}.cluster_name,6)

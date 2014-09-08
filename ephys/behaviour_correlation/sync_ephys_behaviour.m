@@ -22,6 +22,5 @@ for trial_id = 1:numel(session.data)
 
 	session.data{trial_id}.processed_matrix(6,:) = trig_inds;
 	session.data{trial_id}.processed_matrix(7,:) = trig_times;
-
 end
 

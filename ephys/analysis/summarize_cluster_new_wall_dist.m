@@ -232,8 +232,8 @@ for ij = 1:length(all_clust_ids)
     end
 
     % Make touch tuning when running slow / fast
-    keep_name = 'ol_running';
-    stim_name = 'running_fast_only';
+    keep_name = 'ol_base';
+    stim_name = 'running_grouped';
     stim_name2 = 'corPos';
     tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
     if plot_on
@@ -242,7 +242,7 @@ for ij = 1:length(all_clust_ids)
     end
 
     % Make touch tuning when wall moving
-    keep_name = 'ol_running';
+    keep_name = 'ol_base';
     stim_name = 'whisking';
     stim_name2 = 'corPos';
     tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
