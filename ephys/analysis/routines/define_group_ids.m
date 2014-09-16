@@ -40,6 +40,22 @@ switch exp_type
 			otherwise
 				error('WGNR :: unrecognized groupd id')
 		end
+	case 'laser_ol'
+		groups = trial_inds;
+		switch id_type
+			case 'base'
+				group_ids = [1:20];
+			case 'olR'
+				group_ids = [1:7];
+			case 'olLP'
+				group_ids = [13 12 11 10 9 8 7]; %7 8:13
+			case 'olRLP'
+				group_ids = [14:20];
+			case 'outOfReach'
+				group_ids = [7];
+			otherwise
+				error('WGNR :: unrecognized groupd id')
+		end
 	otherwise
 		error('WGNR :: unrecognized expriment type')
 end		

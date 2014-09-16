@@ -39,8 +39,9 @@ for i_group = 1:num_groups
     	psth_all(i_group,:) = RASTER.psth{i_group};
     end
 end
-psth_all = conv2(psth_all,ones(mean_ds,temp_smooth)/mean_ds/temp_smooth,'same');
-psth_all = psth_all(1:mean_ds:end,:);
+psth_all = conv2(psth_all,ones(1,temp_smooth)/1/temp_smooth,'same');
+psth_all = downsample(psth_all,mean_ds);
+%psth_all = psth_all(1:mean_ds:end,:);
 RASTER.psth = psth_all;
 
 RASTER.trial_range = [1 prev_max];

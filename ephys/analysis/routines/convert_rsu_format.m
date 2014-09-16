@@ -5,8 +5,8 @@ num_clusters = numel(sorted_spikes);
 keep_trials = find(ismember(groups,group_ids));
 keep_trials(~ismember(keep_trials,trial_range)) = [];
 
-d.s_labels = {'wall_pos';'wall_vel';'speed';'lateral_speed';'forward_speed';'run_angle';'whisker_amp'};
-d.u_labels = {'group_id';'mean_speed';'trial_length';'trial_duration';'whisker_data'};
+d.s_labels = {'wall_pos';'wall_vel';'speed';'lateral_speed';'forward_speed';'run_angle';'whisker_amp';'laser_power'};
+d.u_labels = {'group_id';'mean_speed';'trial_length';'trial_duration';'whisker_data';'laser_power'};
 
 d.r_ntk = zeros(num_clusters,max_length_trial,length(keep_trials));
 d.s_ctk = zeros(length(d.s_labels),max_length_trial,length(keep_trials));
@@ -49,7 +49,24 @@ for i_group = 1:length(group_ids)
 		 	d.s_ctk(7,1:cur_trial_length,i_ind) = session.data{trial_id(i_trial)}.processed_matrix(10,start_ind:(start_ind+cur_trial_length-1));
 		else
 			d.u_ck(5,i_ind) = 0;
+        end
+            tmp = session.data{trial_id(i_trial)}.trial_matrix(5,start_ind:(start_ind+cur_trial_length-1));
+            tmp_conv = conv(tmp,ones(50,1));
+		 	d.s_ctk(8,1:cur_trial_length,i_ind) = round((0.5-tmp_conv(1:length(tmp)))*60);
+            
+		if ismember(d.u_ck(1,i_ind),8:13)            
+            max_power = 0.1+session.trial_info.max_laser_power(trial_id(i_trial));
+            tmp_vect = zeros(2001,1);
+            tmp_vect(1:500) = linspace(0,max_power,500);
+            tmp_vect(501:1500) = max_power;
+            tmp_vect(1501:2000) = linspace(max_power,0,500);
+		 	try
+		 		d.s_ctk(8,1:cur_trial_length,i_ind) = round((0.6-tmp_vect)*50);
+			catch
+			end
 		end
+
+			d.u_ck(5,i_ind) = session.trial_info.max_laser_power(trial_id(i_trial));
 	end
 end
 

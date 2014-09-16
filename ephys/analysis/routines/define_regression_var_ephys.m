@@ -118,8 +118,17 @@ switch stim_type_name
 		regressor_obj.x_tick = [];
 		regressor_obj.tune_type = '';
 		regressor_obj.x_fit_vals = [0 10];
+	case 'laser_power'
+		regressor_obj.var_tune = 'laser_power';
+		regressor_obj.bin_vals = [0:5:30];
+		regressor_obj.bin_type = 'equal';		
+		regressor_obj.x_label = 'Virtual wall distance (mm)';
+		regressor_obj.x_range = [-2.5 32.5];
+		regressor_obj.x_tick = [0:5:30];
+		regressor_obj.tune_type = 'Smooth';
+		regressor_obj.x_fit_vals = [0:.5:30];
 	case 'laser'
-		regressor_obj.var_tune = 'laser';
+		regressor_obj.var_tune = 'laser_power';
 		regressor_obj.bin_vals = [0 1 2 3 4];
 		regressor_obj.bin_type = 'equal';		
 		regressor_obj.x_label = 'Laser power (V)';

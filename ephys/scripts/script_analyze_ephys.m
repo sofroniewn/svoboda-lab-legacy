@@ -7,7 +7,7 @@ close all
 drawnow
 
 
-anm_id = '237723';
+anm_id = '250496';
 
 switch anm_id
 	case '235885'
@@ -20,9 +20,13 @@ switch anm_id
 	case '237723'
 		base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_237723/2014_06_17/run_03'; %anm #3 for olR and old cl
 		trial_range_start = 40;
-	otherwise
+	case '250496'
+        base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250496/2014_09_04/run_03'; %anm #3 for olR and old cl
+        trial_range_start = 100;        
+    otherwise
 		error('Unrecognized animal id')
 end
+
 
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250492/2014_08_15/run_02'; %anm #1 for olR and olB and olL
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250495/2014_08_14/run_03'; %anm #2 for olR and olB and olL
@@ -55,14 +59,16 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PUBLISH PLOTS OF CLUSTERS
 global trial_range; trial_range = [trial_range_start:4000];
-global exp_type; exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
+global exp_type; exp_type = 'laser_ol'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
 global id_type; id_type = 'olR';
 
-publish_file_name = 'publish_ephys_new_wall_dist.m'; % 'publish_ephys.m' or 'publish_ephys_new.m'
-outputDir = ['anm_' anm_id '_summary_3'];
+
+summarize_name = 'summarize_cluster_laser_tuning'; % 'publish_ephys.m' or 'publish_ephys_new.m'
+create_publish_ephys(summarize_name);
+outputDir = ['anm_' anm_id '_summary_no_run'];
 
 cd('/Users/sofroniewn/Documents/DATA/ephys_summary');
-publish(publish_file_name,'showCode',false,'outputDir',outputDir); close all;
+publish('publish_ephys.m','showCode',false,'outputDir',outputDir); close all;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -73,7 +79,9 @@ all_clust_ids = 4 %[3:numel(sorted_spikes)];
 plot_on = 1;
 d = [];
 
-d = summarize_cluster_new_wall_dist(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on);
+%trial_range = [1:600];
+all_clust_ids = 5 %[3:numel(sorted_spikes)];
+d = summarize_cluster_laser_tuning(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on);
 %%
 
 
