@@ -18,7 +18,7 @@ if isempty(d)
     d = convert_rsu_format(sorted_spikes,session,trial_range,group_ids,groups,max_length_trial);
 end
 
-d.p_labels = {'clust_id';'chan_depth';'isi';'spk_amplitude';'spike_tau';'baseline_rate';'running_modulation';'peak_rate';'peak_distance'};
+d.p_labels = {'clust_id';'chan_depth';'layer_4_dist';'isi';'spk_amplitude';'spike_tau';'baseline_rate';'running_modulation';'peak_rate';'peak_distance'};
 d.p_nj = NaN(length(all_clust_ids),numel(d.p_labels));
 
 
@@ -58,6 +58,10 @@ for ij = 1:length(all_clust_ids)
     peak_channel = get_peak_channel(mean_spike_amp,[]);
     s_ind = find(strcmp(d.p_labels,'chan_depth'));
 	d.p_nj(ij,s_ind) = peak_channel;
+    
+    s_ind = find(strcmp(d.p_labels,'layer_4_dist'));
+    layer_4_dist =  20*(peak_channel-ephys_summary.layer_4);
+    d.p_nj(ij,s_ind) = layer_4_dist;
 
 	% get isi information
     ISI = get_isi(spike_times,[]);
@@ -68,6 +72,7 @@ for ij = 1:length(all_clust_ids)
         plot_isi(fig_props,ISI);
         text(.04,.96,sprintf('Id %d',clust_id),'Units','Normalized','FontSize',18,'Color','r','FontWeight','Bold')
         text(.04,.87,sprintf('Chan %.1f',peak_channel),'Units','Normalized','Color','r')
+        text(.04,.80,sprintf('L4 dist %.1f um',layer_4_dist),'Units','Normalized','Color','r')
     end
     
     % get spike waveform information

@@ -14,5 +14,5 @@ end
 
 plot_on = 1; 
 d = []; 
-d = summarize_cluster_laser_tuning(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on); 
+d = summarize_cluster_new_wall_dist(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on); 
 assignin('base','d',d);

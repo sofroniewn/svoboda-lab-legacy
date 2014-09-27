@@ -6,27 +6,11 @@ clear all
 close all
 drawnow
 
+anm_id = '252776';
+laser_on = 0;
+[base_dir trial_range_start exp_type layer_4] = ephys_anm_id_database(anm_id,laser_on);
 
-anm_id = '250496';
-
-switch anm_id
-	case '235885'
-		base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_03'; %anm #2 for olR and old cl
-		base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_06'; % laser data
-		trial_range_start = 85;
-	case '245918'
-		base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_245918/2014_06_21/run_02'; %anm #1 for olR and old cl
-		trial_range_start = 40;
-	case '237723'
-		base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_237723/2014_06_17/run_03'; %anm #3 for olR and old cl
-		trial_range_start = 40;
-	case '250496'
-        base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250496/2014_09_04/run_03'; %anm #3 for olR and old cl
-        trial_range_start = 100;        
-    otherwise
-		error('Unrecognized animal id')
-end
-
+global trial_range; trial_range = [trial_range_start:4000];
 
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250492/2014_08_15/run_02'; %anm #1 for olR and olB and olL
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250495/2014_08_14/run_03'; %anm #2 for olR and olB and olL
@@ -48,31 +32,211 @@ session = parse_session_data(1,session);
 global ephys_summary;
 f_name_summary = fullfile(base_dir,'ephys',['summary_data.mat']);
 if exist(f_name_summary) == 2
-	load(f_name_summary,'summary_data','summary_data_labels');
-	ephys_summary.d = summary_data;
-	ephys_summary.labels = summary_data_labels;
+    load(f_name_summary,'summary_data','summary_data_labels');
+    ephys_summary.d = summary_data;
+    ephys_summary.labels = summary_data_labels;
+    ephys_summary.layer_4 = layer_4;
 else
-	ephys_summary = [];
+    ephys_summary = [];
 end
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PUBLISH PLOTS OF CLUSTERS
-global trial_range; trial_range = [trial_range_start:4000];
-global exp_type; exp_type = 'laser_ol'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
 global id_type; id_type = 'olR';
 
+all_clust_ids = 3:numel(sorted_spikes);
+plot_on = 0;
+d = [];
+d = summarize_cluster_new_wall_dist(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on);
+%%
 
-summarize_name = 'summarize_cluster_laser_tuning'; % 'publish_ephys.m' or 'publish_ephys_new.m'
+
+summarize_name = 'summarize_cluster_new_wall_dist'; % 'publish_ephys.m' or 'publish_ephys_new.m'
 create_publish_ephys(summarize_name);
-outputDir = ['anm_' anm_id '_summary_no_run'];
+outputDir = ['anm_' anm_id '_summary_A'];
 
 cd('/Users/sofroniewn/Documents/DATA/ephys_summary');
 publish('publish_ephys.m','showCode',false,'outputDir',outputDir); close all;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% laser base_dir
+anm_num = 235585;
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_235585/2014_06_04/run_04'; % laser data
+lase_data_name = 'laser_data_short_new.mat';
+trial_range = 1:20;
+keep_powers_num = 1;
+layer_4 = 17.6;
+ch_exclude = [11];
+
+
+anm_num = 237723;
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_237723/2014_06_17/run_04'; %laser
+lase_data_name = 'laser_data_short_new.mat';
+trial_range = 20:40;
+keep_powers_num = 1;
+layer_4 = 19.5;
+ch_exclude = [11];
+
+
+anm_num = 245916;
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_245916/2014_06_20/run_04'; %laser data
+lase_data_name = 'laser_data_short.mat';
+trial_range = 1:40;
+keep_powers_num = 2:3;
+layer_4 = 26.8;
+ch_exclude = [12];
+
+
+
+anm_num = 245918;
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_245918/2014_06_21/run_03'; %laser data
+lase_data_name = 'laser_data_short.mat';
+trial_range = 20:40;
+keep_powers_num = 1;
+layer_4 = 21.6;
+ch_exclude = [12];
+
+
+anm_num = 245914;
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_245914/2014_06_23/run_06'; %laser
+lase_data_name = 'laser_data_short.mat';
+trial_range = 20:40;
+keep_powers_num = 1;
+layer_4 = NaN;
+ch_exclude = [12];
+
+
+anm_num = 247868;
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_247868/2014_06_26/run_03'; %laser
+lase_data_name = 'laser_data_short.mat';
+trial_range = 20:40;
+keep_powers_num = 2:3;
+layer_4 = 23.1;
+ch_exclude = [12];
+
+
+anm_num = 246699;
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_246699/2014_07_23/run_03'; %laser
+lase_data_name = 'laser_data_short.mat';
+trial_range = 20:40;
+keep_powers_num = 1;
+layer_4 = 12.9;
+ch_exclude = [12];
+
+
+
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_249872/2014_06_27/run_03'; %laser
+lase_data_name = 'laser_data_short.mat';
+trial_range = 20:40;
+keep_powers_num = 1;
+layer_4 = 18.5;
+ch_exclude = [12];
+
+
+
+
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_246701/2014_07_23/run_03'; %laser
+lase_data_name = 'laser_data_short.mat';
+trial_range = 20:40;
+keep_powers_num = 1;
+layer_4 = 17.3;
+ch_exclude = [12];
+
+
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_246702/2014_08_14/run_04'; %laser
+lase_data_name = 'laser_data_short.mat';
+trial_range = 20:40;
+keep_powers_num = 2:3;
+layer_4 = 21.3;
+ch_exclude = [4 15];
+
+
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250492/2014_08_15/run_03'; %laser
+lase_data_name = 'laser_data_short.mat';
+trial_range = 20:40;
+keep_powers_num = 1;
+layer_4 = 15.3;
+ch_exclude = [20];
+
+
+
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250494/2014_08_21/run_03'; %laser
+lase_data_name = 'laser_data_short.mat';
+trial_range = 20:40;
+keep_powers_num = 1;
+layer_4 = 18.9;
+ch_exclude = [20];
+
+
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250495/2014_08_14/run_03'; %laser
+lase_data_name = 'laser_data_short.mat';
+trial_range = 20:40;
+keep_powers_num = 1;
+layer_4 = 17.5;
+ch_exclude = [12];
+
+
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_247871/2014_08_20/run_03'; %laser
+lase_data_name = 'laser_data_short.mat';
+trial_range = 20:40;
+keep_powers_num = 3;
+layer_4 = 18.3;
+ch_exclude = [20];
+
+
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250496/2014_09_04/run_04'; %laser
+lase_data_name = 'laser_data_short_new.mat';
+trial_range = 5:25;
+keep_powers_num = 1;
+layer_4 = 27.4;
+ch_exclude = [20];
+
+
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_252776/2014_09_02/run_03'; %laser
+lase_data_name = 'laser_data_short_new.mat';
+trial_range = 60:90;
+keep_powers_num = 1:4;
+layer_4 = 28.7;
+ch_exclude = [4 7 15];
+
+
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_256043/2014_09_03/run_02'; %laser
+lase_data_name = 'laser_data_short_new.mat';
+trial_range = 60:90;
+keep_powers_num = 1:2;
+layer_4 = 28.7;
+ch_exclude = [20];
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% CSD
+[laser_data] = func_extract_laser_power(base_dir, trial_range, lase_data_name, 0);
+power_values = round(laser_data.max_power*10);
+power_range = unique(power_values);
+keep_powers = power_range(keep_powers_num);
+
+CSD = get_CSD(laser_data,trial_range,power_values,keep_powers,ch_exclude);
+figure('Position',[443   376   789   430]); plot_CSD([],CSD,'CSD')
+figure('Position',[73   361   338   186]); plot_CSD([],CSD,'LFP')
+figure('Position',[73   103   338   186]); plot_CSD([],CSD,'traces')
+figure('Position',[73   103   338   186]); plot_CSD([],CSD,'profile')
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
 %% LOAD summary data without plotting
 global id_type; id_type = 'olR';
 all_clust_ids = 4 %[3:numel(sorted_spikes)];
@@ -81,7 +245,7 @@ d = [];
 
 %trial_range = [1:600];
 all_clust_ids = 5 %[3:numel(sorted_spikes)];
-d = summarize_cluster_laser_tuning(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on);
+d = summarize_cluster_new_wall_dist(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on);
 %%
 
 
@@ -109,9 +273,9 @@ run_var = run_var - mean(run_var(:));
 run_var(run_var>100) = 100;
 run_var(run_var<-100) = -100;
 
-        gap = [0.0355 0.0355];
-        marg_h = [0.08 0.03];
-        marg_w = [0.03 0.01];
+gap = [0.0355 0.0355];
+marg_h = [0.08 0.03];
+marg_w = [0.03 0.01];
 
 fil = triang(100)';
 figure(114)
@@ -143,10 +307,10 @@ imagesc(conv2(flipdim(squeeze(d.r_ntk(25,:,keep_trials))',1),fil,'same'));
 subplot(4,3,12)
 imagesc(conv2(flipdim(squeeze(d.r_ntk(22,:,keep_trials))',1),fil,'same'));
 
- % cmap = ones(60,3);
- % cmap(:,2) = linspace(1,0,60);
- % cmap(:,1) = linspace(1,0,60);
- % colormap(flipdim(cmap,1));
+% cmap = ones(60,3);
+% cmap(:,2) = linspace(1,0,60);
+% cmap(:,1) = linspace(1,0,60);
+% colormap(flipdim(cmap,1));
 
 
 
@@ -154,10 +318,10 @@ figure(114)
 clf(114)
 imagesc(wall_pos)
 axis off
- cmap = ones(60,3);
- cmap(:,2) = linspace(1,0,60);
- cmap(:,1) = linspace(1,0,60);
- colormap(flipdim(cmap,1));
+cmap = ones(60,3);
+cmap(:,2) = linspace(1,0,60);
+cmap(:,1) = linspace(1,0,60);
+colormap(flipdim(cmap,1));
 
 
 figure(121)
@@ -167,8 +331,8 @@ aa = unique(wall_pos(:,1000))
 cmap = zeros(length(aa),3);
 cmap(:,3) = linspace(1,0,length(aa));
 for ij = 1:length(aa)
-	ind = find(wall_pos(:,1000) == aa(ij),1,'first');
-	plot(d.t,wall_pos(ind,:),'color',cmap(ij,:),'linewidth',2)
+    ind = find(wall_pos(:,1000) == aa(ij),1,'first');
+    plot(d.t,wall_pos(ind,:),'color',cmap(ij,:),'linewidth',2)
 end
 xlim([0 4])
 xlabel('Time (s)')
@@ -359,38 +523,38 @@ marg_h = [0.1 0.03];
 marg_w = [0.1 0.1];
 
 
-   	exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
-	id_type = 'olR';
-	 stim_name = 'speed';
-    keep_name = 'ol_whisking';
-    time_range = [0 4];
-    tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range);
-    %[peak_rate loc] = max(tuning_curve.model_fit.curve);
-    %peak_dist = tuning_curve.regressor_obj.x_fit_vals(loc);
-    %s_ind = find(strcmp(d.p_labels,'peak_rate'));
-    %s_ind = find(strcmp(d.p_labels,'peak_distance'));
-     tuning_curve.col_mat = [1 0 0]; 
-        subtightplot(3,2,[1 2],gap,marg_h,marg_w);
-        plot_tuning_curve_ephys(fig_props,tuning_curve)
-     %   text(.05,.96,sprintf('Peak rate %.2f Hz',peak_rate),'Units','Normalized','Color','r')
-     %   text(.05,.89,sprintf('Peak distance %.1f mm',peak_dist),'Units','Normalized','Color','r')
+exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl';
+id_type = 'olR';
+stim_name = 'speed';
+keep_name = 'ol_whisking';
+time_range = [0 4];
+tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range);
+%[peak_rate loc] = max(tuning_curve.model_fit.curve);
+%peak_dist = tuning_curve.regressor_obj.x_fit_vals(loc);
+%s_ind = find(strcmp(d.p_labels,'peak_rate'));
+%s_ind = find(strcmp(d.p_labels,'peak_distance'));
+tuning_curve.col_mat = [1 0 0];
+subtightplot(3,2,[1 2],gap,marg_h,marg_w);
+plot_tuning_curve_ephys(fig_props,tuning_curve)
+%   text(.05,.96,sprintf('Peak rate %.2f Hz',peak_rate),'Units','Normalized','Color','r')
+%   text(.05,.89,sprintf('Peak distance %.1f mm',peak_dist),'Units','Normalized','Color','r')
 
- stim_name = 'whisker_amp';
-    keep_name = 'ol_whisking';
-    time_range = [0 4];
-    tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range);
-     tuning_curve.col_mat = [0 1 0];
-     subtightplot(3,2,[3 4],gap,marg_h,marg_w);
-        plot_tuning_curve_ephys(fig_props,tuning_curve)
-     
+stim_name = 'whisker_amp';
+keep_name = 'ol_whisking';
+time_range = [0 4];
+tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range);
+tuning_curve.col_mat = [0 1 0];
+subtightplot(3,2,[3 4],gap,marg_h,marg_w);
+plot_tuning_curve_ephys(fig_props,tuning_curve)
 
- stim_name = 'corPos';
-    keep_name = 'ol_whisking';
-    time_range = [0 4];
-    tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range);
-     subtightplot(3,2,[5 6],gap,marg_h,marg_w);
-        plot_tuning_curve_ephys(fig_props,tuning_curve)
-     
+
+stim_name = 'corPos';
+keep_name = 'ol_whisking';
+time_range = [0 4];
+tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range);
+subtightplot(3,2,[5 6],gap,marg_h,marg_w);
+plot_tuning_curve_ephys(fig_props,tuning_curve)
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -418,12 +582,12 @@ mean_wall = mean_wall - min(mean_wall);
 mean_wall = mean_wall*100/mean_wall(1);
 
 figure(17); clf(17);
-hold on; 
+hold on;
 for ij = [4 8 5 6 15 19 25]  %11 22 23 24 %1:size(d.r_ntk,1)
-	avg_fr = conv2(flipdim(squeeze(d.r_ntk(ij,:,keep_trials))',1),fil,'same');
-	mean_curve = nanmean(avg_fr(trial_plt_range,:));
-	mean_curve = mean_curve - mean(mean_curve(20:120));
-	plot(d.t,100*mean_curve/max(abs(mean_curve)),'r','Linewidth',2)
+    avg_fr = conv2(flipdim(squeeze(d.r_ntk(ij,:,keep_trials))',1),fil,'same');
+    mean_curve = nanmean(avg_fr(trial_plt_range,:));
+    mean_curve = mean_curve - mean(mean_curve(20:120));
+    plot(d.t,100*mean_curve/max(abs(mean_curve)),'r','Linewidth',2)
 end
 plot(d.t,mean_wall,'b','Linewidth',4);
 %plot(d.t,mean_run,'k');
@@ -451,13 +615,13 @@ hold on
 % mean_curve = mean(avg_fr(30:end,100:end-100));
 % plot(zscore(mean_curve),'linewidth',2)
 for ij = 1:10 %size(r_ntk,1)
-%	plot(mean_reorder(ij,:),'b','linewidth',1)
+    %	plot(mean_reorder(ij,:),'b','linewidth',1)
 end
 for ij = 11:19 %size(r_ntk,1)
-	%plot(mean_reorder(ij,:),'c','linewidth',1)
+    %plot(mean_reorder(ij,:),'c','linewidth',1)
 end
 for ij = 20:size(r_ntk,1)
-	%plot(mean_reorder(ij,:),'r','linewidth',1)
+    %plot(mean_reorder(ij,:),'r','linewidth',1)
 end
 
 plot(zscore(diff_angle),'k','linewidth',4)
@@ -580,10 +744,10 @@ h = imagesc(run_speed);
 %set(h, 'AlphaData', run_speed>5)
 axis tight
 for ij = 1:size(psth_all,1)
-	spks = find(psth_all(ij,:)>0);
-	if ~isempty(spks)
-		hh = plot(spks,ij,'.','MarkerEdgeColor',[0.5 .5 .5],'MarkerSize',6,'MarkerFaceColor','none');
-	end
+    spks = find(psth_all(ij,:)>0);
+    if ~isempty(spks)
+        hh = plot(spks,ij,'.','MarkerEdgeColor',[0.5 .5 .5],'MarkerSize',6,'MarkerFaceColor','none');
+    end
 end
 
 
@@ -633,11 +797,11 @@ figure;
 plot(psth_all>0,'.r')
 
 % time_comb = session.data{1}.processed_matrix(1,501:end);
-% 
+%
 % figure(323);
 % clf(323)
 % set(gcf,'Position',[13   549   560   257])
-% 
+%
 % hold on
 % for ij = 1:length(group_ids)
 % 	trial_id = find(groups == group_ids(ij),1,'first');
@@ -645,7 +809,7 @@ plot(psth_all>0,'.r')
 % end
 % xlim([0 4])
 
-% 
+%
 % %figure(324);
 % %clf(324)
 % %hold on
@@ -751,7 +915,7 @@ plot_evoked_spike_probability(1000*(dir_num-1)+11,clust_id,sorted_spikes,trial_r
 %% 8 act
 %% 13 act
 %% 14 act trans on
-%% 15 inh trans 
+%% 15 inh trans
 %% 17 act trans on
 %% 20 inh
 %% 21 act trans on
@@ -870,16 +1034,16 @@ trial_id = 84;
 clust_id = 13;
 spike_inds = sorted_spikes{clust_id}.ephys_time(sorted_spikes{clust_id}.trial_num == trial_id);
 
-figure(1); 
+figure(1);
 clf(1)
 hold on;
 plot(smooth([0;500*diff(smooth(session.data{trial_id}.trial_matrix(3,:),25))],25))
 if ~isempty(spike_inds)
-	plot(spike_inds*500,0,'.r')
+    plot(spike_inds*500,0,'.r')
 end
 
 %% 14 act trans on
-%% 15 inh trans 
+%% 15 inh trans
 %% 17 act trans on
 %% 20 inh
 %% 21 act trans on
@@ -910,25 +1074,25 @@ end
 
 %% Visualize unit data trial by trial
 % file_list = func_list_files(base_dir,f_name_flag,file_nums);
-% 
+%
 % trial_id = 11;
 % [s p d] = load_ephys_trial(base_dir,file_list,trial_id);
-% 
+%
 % clust_id = 4;
 % spike_inds = sorted_spikes{clust_id}.trial_num == trial_id;
 % spike_times = sorted_spikes{clust_id}.ephys_time(spike_inds);
-% 
+%
 % figure(43)
 % clf(43)
 % hold on
 % %plot(d.TimeStamps,-d.aux_chan(:,3)/5,'k') % trial start
 % %plot(d.TimeStamps,-d.aux_chan(:,1)/5,'b') % laser power
-% 
+%
 % plot(spike_times,0,'.k') % plot spikes
 % plot(session.data{trial_id}.processed_matrix(1,:),-(1-session.data{trial_id}.trial_matrix(9,:)),'r') % trial start
 % plot(session.data{trial_id}.processed_matrix(1,:),session.data{trial_id}.trial_matrix(5,:),'g') % laser power
-% 
-% 
+%
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -947,7 +1111,7 @@ end
 
 % Pull out intervals of time when a behavioural variable transitions
 % Each x_vars must be between range x_vars_range (x_vars_range(1) <= and < x_vars_range(2)) for entire t_window;
-% x_vars is a cell array of strings, each string defining 
+% x_vars is a cell array of strings, each string defining
 
 x_vars = cell(4,1);
 x_vars{1}.str = 'session.data{trial_id}.processed_matrix(5,:)';
@@ -1008,16 +1172,38 @@ t_window_inds = [-200 100]; % window range
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+id_diff_types = {'olR';'olRLP';'olLP'};
+
+figure(12)
+clf(12)
+hold on
+for ind = 1:3
+  subplot(1,numel(id_diff_types),ind)
+  hold on
+  id_type = id_diff_types{ind};
+  [group_ids groups] = define_group_ids(exp_type,id_type,[]);
+  trial_ind = find(ismember(d.u_ck(1,:),group_ids));
+  num_trials = length(trial_ind);
+  col_mat = zeros(length(group_ids),3);
+  col_mat(:,1) = 1-linspace(0,1,length(group_ids));
+  if ind > 2
+    trial_ind = flipdim(trial_ind,2);
+  end
+  for ij = 1:num_trials
+    x_pos = cumsum(squeeze(d.s_ctk(4,:,trial_ind(ij))))/500;
+    y_pos = cumsum(squeeze(d.s_ctk(5,:,trial_ind(ij))))/500;
+    id = d.u_ck(1,trial_ind(ij))-min(group_ids)+1;
+  if ind > 2
+    id = size(col_mat,1)-id+1;
+  end
+    plot(x_pos,y_pos,'Color',col_mat(id,:))
+  end
+  xlabel(id_type)
+  xlim([-5 200])
+  ylim([-70 10])
+end
 
 
 
 
 
-
-
-
-
-
-
-%% RETIRED
-plot_spike_pair_corr(32,11,17,sorted_spikes,trial_range,[0 1 0])

@@ -5,7 +5,7 @@ clf(fig_id)
 hold on
 %set(gcf,'Position',[720    -1   345   239])
 
-keep_ind = tuning_param.keep_val > 1;
+keep_ind = tuning_param.keep_val > -1;
 r2_val = tuning_param.r2;
 r2_val(r2_val<.1) = -1;
 r2_val(~keep_ind) = -1;

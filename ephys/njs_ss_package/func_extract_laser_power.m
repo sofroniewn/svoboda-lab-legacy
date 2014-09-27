@@ -90,11 +90,15 @@ else
                 error('offset does not follow onset')
             end
             window = laser_data.onset_inds{i_trial}(ij) + window_range;
-            tmp_vlt = ch_LFP(window,:)';
-            cur_vlt = squeeze(laser_data.raw_vlt(i_trial,:,:));
-            laser_data.raw_vlt(i_trial,:,:) = cur_vlt + tmp_vlt/length(laser_data.onset_inds{i_trial});
+            if min(window) > 0 && max(window) < size(ch_LFP,1)
+                tmp_vlt = ch_LFP(window,:)';
+                cur_vlt = squeeze(laser_data.raw_vlt(i_trial,:,:));
+                laser_data.raw_vlt(i_trial,:,:) = cur_vlt + tmp_vlt/length(laser_data.onset_inds{i_trial});
+            end
         end
-        laser_data.max_power(i_trial) = max(laser_data.powers{i_trial});
+        if ~isempty(laser_data.powers{i_trial})
+            laser_data.max_power(i_trial) = max(laser_data.powers{i_trial});
+        end
         
         disp(['--------------------------------------------']);
     end

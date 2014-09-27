@@ -17,7 +17,6 @@ avg_vlt(1,:) = [];
 all_chan(end) = [];
 all_chan(1) = [];
 
-
 CSD.vals = zeros(size(avg_vlt));
 for ij = 1:size(avg_vlt,2)
 	tmp = avg_vlt(all_chan-1,ij);
@@ -35,3 +34,11 @@ CSD.time_window = laser_data.time_window;
 CSD.vlt_trace = -avg_vlt'*10^4+offset_shift';
 CSD.vlt_cmap = avg_vlt; %flipdim(avg_vlt,1);
 CSD.vals = CSD.vals; %flipdim(CSD.vals,1);
+
+CSD.profile = mean(CSD.vals(:,551:590),2);
+
+% upsample CSD
+CSD.profile_chan_interp = [1:1/10:length(CSD.profile)];
+CSD.profile_interp = spline([1:length(CSD.profile)],CSD.profile,CSD.profile_chan_interp);
+
+

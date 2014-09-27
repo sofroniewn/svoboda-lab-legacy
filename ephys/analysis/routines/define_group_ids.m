@@ -19,6 +19,25 @@ switch exp_type
 			otherwise
 				error('WGNR :: unrecognized groupd id')
 		end
+	case 'ol_cl_different_widths'
+		groups = trial_inds;
+		groups(groups>16) = 17;
+		switch id_type
+			case 'base'
+				group_ids = [1:17];
+			case 'olR'
+				group_ids = [1:12];
+			case 'outOfReach'
+				group_ids = [10:12];
+			case 'olMax'
+				group_ids = [6:9];
+			case 'clB'
+				group_ids = [13:16];
+			case 'clR'
+				group_ids = 17;
+			otherwise
+				error('WGNR :: unrecognized groupd id')
+		end
 	case 'bilateral_ol_cl'
 		groups = trial_inds;
 		groups(groups>=16) = 16;

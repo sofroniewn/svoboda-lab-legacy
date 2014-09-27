@@ -18,11 +18,17 @@ if isempty(d)
     d = convert_rsu_format(sorted_spikes,session,trial_range,group_ids,groups,max_length_trial);
 end
 
-d.p_labels = {'clust_id';'chan_depth';'isi';'spk_amplitude';'spike_tau';'baseline_rate';'running_modulation';'peak_rate';'peak_distance'};
+%d.p_labels = {'clust_id';'chan_depth';'layer_4_dist';'isi';'spk_amplitude';'spike_tau';'baseline_rate';'running_modulation';'peak_rate';'peak_distance'};
+
+d.p_labels = {'anm_id';'clust_id';'chan_depth';'num_spikes';'isi';'waveform_SNR';'spk_amplitude';'spike_tau';'spike_tau1';'spike_tau2';'baseline_rate';'running_modulation';'peak_rate';'peak_distance'};
+
+
 d.p_nj = NaN(length(all_clust_ids),numel(d.p_labels));
 
-
 for ij = 1:length(all_clust_ids)
+
+    s_ind = find(strcmp(d.p_labels,'anm_id'));
+    d.p_nj(ij,s_ind) = str2num(session.basic_info.anm_str(5:end));
     
     if plot_on
         figure(110+ij)
@@ -59,10 +65,14 @@ for ij = 1:length(all_clust_ids)
     s_ind = find(strcmp(d.p_labels,'chan_depth'));
 	d.p_nj(ij,s_ind) = peak_channel;
 
+    s_ind = find(strcmp(d.p_labels,'num_spikes'));
+    d.p_nj(ij,s_ind) = length(spike_amps);
+
+
 	% get isi information
     ISI = get_isi(spike_times,[]);
     s_ind = find(strcmp(d.p_labels,'isi'));
-	d.p_nj(ij,s_ind) = ISI.peak;
+	d.p_nj(ij,s_ind) = ISI.peak(1);
 	if plot_on
         subtightplot(4,8,[1 9],gap,marg_h,marg_w)
         plot_isi(fig_props,ISI);
@@ -81,6 +91,12 @@ for ij = 1:length(all_clust_ids)
             else
                text(.04,.80,sprintf('Rejected'),'Units','Normalized','Color','r')
             end
+            if ~isempty(ephys_summary.layer_4)
+                    %s_ind = find(strcmp(d.p_labels,'layer_4_dist'));
+                    %layer_4_dist =  -20*(peak_channel-ephys_summary.layer_4);
+                    %d.p_nj(ij,s_ind) = layer_4_dist;
+                    text(.04,.66,sprintf('L4 %.0f um',layer_4_dist),'Units','Normalized','Color','r')
+            end
         end
     end
     xlabel('');
@@ -91,11 +107,18 @@ for ij = 1:length(all_clust_ids)
 	d.p_nj(ij,s_ind) = -WAVEFORMS.amp;
     s_ind = find(strcmp(d.p_labels,'spike_tau'));
 	d.p_nj(ij,s_ind) = 1000*WAVEFORMS.tau_4;
+    s_ind = find(strcmp(d.p_labels,'waveform_SNR'));
+    d.p_nj(ij,s_ind) = WAVEFORMS.SNR;
+    s_ind = find(strcmp(d.p_labels,'spike_tau1'));
+    d.p_nj(ij,s_ind) = 1000*WAVEFORMS.tau_1;
+    s_ind = find(strcmp(d.p_labels,'spike_tau2'));
+    d.p_nj(ij,s_ind) = 1000*WAVEFORMS.tau_2;
     if plot_on
         subtightplot(4,8,[2 10],gap,marg_h,marg_w)
         plot_spk_waveforms(fig_props,WAVEFORMS);
     end
     
+
 
     % Make stability plot
     AMPLITUDES = get_spk_amplitude(spike_amps,spike_trials,trial_times,trial_range);
@@ -241,25 +264,25 @@ for ij = 1:length(all_clust_ids)
         plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
     end
 
-    % Make touch tuning when wall moving
-    keep_name = 'ol_base';
-    stim_name = 'whisking';
-    stim_name2 = 'corPos';
-    tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
-    if plot_on
-        subtightplot(4,8,[18 26],gap,marg_h,marg_w)
-        plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
-    end
+    % % Make touch tuning when whisking
+    % keep_name = 'ol_base';
+    % stim_name = 'whisking';
+    % stim_name2 = 'corPos';
+    % tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
+    % if plot_on
+    %     subtightplot(4,8,[18 26],gap,marg_h,marg_w)
+    %     plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
+    % end
 
   % Make touch tuning when wall moving
-    keep_name = 'ol_not_running';
-    stim_name = 'whisking';
-    stim_name2 = 'corPos';
-    tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
-    if plot_on
-        subtightplot(4,8,[21 29],gap,marg_h,marg_w)
-        plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
-    end
+%     keep_name = 'ol_not_running';
+%     stim_name = 'whisking';
+%     stim_name2 = 'corPos';
+%     tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type,time_range);
+%     if plot_on
+%         subtightplot(4,8,[21 29],gap,marg_h,marg_w)
+%         plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
+%     end
 
 %    assignin('base','tuning_curve',tuning_curve);
 end

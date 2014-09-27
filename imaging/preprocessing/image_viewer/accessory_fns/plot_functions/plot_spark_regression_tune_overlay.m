@@ -39,7 +39,7 @@ for ij = 1:num_planes
     tune = im_array_tune{plot_planes(ij),chan_num}(:,:,cur_trial);
 	tune = (tune - min(range_val))/(max(range_val) - min(range_val));
    
-    tmp = jet(clip(tune,0,1));
+    tmp = jet_ext(clip(tune,0,1));
     %tmp(:,:,2) = 0;
     tmp = rgb2hsv(tmp);
     oim(:,:,1) = tmp(:,:,1);

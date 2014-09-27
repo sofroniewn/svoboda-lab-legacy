@@ -14,8 +14,12 @@ else
 	endTime = im_session.ref.im_props.numPlanes;
 	end_path = im_session.basic_info.data_dir(start_ind:end);
 	end_path(strfind(end_path,'\')) = '/';
-	directory = ['/groups/svoboda/wdbp/',end_path];
-
+	if ~isempty(strfind(im_session.basic_info.data_dir,'wdbp'))
+		directory = ['/groups/svoboda/wdbp/',end_path];
+	else
+		directory = ['/nobackup/svoboda/sofroniewn/',end_path];	
+	end
+	
 	ref_file_name = im_session.ref.file_name;
 
 	if ~isempty(im_session.reg.nFrames)

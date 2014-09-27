@@ -22,11 +22,19 @@ else
 	endTime = numel(im_session.basic_info.cur_files);
 	end_path = im_session.basic_info.data_dir(start_ind:end);
 	end_path(strfind(end_path,'\')) = '/';
-	directory = ['/groups/svoboda/wdbp/',end_path];
+	if ~isempty(strfind(im_session.basic_info.data_dir,'wdbp'))
+		directory = ['/groups/svoboda/wdbp/',end_path];
+	else
+		directory = ['/nobackup/svoboda/sofroniewn/',end_path];	
+	end
 
 	end_path = roi_array_fname(start_ind:end);
 	end_path(strfind(end_path,'\')) = '/';
-	roi_array_fname = ['/groups/svoboda/wdbp/',end_path];
+	if ~isempty(strfind(im_session.basic_info.data_dir,'wdbp'))
+		roi_array_fname = ['/groups/svoboda/wdbp/',end_path];
+	else
+		roi_array_fname = ['/nobackup/svoboda/sofroniewn/',end_path];	
+	end
 
 	% set paths for the function
 	functionPath = '/groups/freeman/home/freemanj11/code/wgnr/compiled/roiF_extract_cluster';
