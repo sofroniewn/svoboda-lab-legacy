@@ -78,7 +78,7 @@ handles.pathstr = pathstr;
 
 
 p = path;
-start_str = strfind(p,'WGNR_DATA');
+start_str = strfind(p,'DATA');
 start_file = strfind(p,':');
 start_file_ind= find(start_file < start_str,1,'last');
 if isempty(start_file_ind) == 1

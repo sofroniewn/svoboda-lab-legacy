@@ -5,8 +5,10 @@
 clear all
 close all
 drawnow
-
-anm_id = '252776';
+all_anm_id = {'235585','237723','245918','249872','246702','250492','250494','250495','247871','250496','256043','252776'};
+for ih = 1:numel(all_anm_id)
+%anm_id = '237723';
+anm_id = all_anm_id{ih};
 laser_on = 0;
 [base_dir trial_range_start exp_type layer_4] = ephys_anm_id_database(anm_id,laser_on);
 
@@ -39,17 +41,26 @@ if exist(f_name_summary) == 2
 else
     ephys_summary = [];
 end
+    ephys_summary = [];
+
+if strcmp(anm_id,'237723')
+   sorted_spikes = sorted_spikes(1:30);
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PUBLISH PLOTS OF CLUSTERS
-global id_type; id_type = 'olR';
 
 all_clust_ids = 3:numel(sorted_spikes);
 plot_on = 0;
 d = [];
-d = summarize_cluster_new_wall_dist(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,id_type,trial_range,plot_on);
-%%
+d = summarize_cluster_params(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,trial_range,layer_4);
+
+cd('/Users/sofroniewn/Documents/DATA/ephys_summary');
+save(['./' anm_id '_d'],'d','-v7.3');
+end
+% num2clip(d.p_nj)
+% %%
 
 
 summarize_name = 'summarize_cluster_new_wall_dist'; % 'publish_ephys.m' or 'publish_ephys_new.m'
@@ -58,7 +69,7 @@ outputDir = ['anm_' anm_id '_summary_A'];
 
 cd('/Users/sofroniewn/Documents/DATA/ephys_summary');
 publish('publish_ephys.m','showCode',false,'outputDir',outputDir); close all;
-
+num2clip(d.p_nj)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1202,6 +1213,442 @@ for ind = 1:3
   xlim([-5 200])
   ylim([-70 10])
 end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+figure(3)
+clf(3)
+hold on
+n = hist(p(p(:,7)>5&p(:,6)<.11 & p(:,9)<350 ,12),[0:40]);
+n = cumsum(n)/sum(n);
+plot([0:40],n,'r')
+n = hist(p(p(:,7)>5&p(:,6)<.11 & p(:,9)>500 ,12),[0:40]);
+n = cumsum(n)/sum(n);
+plot([0:40],n,'b')
+
+
+figure(3)
+clf(3)
+hold on
+n = hist(p(p(:,7)>5&p(:,6)<.11 & p(:,9)<350 ,14),[0:40]);
+n = cumsum(n)/sum(n);
+plot([0:40],n,'r')
+n = hist(p(p(:,7)>5&p(:,6)<.11 & p(:,9)>500 ,14),[0:40]);
+n = cumsum(n)/sum(n);
+plot([0:40],n,'b')
+
+
+
+firingrate_vs_depth(p,'extra');
+
+figure(2)
+clf(2)
+hold on
+dependent_var = p(:,15);
+independent_var = p(:,14)./p(:,12);
+
+x_var = dependent_var(p(:,7)>5&p(:,6)<.11 & p(:,9)>500);
+y_var = independent_var(p(:,7)>5&p(:,6)<.11 & p(:,9)>500);
+
+scatter(x_var,y_var);
+
+set(gca,'yscale','log')
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% SETUP CLUSTERING
+clear all
+close all
+drawnow
+cd('/Users/sofroniewn/Documents/DATA/ephys_summary');
+d = [];
+all_anm_id = {'235585','237723','245918','249872','246702','250492','250494','250495','247871','250496','256043','252776'};
+for ih = 1:numel(all_anm_id)
+  anm_id = all_anm_id{ih};
+  all_anm{ih} = load(['./' anm_id '_d'],'d');
+end
+
+p_labels = all_anm{1}.d.p_labels;
+p = [];
+for ih = 1:numel(all_anm_id)
+p = cat(1,p,all_anm{ih}.d.p_nj);
+end
+
+%p(isnan(p(:,13)),13) = 0;
+%p(isinf(p(:,13)),13) = 100;
+
+total_order = [];
+for ih = 1:numel(all_anm)
+  for ij = 1:numel(all_anm{ih}.d.summarized_cluster)
+    s_ind = find(strcmp(all_anm{ih}.d.p_labels,'layer_4_dist'));
+    layer_4_dist = all_anm{ih}.d.p_nj(ij,s_ind);
+    total_order = cat(1,total_order,[ih ij layer_4_dist]);
+  end
+end
+
+
+ s_ind = find(strcmp(p_labels,'spike_tau'));
+ spike_tau = p(:,s_ind);
+ s_ind = find(strcmp(p_labels,'isi_violations'));
+ isi_viol = p(:,s_ind);
+ s_ind = find(strcmp(p_labels,'waveform_SNR'));
+ wave_snr = p(:,s_ind);
+ s_ind = find(strcmp(p_labels,'peak_rate'));
+ peak_rate = p(:,s_ind);
+ s_ind = find(strcmp(p_labels,'baseline_rate'));
+ base_rate = p(:,s_ind);
+ s_ind = find(strcmp(p_labels,'running_modulation'));
+ run_mod = p(:,s_ind);
+ s_ind = find(strcmp(p_labels,'isi_peak'));
+ isi_peak = p(:,s_ind);
+ s_ind = find(strcmp(p_labels,'layer_4_dist'));
+ layer_4_dist = p(:,s_ind);
+ s_ind = find(strcmp(p_labels,'spk_amplitude'));
+ spike_amp = p(:,s_ind);
+
+
+keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_tau < 350 & peak_rate > 2 & spike_amp >= 60;
+
+order_sort = total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,3));
+order_sort = order_sort(ind,:);
+
+
+	order = order_sort(:,:);
+
+	outputDir = ['Fast_spikers_sum'];
+	cd('/Users/sofroniewn/Documents/DATA/ephys_summary');
+	publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+
+
+start_ind = 1;
+iter = 1;
+while start_ind <= size(order_sort,1);
+	end_ind = min(size(order_sort,1),start_ind+55);
+	order = order_sort(start_ind:end_ind,:);
+	outputDir = ['Regular_spikers_sum_' num2str(iter)];
+	cd('/Users/sofroniewn/Documents/DATA/ephys_summary');
+	publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+	start_ind = end_ind+1;
+	iter = iter+1;
+end
+
+%order = order_sort(109:end,:);
+
+%plot_clusters(all_anm,order);
+
+num2clip(p)
+
+
+% histogram by depth - all units
+figure;
+edges= [-550:50:550];
+hist(layer_4_dist,edges)
+
+% isi_viol wave_snr - all units
+figure;
+plot(isi_viol,wave_snr,'.k')
+
+% spike_amp wave_snr - all units
+figure;
+plot(spike_amp,wave_snr,'.k')
+
+% isi_viol wave_snr - all units
+figure;
+plot(spike_tau,isi_viol,'.k')
+
+% peak rate
+figure;
+hist(peak_rate,[0:100])
+xlim([0 100])
+% spike amp hist - all units
+
+% histogram by depth - high quality units
+figure;
+%keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_tau < 350 & peak_rate > 2 & spike_amp >= 60;
+keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_amp >= 60;
+edges= [100:50:900];
+hist(spike_tau(keep_spikes),edges)
+
+% From now on hq units only
+% tau histogram - split into RS and FS
+figure;
+%keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_tau < 350 & peak_rate > 2 & spike_amp >= 60;
+keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_amp >= 60;
+edges= [-550:50:550];
+hist(layer_4_dist(keep_spikes),edges)
+
+% histogram by depth rs, fs
+figure;
+%keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_tau < 350 & peak_rate > 2 & spike_amp >= 60;
+keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_amp >= 60 & spike_tau < 350;
+edges= [-550:50:550];
+hist(layer_4_dist(keep_spikes),edges)
+
+% histogram by depth rs, fs
+figure;
+%keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_tau < 350 & peak_rate > 2 & spike_amp >= 60;
+keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_amp >= 60 & spike_tau > 500;
+edges= [-550:50:550];
+hist(layer_4_dist(keep_spikes),edges)
+
+
+% isi_viol wave_snr - all units
+figure;
+hold on
+keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_amp >= 60 & spike_tau > 500 & layer_4_dist >= -50;
+plot(spike_tau(keep_spikes),isi_peak(keep_spikes),'.k')
+keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_amp >= 60 & spike_tau > 500 & layer_4_dist < -50;
+plot(spike_tau(keep_spikes),isi_peak(keep_spikes),'.g')
+
+
+% cdf firing rate rs, fs (base_line / peak)
+
+figure;
+hold on
+keep_spikes = wave_snr > 5 & isi_viol < 10 & spike_amp >= 60 & spike_tau > 500;
+n = hist(base_rate(keep_spikes),[0:40])
+n = cumsum(n)/sum(n);
+plot([0:40],n,'b')
+keep_spikes = wave_snr > 5 & isi_viol < 10 & spike_amp >= 60 & spike_tau < 350;
+n = hist(base_rate(keep_spikes),[0:40])
+n = cumsum(n)/sum(n);
+plot([0:40],n,'r')
+
+figure;
+hold on
+keep_spikes = wave_snr > 5 & isi_viol < 10 & spike_amp >= 60 & spike_tau > 500;
+n = hist(peak_rate(keep_spikes),[0:40])
+n = cumsum(n)/sum(n);
+plot([0:40],n,'b')
+keep_spikes = wave_snr > 5 & isi_viol < 10 & spike_amp >= 60 & spike_tau < 350;
+n = hist(peak_rate(keep_spikes),[0:40])
+n = cumsum(n)/sum(n);
+plot([0:40],n,'r')
+
+run_rate = base_rate.*run_mod;
+figure;
+hold on
+keep_spikes = wave_snr > 5 & isi_viol < 10 & spike_amp >= 60 & spike_tau > 500;
+n = hist(run_rate(keep_spikes),[0:40])
+n = cumsum(n)/sum(n);
+plot([0:40],n,'b')
+keep_spikes = wave_snr > 5 & isi_viol < 10 & spike_amp >= 60 & spike_tau < 350;
+n = hist(run_rate(keep_spikes),[0:40])
+n = cumsum(n)/sum(n);
+plot([0:40],n,'r')
+
+
+
+
+firingrate_vs_depth(p,p_labels,'baseline');
+firingrate_vs_depth(p,p_labels,'peak');
+firingrate_vs_depth(p,p_labels,'peak');
+
+
+
+firingrate_vs_depth(p,p_labels,'peak_isi');
+
+
+
+
+
+
+
+
+% histogram by depth rs, fs
+figure;
+hold on
+%keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_tau < 350 & peak_rate > 2 & spike_amp >= 60;
+keep_spikes = wave_snr > 5 & isi_viol < 10 & spike_amp >= 60 & spike_tau > 500;
+edges= [-550:50:550];
+n = hist(layer_4_dist(keep_spikes),edges);
+n1 = hist(layer_4_dist(keep_spikes & add_vec > 1),edges)./n;
+n2 = hist(layer_4_dist(keep_spikes & add_vec < -1),edges)./n;
+
+h = bar(edges,n1);
+set(h,'FaceColor','b')
+set(h,'EdgeColor','b')
+h = bar(edges,-n2);
+set(h,'FaceColor','r')
+set(h,'EdgeColor','r')
+xlim([-600 600])
+ylim([-1 1])
+
+
+
+
+
+
+
+
+
+
+add_vec = [];
+for ih = 1:numel(all_anm)
+  for ij = 1:numel(all_anm{ih}.d.summarized_cluster)
+    tune_curve = all_anm{ih}.d.summarized_cluster{ij}.TOUCH_TUNING.model_fit.curve;
+
+[val ind] = max(tune_curve);
+[valm indm] = min(tune_curve);
+
+    val_1 = nanmean(tune_curve(1:25));
+    val_2 = nanmean(tune_curve(45:61));
+    add_vec = cat(1,add_vec,[val_1 val_2]);
+  end
+end
+add_vec(add_vec<=0.01) = 0.01;
+p(:,16) = add_vec(:,1)./add_vec(:,2);
+
+
+add_vec = [];
+for ih = 1:numel(all_anm)
+  for ij = 1:numel(all_anm{ih}.d.summarized_cluster)
+    tune_curve = all_anm{ih}.d.summarized_cluster{ij}.TOUCH_TUNING.model_fit.curve;
+    x_vals = all_anm{ih}.d.summarized_cluster{ij}.TOUCH_TUNING.regressor_obj.x_fit_vals;
+
+    [val ind] = max(tune_curve);
+    [valm indm] = min(tune_curve);
+    valm(valm<=0.01) = 0.01;
+    valbase = nanmean(tune_curve(45:61));
+    valbase(valbase<=0.01) = 0.01;
+
+    tmp = val/valbase;
+    tmpm = valm/valbase;
+
+    ind_tmp = ind;
+    if 1/tmpm > tmp
+      tmp = tmpm;
+      ind_tmp = indm;
+    end
+
+    add_vec = cat(1,add_vec,[tmp x_vals(ind_tmp)]);
+  end
+end
+add_vec(isinf(add_vec(:,1)),1) = 100;
+add_vec(isnan(add_vec(:,1)),1) = 1;
+
+add_vec = log(add_vec(:,1));
+%p = cat(2,p,add_vec);
+p(:,17) = add_vec(:,:);
+
+firingrate_vs_depth(p,'extra');
+
+
+
+dependent_var = p(:,16);
+figure(2)
+clf(2)
+set(gcf,'position',[74         520        1316         278])
+subplot(1,2,1)
+hold on
+
+depth = p(p(:,7)>5 & p(:,6)<.11 & p(:,9)>500 & p(:,16)<=5 & p(:,16)>=.5,4);
+edges= [-550:50:550];
+[bincounts_0 inds] = histc(depth,edges);
+
+
+depth = p(p(:,7)>5 & p(:,6)<.11 & p(:,9)>500 & p(:,16)>2,4);
+edges= [-550:50:550];
+[bincounts_1 inds] = histc(depth,edges);
+
+
+depth = p(p(:,7)>5 & p(:,6)<.11 & p(:,9)>500 & p(:,16) < .5,4);
+edges= [-550:50:550];
+[bincounts_2 inds] = histc(depth,edges);
+
+
+bincounts = bincounts_1./(bincounts_1+bincounts_0+bincounts_2);
+bincounts(isinf(bincounts)) = 0;
+h = bar(edges,bincounts);
+set(h,'FaceColor','b')
+set(h,'EdgeColor','b')
+
+bincounts = -bincounts_2./(bincounts_1+bincounts_0+bincounts_2);
+bincounts(isinf(bincounts)) = 0;
+h = bar(edges,bincounts);
+set(h,'FaceColor','r')
+set(h,'EdgeColor','r')
+xlim(x_lim)
+ylim([-1 1])
+
+
+subplot(1,2,2)
+bincounts = (bincounts_1+bincounts_0+bincounts_2);
+h = bar(edges,bincounts);
+set(h,'FaceColor','k')
+set(h,'EdgeColor','k')
+xlim(x_lim)
+ylim([0 80])
+
+
+figure(2)
+clf(2)
+set(gcf,'position',[74         520        1316         278])
+subplot(1,2,1)
+hold on
+x_range = diff(x_lim);
+y_range = diff(y_lim_ex);
+cur_pos = get(gca,'Position');
+scale = y_range/x_range*cur_pos(4)/cur_pos(3);
+
+spike_rate = dependent_var(p(:,7)>5&p(:,6)<.11 & p(:,9)>500 & p(:,16)>1);
+depth = p(p(:,7)>5 & p(:,6)<.11 & p(:,9)>500 & p(:,16)>1,4);
+edges= [-575:50:575];
+[bincounts inds] = histc(depth,edges);
+vals = accumarray(inds,spike_rate,[length(edges) 1],@prod);
+vals = vals.^(1./bincounts);
+h = bar(edges+mean(diff(edges))/2,vals);
+set(h,'FaceColor','b')
+set(h,'EdgeColor','b')
+
+if type_log
+  h = plot(depth,spike_rate,'.k');
+  set(h,'MarkerEdgeColor', [0.5 0.5 0.5]);
+else
+  h = transparentScatter(depth,spike_rate,5,scale,0.5,[0 0 0]);
+end
+
+spike_rate = dependent_var(p(:,7)>5&p(:,6)<.11 & p(:,9)>500 & p(:,16)<1);
+depth = p(p(:,7)>5 & p(:,6)<.11 & p(:,9)>500 & p(:,16) < 1,4);
+edges= [-575:50:575];
+[bincounts inds] = histc(depth,edges);
+vals = accumarray(inds,spike_rate,[length(edges) 1],@prod);
+vals = vals.^(1./bincounts);
+h = bar(edges+mean(diff(edges))/2,vals);
+set(h,'FaceColor','r')
+set(h,'EdgeColor','r')
+
+if type_log
+  h = plot(depth,spike_rate,'.k');
+  set(h,'MarkerEdgeColor', [0.5 0.5 0.5]);
+else
+  h = transparentScatter(depth,spike_rate,5,scale,0.5,[0 0 0]);
+end
+
+xlim(x_lim)
+ylim(y_lim_ex)
+if type_log
+  set(gca,'yscale','log')
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

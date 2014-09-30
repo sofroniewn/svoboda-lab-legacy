@@ -23,7 +23,7 @@ end
 ylim([0 ymax]);
 
 %title(['Cluster Id ' num2str(clust_id)])
-text(.725,.89,sprintf('%.0f ms',1000*ISI.peak),'Color','r','units','normalized')
-text(.725,.96,sprintf('%.2f%%',ISI.violations),'Color','r','units','normalized')
+text(.725,.89,sprintf('%.0f ms',1000*ISI.peak),'Color','r','units','normalized','Background','w')
+text(.725,.96,sprintf('%.2f%%',ISI.violations),'Color','r','units','normalized','Background','w')
 
 
