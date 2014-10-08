@@ -1,165 +1,53 @@
-function firingrate_vs_depth(p,p_labels,type)
+function firingrate_vs_depth(ps,y_mat,keep_mat,comb)
 
- s_ind = find(strcmp(p_labels,'spike_tau'));
- spike_tau = p(:,s_ind);
- s_ind = find(strcmp(p_labels,'isi_violations'));
- isi_viol = p(:,s_ind);
- s_ind = find(strcmp(p_labels,'waveform_SNR'));
- wave_snr = p(:,s_ind);
- s_ind = find(strcmp(p_labels,'peak_rate'));
- peak_rate = p(:,s_ind);
- s_ind = find(strcmp(p_labels,'baseline_rate'));
- base_rate = p(:,s_ind);
- s_ind = find(strcmp(p_labels,'running_modulation'));
- run_mod = p(:,s_ind);
- s_ind = find(strcmp(p_labels,'isi_peak'));
- isi_peak = p(:,s_ind);
- s_ind = find(strcmp(p_labels,'layer_4_dist'));
- layer_4_dist = p(:,s_ind);
- s_ind = find(strcmp(p_labels,'spk_amplitude'));
- spike_amp = p(:,s_ind);
-s_ind = find(strcmp(p_labels,'peak_distance'));
- peak_dist = p(:,s_ind);
+keep_spikes_all = ps.waveform_SNR > 5 & ps.isi_violations < 1 & ps.spike_tau > 500 & ps.spk_amplitude >= 60 & ps.num_trials > 40 & ps.touch_peak_rate > 2 & ps.SNR > 2.5;
 
-switch type
-case 'baseline'
-	x_lim = [-600 600];
-	y_lim_ex = [0 20];
-	y_lim_inh = [0 35];
-	dependent_var = base_rate;
-	type_log = 0;
-case 'peak'
-	x_lim = [-600 600];
-	y_lim_ex = [0 50];
-	y_lim_inh = [0 100];
-	dependent_var = peak_rate;
-	type_log = 0;
-case 'peak_isi'
-	x_lim = [-600 600];
-	y_lim_ex = [0 120];
-	y_lim_inh = [0 120];
-	dependent_var = isi_peak*1000;
-	type_log = 0;
-case 'tau'
-	x_lim = [-600 600];
-	y_lim_ex = [500 800];
-	y_lim_inh = [100 350];
-	dependent_var = spike_tau;
-	type_log = 0;
-case 'dist'
-	x_lim = [-600 600];
-	y_lim_ex = [0 30];
-	y_lim_inh = [0 30];
-	dependent_var = peak_dist;
-	type_log = 0;
-case 'peak_mod'
-	x_lim = [-600 600];
-	y_lim_ex = [-1 3];
-	y_lim_inh = [-1 3];
-	dependent_var = peak_rate./base_rate;
-	dependent_var(isinf(dependent_var)) = 100;
-	dependent_var = log(dependent_var);
-	type_log = 0;
-case 'run_rate'
-	x_lim = [-600 600];
-	y_lim_ex = [0 30];
-	y_lim_inh = [0 60];
-	dependent_var = base_rate.*run_mod;
-	dependent_var(isinf(dependent_var)) = 0;
-	dependent_var(isnan(dependent_var)) = 0;
-	type_log = 0;
-case 'run_mod'
-	x_lim = [-600 600];
-	y_lim_ex = [-2 2];
-	y_lim_inh = [-2 2];
-	dependent_var = run_mod;
-	dependent_var(isinf(dependent_var)) = 100;
-	dependent_var(isnan(dependent_var)) = 0;
-	dependent_var = log(dependent_var);
-	type_log = 0;
-case 'extra'
-	chan = 17;
-	x_lim = [-600 600];
-	y_lim_ex = [-5 5];
-	y_lim_inh = [-5 5];
-	dependent_var = p(:,chan);
-	type_log = 0;
-case 'extra2'
-	chan = 18;
-	x_lim = [-600 600];
-	y_lim_ex = [0 30];
-	y_lim_inh = [0 30];
-	dependent_var = p(:,chan);
-	type_log = 0;
-otherwise
-	error('could not match type')
+edges = [-600:100:600];
+vals_mat = zeros(length(edges),size(y_mat,2));
+n_mat = zeros(length(edges),size(y_mat,2));
+for ij = 1:size(y_mat,2)
+    if ~isempty(keep_mat)
+        keep_spikes = keep_spikes_all & keep_mat(:,ij);
+    else
+        keep_spikes = keep_spikes_all;
+    end
+    x = ps.layer_4_dist(keep_spikes);
+    y = y_mat(keep_spikes,ij);
+    vals = weighted_hist(x,y,edges);
+    vals_mat(:,ij) = vals;
+    n = histc(x,edges);
+    n_mat(:,ij) = n;
 end
 
-keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_amp >= 60;
-
-
-figure(2)
-clf(2)
-set(gcf,'position',[74         520        1316         278])
-subplot(1,2,1)
+figure
 hold on
-x_range = diff(x_lim);
-y_range = diff(y_lim_ex);
-cur_pos = get(gca,'Position');
-scale = y_range/x_range*cur_pos(4)/cur_pos(3);
-
-spike_rate = dependent_var(keep_spikes & spike_tau > 500);
-depth = p(keep_spikes & spike_tau > 500,4);
-edges= [-575:50:575];
-[bincounts inds] = histc(depth,edges);
-vals = accumarray(inds,spike_rate,[length(edges) 1],@mean);
-h = bar(edges,vals);
-set(h,'FaceColor','b')
-set(h,'EdgeColor','b')
-
-if type_log
-	h = plot(depth,spike_rate,'.k');
-	set(h,'MarkerEdgeColor', [0.5 0.5 0.5]);
+if ~comb & size(y_mat,2) == 2
+    h = bar(edges,vals_mat(:,1));
+    set(h,'FaceColor','b')
+    set(h,'EdgeColor','b')
+    h = bar(edges,-vals_mat(:,2));
+    set(h,'FaceColor','r')
+    set(h,'EdgeColor','r')
 else
-	h = transparentScatter(depth,spike_rate,5,scale,0.5,[0 0 0]);
+    cmap = colormap(lines(size(y_mat,2)));
+    h = bar(edges,vals_mat);
+    for ij = 1:size(y_mat,2)
+        set(h(ij),'FaceColor',cmap(ij,:))
+        set(h(ij),'EdgeColor',cmap(ij,:))
+    end
 end
 
-xlim(x_lim)
-ylim(y_lim_ex)
-if type_log
-  set(gca,'yscale','log')
-end
+xlim([-600 600])
 
 
 
-subplot(1,2,2)
-hold on
-x_range = diff(x_lim);
-y_range = diff(y_lim_inh);
-cur_pos = get(gca,'Position');
-scale = y_range/x_range*cur_pos(4)/cur_pos(3);
 
-spike_rate = dependent_var(keep_spikes & spike_tau < 350);
-depth = p(keep_spikes & spike_tau < 350 ,4);
-edges= [-550:100:550];
-[bincounts inds] = histc(depth,edges);
-vals = accumarray(inds,spike_rate,[length(edges) 1],@mean);
-h = bar(edges,vals);
-set(h,'FaceColor','r')
-set(h,'EdgeColor','r')
-
-if type_log
-	h = plot(depth,spike_rate,'.k');
-	set(h,'MarkerEdgeColor', [0.5 0.5 0.5]);
-else
-	h = transparentScatter(depth,spike_rate,5,scale,0.5,[0 0 0]);
-end
-
-xlim(x_lim)
-ylim(y_lim_inh)
-if type_log
-  set(gca,'yscale','log')
-end
+ % figure(34)
+ % clf(34)
+ % h = bar(edges,n_mat(:,1));
+ % set(h,'FaceColor','k')
+ % set(h,'EdgeColor','k')
+ % xlim([-600 600])
 
 
 

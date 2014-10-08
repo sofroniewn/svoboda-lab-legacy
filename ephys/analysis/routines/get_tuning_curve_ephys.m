@@ -53,7 +53,7 @@ if fit_model_on
             tuning_curve.model_fit = fitSigmoid(full_x,full_y,initPrs);
             tuning_curve.model_fit.curve = fitSigmoid_modelFun(tuning_curve.regressor_obj.x_fit_vals,tuning_curve.model_fit.estPrs);
         case 'Smooth'
-            p = .0001;
+            p = 10^-5;
             tuning_curve.model_fit.curve = csaps(full_x,full_y,p,tuning_curve.regressor_obj.x_fit_vals);
             [pks loc] = max(tuning_curve.model_fit.curve);
             tuning_curve.model_fit.estPrs = tuning_curve.regressor_obj.x_fit_vals(loc);
@@ -62,13 +62,13 @@ if fit_model_on
                 ind = find(tuning_curve.num_pts>0,1,'first');
                 val = tuning_curve.regressor_obj.x_vals(ind-1);
                 ind = find(tuning_curve.regressor_obj.x_fit_vals<=val,1,'last');
-                tuning_curve.model_fit.curve(1:ind) = NaN;
+                tuning_curve.model_fit.curve(1:ind) = tuning_curve.model_fit.curve(ind+1);
             end
             if tuning_curve.num_pts(end) == 0;
                 ind = find(tuning_curve.num_pts>0,1,'last');
                 val = tuning_curve.regressor_obj.x_vals(ind+1);
                 ind = find(tuning_curve.regressor_obj.x_fit_vals<=val,1,'last');
-                tuning_curve.model_fit.curve(ind+1:end) = NaN;
+                tuning_curve.model_fit.curve(ind+1:end) = tuning_curve.model_fit.curve(ind);
             end
         otherwise
             tuning_curve.model_fit = [];

@@ -1,4 +1,4 @@
-function plot_clusters(all_anm,order,full)
+function plot_clusters(all_anm,order,extra_var,full)
 
 for ij = 1:size(order,1)
     anm_num = order(ij,1);
@@ -15,19 +15,19 @@ for ij = 1:size(order,1)
         clf(110+ij)
         fig_props = [];
         if full
-        set(gcf,'Position',[10 560 1400 480])
-        gap = [0.0355 0.0355];
-        marg_h = [0.08 0.03];
-        marg_w = [0.03 0.01];
-        num_plots_h = 4;
-        num_plots_w = 8;
+            set(gcf,'Position',[10 560 1400 480])
+            gap = [0.0355 0.0355];
+            marg_h = [0.08 0.03];
+            marg_w = [0.03 0.01];
+            num_plots_h = 4;
+            num_plots_w = 8;
         else
-        set(gcf,'Position',[10 560 1400 240])
-        gap = 0.0355;
-        marg_h = [0.14 0.03];
-        marg_w = [0.03 0.01];
-        num_plots_h = 2;
-        num_plots_w = 8;
+            set(gcf,'Position',[10 560 1400 240])
+            gap = 0.0355;
+            marg_h = [0.14 0.03];
+            marg_w = [0.03 0.01];
+            num_plots_h = 2;
+            num_plots_w = 8;
         end
     
     % get depth information
@@ -102,6 +102,57 @@ for ij = 1:size(order,1)
    
     % Make touch tuning    
     tuning_curve = d.summarized_cluster{clust_num}.TOUCH_TUNING;
+
+    full_x = [];
+    full_y = [];
+    for ij = 1:length(tuning_curve.regressor_obj.x_vals)
+        full_x = [full_x;repmat(tuning_curve.regressor_obj.x_vals(ij),length(tuning_curve.data{ij}),1)];
+        full_y = [full_y;tuning_curve.data{ij}];
+    end
+    
+   
+      p = 10^-5;
+            tuning_curve.model_fit.curve = csaps(full_x,full_y,p,tuning_curve.regressor_obj.x_fit_vals);
+            [pks loc] = max(tuning_curve.model_fit.curve);
+            tuning_curve.model_fit.estPrs = tuning_curve.regressor_obj.x_fit_vals(loc);
+            tuning_curve.model_fit.r2 = 0;
+            if tuning_curve.num_pts(1) == 0;
+                ind = find(tuning_curve.num_pts>0,1,'first');
+                val = tuning_curve.regressor_obj.x_vals(ind-1);
+                ind = find(tuning_curve.regressor_obj.x_fit_vals<=val,1,'last');
+                tuning_curve.model_fit.curve(1:ind) = tuning_curve.model_fit.curve(ind+1);
+            end
+            if tuning_curve.num_pts(end) == 0;
+                ind = find(tuning_curve.num_pts>0,1,'last');
+                val = tuning_curve.regressor_obj.x_vals(ind+1);
+                ind = find(tuning_curve.regressor_obj.x_fit_vals<=val,1,'last');
+                tuning_curve.model_fit.curve(ind+1:end) = tuning_curve.model_fit.curve(ind);
+            end
+            
+baseline = mean(tuning_curve.model_fit.curve(50:end));
+[pks loc] = max(tuning_curve.model_fit.curve);
+[pksm locm] = min(tuning_curve.model_fit.curve);
+
+%[pks loc] = findpeaks(tuning_curve.model_fit.curve);
+%[pksm locm] = findpeaks(-tuning_curve.model_fit.curve);
+% figure(22)
+% clf(22)
+% plot_tuning_curve_ephys([],tuning_curve)
+
+ % baseline = prctile(tuning_curve.means,10);
+    % weight = tuning_curve.means - baseline;
+    % mod_depth = max(weight);
+    % %weight = abs(weight);
+    % weight = weight/sum(weight);
+    % tuned_val = sum(weight.*tuning_curve.regressor_obj.x_vals);
+    
+    %         initPrs = [tuned_val, 1, mod_depth, tuned_val, 1, 0 baseline];
+    %         tuning_curve.model_fit = fitDoubleGauss(full_x,full_y,initPrs);
+    %         tuning_curve.model_fit.curve = fitDoubleGauss_modelFun(tuning_curve.regressor_obj.x_fit_vals,tuning_curve.model_fit.estPrs);
+
+
+
+
     s_ind = find(strcmp(d.p_labels,'peak_rate'));
 	peak_rate = d.p_nj(clust_num,s_ind);
     s_ind = find(strcmp(d.p_labels,'peak_distance'));
@@ -111,22 +162,21 @@ for ij = 1:size(order,1)
     text(.05,.95,sprintf('Peak rate %.2f Hz',peak_rate),'Units','Normalized','Color','r','Background','w')
     text(.05,.89,sprintf('Peak distance %.1f mm',peak_dist),'Units','Normalized','Color','r','Background','w')
 
+plot([0 30],[baseline baseline],'r','linewidth',3)
+plot(tuning_curve.regressor_obj.x_fit_vals(loc),tuning_curve.model_fit.curve(loc),'.g','MarkerSize',30)
+plot(tuning_curve.regressor_obj.x_fit_vals(locm),tuning_curve.model_fit.curve(locm),'.r','MarkerSize',30)
 
-    tune_curve = d.summarized_cluster{clust_num}.TOUCH_TUNING.model_fit.curve;
-    x_vals = d.summarized_cluster{clust_num}.TOUCH_TUNING.regressor_obj.x_fit_vals;
-    [val ind] = max(tune_curve);
-    [valm indm] = min(tune_curve);
-    valm(valm<=0.01) = 0.01;
-    valbase = nanmean(tune_curve(45:61));
-    valbase(valbase<=0.01) = 0.01;
-    tmp = val/valbase;
-    tmpm = valm/valbase;
-    ind_tmp = ind;
-    if 1/tmpm > tmp
-      tmp = tmpm;
-      ind_tmp = indm;
-    end
-    text(.05,.80,sprintf('Type %.1f',log(tmp)),'Units','Normalized','Color','r','Background','w')
+    tmp = (pks-baseline);
+    tmpm = (baseline-pksm);
+    % ind_tmp = ind;
+    % if 1/tmpm > tmp
+    %   tmp = tmpm;
+    %   ind_tmp = indm;
+    % end
+    text(.05,.80,sprintf('On  %.2f',tmp),'Units','Normalized','Color','r','Background','w')
+    text(.05,.73,sprintf('Off %.2f',tmpm),'Units','Normalized','Color','r','Background','w')
+
+%    text(.05,.64,sprintf('SNR %.1f',extra_var(order(ij,3))),'Units','Normalized','Color','r','Background','w')
 
 
    if full
