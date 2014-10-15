@@ -6,13 +6,22 @@ clear all
 close all
 drawnow
 all_anm_id = {'235585','237723','245918','249872','246702','250492','250494','250495','247871','250496','256043','252776'};
-for ih = 1:numel(all_anm_id)
-%anm_id = '237723';
-anm_id = all_anm_id{ih};
-laser_on = 0;
-[base_dir trial_range_start exp_type layer_4] = ephys_anm_id_database(anm_id,laser_on);
+for ih =  2 %1:numel(all_anm_id)
 
-global trial_range; trial_range = [trial_range_start:4000];
+anm_id = all_anm_id{ih}
+laser_on = 0;
+global trial_range_start;
+global trial_range_end;
+
+    [base_dir anm_params] = ephys_anm_id_database(anm_id,0);
+    run_thresh = anm_params.run_thresh;
+    trial_range_start = anm_params.trial_range_start;
+    trial_range_end = anm_params.trial_range_end;
+    cell_reject = anm_params.cell_reject;
+    exp_type = anm_params.exp_type;
+    layer_4 = anm_params.layer_4;
+    boundaries = anm_params.boundaries;
+    boundary_labels = anm_params.boundary_labels;
 
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250492/2014_08_15/run_02'; %anm #1 for olR and olB and olL
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250495/2014_08_14/run_03'; %anm #2 for olR and olB and olL
@@ -47,6 +56,7 @@ if strcmp(anm_id,'237723')
    sorted_spikes = sorted_spikes(1:30);
 end
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PUBLISH PLOTS OF CLUSTERS
@@ -54,9 +64,9 @@ end
 all_clust_ids = 3:numel(sorted_spikes);
 plot_on = 0;
 d = [];
-d = summarize_cluster_params(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,trial_range,layer_4);
+d = summarize_cluster_params(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,trial_range_start,trial_range_end,layer_4,run_thresh,plot_on);
 
-cd('/Users/sofroniewn/Documents/DATA/ephys_summary');
+cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev3');
 save(['./' anm_id '_d'],'d','-v7.3');
 end
 % num2clip(d.p_nj)
@@ -67,7 +77,7 @@ summarize_name = 'summarize_cluster_new_wall_dist'; % 'publish_ephys.m' or 'publ
 create_publish_ephys(summarize_name);
 outputDir = ['anm_' anm_id '_summary_A'];
 
-cd('/Users/sofroniewn/Documents/DATA/ephys_summary');
+cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev3');
 publish('publish_ephys.m','showCode',false,'outputDir',outputDir); close all;
 num2clip(d.p_nj)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1261,46 +1271,156 @@ set(gca,'yscale','log')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SETUP CLUSTERING
 clear all
 close all
 drawnow
-cd('/Users/sofroniewn/Documents/DATA/ephys_summary');
+cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev3');
 d = [];
 all_anm_id = {'235585','237723','245918','249872','246702','250492','250494','250495','247871','250496','256043','252776'};
 for ih = 1:numel(all_anm_id)
-  anm_id = all_anm_id{ih};
-  all_anm{ih} = load(['./' anm_id '_d'],'d');
+  anm_id = all_anm_id{ih}
+  all_anm.data{ih} = load(['./' anm_id '_d'],'d');
+end
+all_anm.names = all_anm_id;
+
+global ps;
+[ps p p_labels curves data] = extract_additional_ephys_vars(all_anm.data); all_anm.data = data;
+total_order = [ps.anm_id, ps.clust_id, [1:length(ps.anm_id)]', ps.layer_4_dist];
+
+
+% PUBLISH ALL ANIMALS one by one
+for ij = 1:numel(all_anm_id)
+	  anm_id = all_anm.names{ij}
+	  anm_num = str2num(anm_id);
+	  keep_spikes = ps.anm_id == anm_num;
+	  order_sort = total_order(keep_spikes,:);
+	  [val ind] = sort(order_sort(:,4));
+	  order = order_sort(ind,:);
+	  outputDir = ['A_' anm_id];
+	  cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev4');
+	  publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
 end
 
-
-
-[ps curves] = extract_additional_ephys_vars(all_anm);
-
-keep_spikes = ps.waveform_SNR > 5 & ps.isi_violations < 1 & ps.spike_tau > 500 & ps.spk_amplitude >= 60 & ps.num_trials > 40 & ps.touch_peak_rate > 2 & SNR > 2.5;
-
+% PUBLISH ALL ISI VIOLATORS
+keep_spikes = ps.isi_violations >= 1;
 order_sort = total_order(keep_spikes,:);
 [val ind] = sort(order_sort(:,4));
-order = order_sort(ind,:);
-
-	% outputDir = ['Regular_spikers_sum'];
-	% cd('/Users/sofroniewn/Documents/DATA/ephys_summary');
-	% publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
-
-global extra_var
-extra_var = SNR;
+order_sort = order_sort(ind,:);
+order = order_sort;
 
 start_ind = 1;
 iter = 1;
 while start_ind <= size(order_sort,1);
-	end_ind = min(size(order_sort,1),start_ind+11);
+	end_ind = min(size(order_sort,1),start_ind+51);
 	order = order_sort(start_ind:end_ind,:);
-	outputDir = ['Regular_spikers_sum_G_' num2str(iter)];
-	cd('/Users/sofroniewn/Documents/DATA/ephys_summary');
+	outputDir = ['B_isi_violators' num2str(iter)];
+	cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev3');
 	publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
 	start_ind = end_ind+1;
 	iter = iter+1;
 end
+
+
+% PUBLISH ALL SNR VIOLATORS
+keep_spikes = ps.waveform_SNR <= 6;
+order_sort = total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order_sort = order_sort(ind,:);
+order = order_sort;
+sum(keep_spikes)
+
+start_ind = 1;
+iter = 1;
+while start_ind <= size(order_sort,1);
+	end_ind = min(size(order_sort,1),start_ind+51);
+	order = order_sort(start_ind:end_ind,:);
+	outputDir = ['B_SNR_violators' num2str(iter)];
+	cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev3');
+	publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+	start_ind = end_ind+1;
+	iter = iter+1;
+end
+
+
+
+% Publish all stability violations
+keep_spikes = abs(ps.stab_fr)>=1;
+order_sort = total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order_sort = order_sort(ind,:);
+order = order_sort;
+outputDir = ['B_stability_violators'];
+cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev3');
+publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+figure(1)
+clf(1)
+hist(ps.layer_4_dist,[-600:50:600])
+xlabel('Distance from layer 4 (mm)')
+xlim([-600 600])
+
+figure(34)
+clf(34)
+edges = unique(ps.layer_id);
+h = bar(edges,ps.layer_id);
+set(h,'FaceColor','k')
+set(h,'EdgeColor','k')
+xlim([1 7])
+set(gca,'xtick',[2:6])
+set(gca,'xticklabel',{'L2/3', 'L4', 'L5a', 'L5b', 'L6'})
+
+figure(1)
+clf(1)
+hist(ps.waveform_SNR,[0:.3:30])
+xlabel('waveform SNR')
+xlim([0 30])
+
+figure(1)
+clf(1)
+hist(ps.isi_violations,[0:.1:5])
+xlabel('% isi violations')
+xlim([-0.1 5.1])
+
+figure(1)
+clf(1)
+plot(ps.isi_violations,ps.waveform_SNR,'.k')
+xlabel('% isi violations')
+ylabel('waveform SNR')
+xlim([0 70])
+ylim([0 30])
+
+figure(1)
+clf(1)
+plot(ps.spk_amplitude,ps.waveform_SNR,'.k')
+xlabel('spike amplitude')
+ylabel('waveform SNR')
+xlim([0 300])
+ylim([0 30])
+
+figure(1)
+clf(1)
+hist(abs(ps.stab_fr),[0:.1:5])
+xlabel('% stability')
+xlim([0 5])
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 %order = order_sort(109:end,:);
 
@@ -1308,6 +1428,29 @@ end
 
 %num2clip(p)
 
+q = [ps.touch_baseline_rate, log(ps.touch_peak_rate - ps.touch_baseline_rate), log(ps.touch_baseline_rate - ps.touch_min_rate)];
+
+%q = curves.onset;
+
+keep_spikes = ps.spike_tau>500 & ps.waveform_SNR > 5 & ps.isi_violations < 1 & ps.spk_amplitude >= 60 & ps.num_trials > 40 & ps.touch_peak_rate > 2 & SNR > 2.5;
+q = q(keep_spikes,:);
+%q = zscore(q);
+
+%q = cat(2,q,H');
+idx = kmeans(zscore(q),3);
+
+gplotmatrix(q,q,idx);
+
+y_mat = [idx==1,idx==2,idx==3,idx==4,idx==5];
+keep_mat = [];
+firingrate_vs_depth(ps,y_mat,keep_mat,1);
+%%
+
+a = log(ps.touch_peak_rate - ps.touch_baseline_rate) - log(ps.touch_baseline_rate - ps.touch_min_rate);
+a = ps.touch_peak_rate - ps.touch_min_rate;
+
+figure
+hist(a(keep_spikes),10)
 
 % histogram by depth - all units
 figure;
@@ -1556,33 +1699,38 @@ ps.SNR = SNR;
 mod_thresh = 0.5;
 mod_thresh = 0.5;
 
-y_mat = [mod_up>mod_thresh & mod_down<mod_thresh, mod_down>mod_thresh];
-firingrate_vs_depth(ps,y_mat,[],0)
+y_mat = [ps.mod_up>mod_thresh & ps.mod_down<mod_thresh, ps.mod_down>mod_thresh];
+firingrate_vs_layer(ps,y_mat,[],0)
 
 y_mat = [mod_up>mod_thresh & mod_down <= mod_thresh,  mod_up > mod_thresh & mod_down > mod_thresh, mod_up <= mod_thresh & mod_down > mod_thresh];
-firingrate_vs_depth(ps,y_mat,[],1);
+
+y_mat = cp;
+keep_mat = ~isnan(cp);
+firingrate_vs_layer(ps,y_mat,keep_mat,1);
 
 
 y_mat = [ps.touch_max_loc, ps.touch_min_loc];
 keep_mat = [mod_up>mod_thresh, mod_down>mod_thresh];
-firingrate_vs_depth(ps,y_mat,keep_mat,0);
+firingrate_vs_layer(ps,y_mat,keep_mat,0);
 
 y_mat = [ps.touch_max_loc - ps.touch_min_loc];
 keep_mat = [mod_up>mod_thresh & mod_down>mod_thresh];
-firingrate_vs_depth(ps,y_mat,keep_mat,0);
+firingrate_vs_layer(ps,y_mat,keep_mat,0);
+
+%%
+keep_spikes = ps.waveform_SNR > 5 & ps.isi_violations < 1 & ps.spike_tau > 500 & ps.spk_amplitude >= 60 & ps.num_trials > 40 & ps.touch_peak_rate > 2 & SNR > 2.5;
 
 
-
-y_mat = [mod_up, mod_down];
-keep_mat = [];
-firingrate_vs_depth(ps,y_mat,keep_mat,1);
+y_mat = [ps.no_walls_still_rate, ps.no_walls_run_rate];
+firingrate_vs_layer(ps,y_mat,[],1);
 
 
 y_mat = [ps.touch_peak_rate, ps.touch_baseline_rate, ps.touch_min_rate];
-firingrate_vs_depth(ps,y_mat,[],1);
+firingrate_vs_layer(ps,y_mat,[],1);
 
-y_mat = [ps.no_walls_still_rate, ps.no_walls_run_rate];
-firingrate_vs_depth(ps,y_mat,[],1);
+y_mat = [mod_up, mod_down];
+keep_mat = [];
+firingrate_vs_layer(ps,y_mat,keep_mat,1);
 
 
 run_mod = ps.no_walls_run_rate - ps.no_walls_still_rate;
@@ -1594,22 +1742,22 @@ firingrate_vs_depth(ps,y_up,y_down,[],[]);
 ps.adapt = 2*nanmean(curves.onset,2)./(nanmean(curves.onset,2) + nanmean(curves.offset,2))-1;
 ps.adapt(isnan(ps.adapt)) = 0;
 
-y_mat = [ps.adapt ps.adapt ps.adapt];
-keep_mat = [mod_up>mod_thresh & mod_down <= mod_thresh,  mod_up > mod_thresh & mod_down > mod_thresh, mod_up <= mod_thresh & mod_down > mod_thresh];
-firingrate_vs_depth(ps,y_mat,keep_mat,1)
-
-
 
 
 y_mat = [ps.adapt];
 keep_mat = [];
-firingrate_vs_depth(ps,y_mat,keep_mat,1)
+firingrate_vs_layer(ps,y_mat,keep_mat,1)
+
+y_mat = [ps.adapt ps.adapt ps.adapt];
+keep_mat = [mod_up>mod_thresh & mod_down <= mod_thresh,  mod_up > mod_thresh & mod_down > mod_thresh, mod_up <= mod_thresh & mod_down > mod_thresh];
+firingrate_vs_layer(ps,y_mat,keep_mat,1)
+
 
 
 
 y_mat = [ps.adapt, ps.adapt];
 keep_mat = [ps.spike_tau>700, ps.spike_tau>500 & ps.spike_tau<=700];
-firingrate_vs_depth(ps,y_mat,keep_mat,1);
+firingrate_vs_layer(ps,y_mat,keep_mat,1);
 
 
 
@@ -1617,7 +1765,7 @@ firingrate_vs_depth(ps,y_mat,keep_mat,1);
 
 y_mat = [ps.spike_tau>700, ps.spike_tau>500 & ps.spike_tau<=700];
 keep_mat = [ps.spike_tau > 500, ps.spike_tau > 500];
-firingrate_vs_depth(ps,y_mat,keep_mat,0);
+firingrate_vs_layer(ps,y_mat,keep_mat,0);
 
 y_mat = [ps.spike_tau>700,  ps.spike_tau<=500, ps.spike_tau>500 & ps.spike_tau<=700];
 keep_mat = [];
@@ -1626,28 +1774,28 @@ firingrate_vs_depth(ps,y_mat,keep_mat,0);
 
 y_mat = [ps.no_walls_still_rate, ps.no_walls_still_rate];
 keep_mat = [ps.spike_tau>700, ps.spike_tau>500 & ps.spike_tau<=700];
-firingrate_vs_depth(ps,y_mat,keep_mat,1);
+firingrate_vs_layer(ps,y_mat,keep_mat,1);
 
 y_mat = [ps.no_walls_run_rate, ps.no_walls_run_rate];
 keep_mat = [ps.spike_tau>700, ps.spike_tau>500 & ps.spike_tau<=700];
-firingrate_vs_depth(ps,y_mat,keep_mat,1);
+firingrate_vs_layer(ps,y_mat,keep_mat,1);
 
 y_mat = [ps.no_walls_run_rate - ps.no_walls_still_rate, ps.no_walls_run_rate - ps.no_walls_still_rate];
 keep_mat = [ps.spike_tau>700, ps.spike_tau>500 & ps.spike_tau<=700];
-firingrate_vs_depth(ps,y_mat,keep_mat,1);
+firingrate_vs_layer(ps,y_mat,keep_mat,1);
 
 
 y_mat = [ps.touch_peak_rate, ps.touch_peak_rate];
 keep_mat = [ps.spike_tau>700, ps.spike_tau>500 & ps.spike_tau<=700];
-firingrate_vs_depth(ps,y_mat,keep_mat,1);
+firingrate_vs_layer(ps,y_mat,keep_mat,1);
 
 y_mat = [ps.touch_peak_rate - ps.touch_baseline_rate, ps.touch_peak_rate - ps.touch_baseline_rate];
 keep_mat = [ps.spike_tau>700, ps.spike_tau>500 & ps.spike_tau<=700];
-firingrate_vs_depth(ps,y_mat,keep_mat,1);
+firingrate_vs_layer(ps,y_mat,keep_mat,1);
 
 y_mat = [ps.touch_baseline_rate - ps.touch_min_rate, ps.touch_baseline_rate - ps.touch_min_rate];
 keep_mat = [ps.spike_tau>700, ps.spike_tau>500 & ps.spike_tau<=700];
-firingrate_vs_depth(ps,y_mat,keep_mat,1);
+firingrate_vs_layer(ps,y_mat,keep_mat,1);
 
 
 %mod_up>mod_thresh & mod_down>mod_thresh
@@ -1935,7 +2083,6 @@ plot(x,yy,'r','LineWidth',2)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% NNMF on tuning curves
 
-keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_tau > 500 & peak_rate > 2 & spike_amp >= 60 & num_trials > 40 & SNR > 2.5;
 
 %keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_amp >= 60 & spike_tau > 500;
 keep_index = find(keep_spikes);
@@ -1947,7 +2094,7 @@ keep_index = keep_index(ind,:);
 num_keep_neurons = sum(keep_spikes);
 length_tuning_curve = length(all_anm{1}.d.summarized_cluster{1}.TOUCH_TUNING.regressor_obj.x_fit_vals);
 
-X = zeros(num_keep_neurons,2*length_tuning_curve);
+X = zeros(num_keep_neurons,length_tuning_curve);
 y = zeros(num_keep_neurons,1);
 
 anm_num = p(:,1);
@@ -1966,7 +2113,7 @@ anm_num = p(:,1);
  for ij = 1:num_keep_neurons
  	neuron_num = keep_index(ij);
  	layer_4_dist(neuron_num)
- 	X(ij,:) = [onset_curve(neuron_num,:) offset_curve(neuron_num,:)];
+ 	X(ij,:) = [curves.onset(neuron_num,:)];
  end
 
 
@@ -2008,5 +2155,43 @@ hold on
 plot(layer_4_dist(keep_index),H(1,:),'.b')
 plot(layer_4_dist(keep_index),H(2,:),'.g')
 plot(layer_4_dist(keep_index),H(3,:),'.r')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Stability analysis
+
+
+ih = 2;
+
+figure;
+hold on
+for ij = 1:numel(all_anm.data{ih}.d.summarized_cluster)
+	trial_range = [all_anm.data{ih}.d.summarized_cluster{ij}.AMPLITUDES.trial_range(1):all_anm.data{ih}.d.summarized_cluster{ij}.AMPLITUDES.trial_range(2)];
+	plot(trial_range,all_anm.data{ih}.d.summarized_cluster{ij}.AMPLITUDES.trial_firing_rate)
+first_third = round(length(all_anm.data{ih}.d.summarized_cluster{ij}.AMPLITUDES.trial_firing_rate)/3);
+start_fr = mean(all_anm.data{ih}.d.summarized_cluster{ij}.AMPLITUDES.trial_firing_rate(1:first_third))
+end_fr = mean(all_anm.data{ih}.d.summarized_cluster{ij}.AMPLITUDES.trial_firing_rate(end-first_third:end))
+tot_fr = mean(all_anm.data{ih}.d.summarized_cluster{ij}.AMPLITUDES.trial_firing_rate(:))
+mod_fr = (start_fr - end_fr)/tot_fr
+end
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Choice prob
+keep_spikes = ps.waveform_SNR > 5 & ps.isi_violations < 1 & ps.spike_tau <350 & ps.num_trials > 70;
+
+figure
+hold on
+hist(cp(keep_spikes),[0:.05:1])
+plot([0.5 0.5],[0 20],'r')
+
+
+nanmean(cp(keep_spikes))
+nanstd(cp(keep_spikes))
+
 
 

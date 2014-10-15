@@ -1,4 +1,4 @@
-function regressor_obj = define_regression_var_ephys(stim_type_name)
+function regressor_obj = define_regression_var_ephys(stim_type_name,run_thresh)
 
 switch stim_type_name
 	case 'speed'
@@ -12,13 +12,13 @@ switch stim_type_name
 		regressor_obj.x_fit_vals = [0:1:45];
 	case 'running'
 		regressor_obj.var_tune = 'speed';
-		regressor_obj.bin_vals = [0 5 Inf]; 
+		regressor_obj.bin_vals = [0 run_thresh Inf]; 
 		regressor_obj.bin_type = 'edges';
 		regressor_obj.x_label = 'Not running / running';
-		regressor_obj.x_range = [0 10];
+		regressor_obj.x_range = [0 run_thresh*2];
 		regressor_obj.x_tick = [];
 		regressor_obj.tune_type = '';
-		regressor_obj.x_fit_vals = [0 10];
+		regressor_obj.x_fit_vals = [0 run_thresh*2];
 	case 'running_grouped'
 		regressor_obj.var_tune = 'speed';
 		regressor_obj.bin_vals = [0 5 18 Inf]; 

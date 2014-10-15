@@ -1,8 +1,8 @@
-function tuning_curve = get_tuning_curve_resample_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range);
+function tuning_curve = get_tuning_curve_resample_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
 
-constrain_trials = define_keep_trials_ephys(keep_name,id_type,exp_type);
+constrain_trials = define_keep_trials_ephys(keep_name,id_type,exp_type,trial_range,run_thresh);
 keep_trials = apply_trial_constraints(d.u_ck,d.u_labels,constrain_trials);
-regressor_obj = define_regression_var_ephys(stim_name);
+regressor_obj = define_regression_var_ephys(stim_name,run_thresh);
 
 time_range_inds = floor([d.samp_rate*time_range(1):d.samp_rate*time_range(2)])+1;
 time_range_inds(time_range_inds>size(d.r_ntk,2)) = [];

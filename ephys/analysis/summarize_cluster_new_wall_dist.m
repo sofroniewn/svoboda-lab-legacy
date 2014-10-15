@@ -98,8 +98,8 @@ for ij = 1:length(all_clust_ids)
                     text(.04,.66,sprintf('L4 %.0f um',layer_4_dist),'Units','Normalized','Color','r')
             end
         end
-    end
     xlabel('');
+    end
 
     % get spike waveform information
     WAVEFORMS = get_spk_waveforms(spike_wave_detect,ephys_sampling_rate);
@@ -133,8 +133,8 @@ for ij = 1:length(all_clust_ids)
     if plot_on
         subtightplot(4,8,[11 12],gap,marg_h,marg_w)
         plot_behaviour_vect(fig_props,BEHAVIOUR_VECT)
+        xlabel('');
     end
-    xlabel('');
     
     time_range = [0 4];
     % Make running tuning
@@ -253,6 +253,15 @@ for ij = 1:length(all_clust_ids)
         subtightplot(4,8,[20 28],gap,marg_h,marg_w)
         plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
     end
+
+     if plot_on
+         subtightplot(4,8,[18 26],gap,marg_h,marg_w)
+        plot([0 0],5*ceil([1 1]/5*max(tuning_curve.model_fit{1}.curve,tuning_curve.model_fit{2}.curve)),'LineWidth',2,'Color','k')
+        plot(tuning_curve.model_fit{1}.curve,tuning_curve.model_fit{2}.curve,'b')
+        plot(tuning_curve.model_fit{1}.curve,tuning_curve.model_fit{2}.curve,'.b')
+        xlim([0 5*ceil(1/5*max(tuning_curve.model_fit{1}.curve,tuning_curve.model_fit{2}.curve))])
+        ylim([0 5*ceil(1/5*max(tuning_curve.model_fit{1}.curve,tuning_curve.model_fit{2}.curve))])
+     end
 
     % Make touch tuning when running slow / fast
     keep_name = 'ol_base';

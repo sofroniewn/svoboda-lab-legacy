@@ -1,4 +1,20 @@
-function tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+function tuning_curve = run_angle_analysis(all_anm,anm_num)
+
+
+anm_id = num2str(all_anm{anm_num}.d.p_nj(1,1)); 
+[base_dir run_thresh trial_range_start trial_range_end exp_type layer_4 boundaries boundary_labels] = ephys_anm_id_database(anm_id,0);
+boundaries(isnan(boundaries)) = -Inf;
+
+	d = all_anm{anm_num}.d;
+
+	stim_name = 'corPos';
+    keep_name = 'ol_running';
+    id_type = 'olR';
+ 
+%    function tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+
+trial_range = [min(trial_range_start):min(max(trial_range_end),4000)];
+time_range = [0 4];
 
 constrain_trials = define_keep_trials_ephys(keep_name,id_type,exp_type,trial_range,run_thresh);
 keep_trials = apply_trial_constraints(d.u_ck,d.u_labels,constrain_trials);
@@ -7,8 +23,11 @@ regressor_obj = define_regression_var_ephys(stim_name,run_thresh);
 time_range_inds = floor([d.samp_rate*time_range(1):d.samp_rate*time_range(2)])+1;
 time_range_inds(time_range_inds>size(d.r_ntk,2)) = [];
 
-responseVar = d.r_ntk(clust_id,time_range_inds,keep_trials);
-responseVar = d.samp_rate*responseVar(:);
+% responseVar = d.r_ntk(clust_id,time_range_inds,keep_trials);
+% responseVar = d.samp_rate*responseVar(:);
+  s_ind = find(strcmp(d.s_labels,'run_angle'));
+responseVar = d.s_ctk(s_ind,time_range_inds,keep_trials);
+
 
 label = regressor_obj.var_tune;
 s_ind = find(strcmp(d.s_labels,regressor_obj.var_tune));
@@ -25,7 +44,7 @@ tuning_curve = get_tuning_curve(regVect,num_groups,responseVar);
 regressor_obj.var_tune = label;
 tuning_curve.regressor_obj = regressor_obj;
 
-fit_model_on = 1;
+fit_model_on = 0;
 
 if fit_model_on
     full_x = [];
@@ -73,6 +92,8 @@ if fit_model_on
         otherwise
             tuning_curve.model_fit = [];
     end
+else
+	            tuning_curve.model_fit = [];
 end
 
 
