@@ -1,8 +1,6 @@
-function firingrate_vs_layer(ps,y_mat,keep_mat,comb)
+function firingrate_vs_layer(x_vec,x_labels,y_mat,keep_mat,keep_spikes_all,comb,hist_plot)
 
-keep_spikes_all = ps.waveform_SNR > 5 & ps.isi_violations < 1 & ps.spike_tau > 500 & ps.spk_amplitude >= 60 & ps.num_trials > 40 & ps.touch_peak_rate > 2 & ps.SNR > 2.5;
-
-edges = unique(ps.layer_id);
+edges = unique(x_vec);
 vals_mat = zeros(length(edges),size(y_mat,2));
 n_mat = zeros(length(edges),size(y_mat,2));
 for ij = 1:size(y_mat,2)
@@ -11,18 +9,22 @@ for ij = 1:size(y_mat,2)
     else
         keep_spikes = keep_spikes_all;
     end
-    x = ps.layer_id(keep_spikes);
-    if size(y_mat,1) == size(ps.layer_id,1)
+    x = x_vec(keep_spikes);
+    if size(y_mat,1) == size(x_vec,1)
         y = y_mat(keep_spikes,ij);
     else
         y = y_mat(:,ij);
     end
     xx{ij} = x;
     yy{ij} = y;
-    vals = weighted_hist(x,y,edges);
+    [vals stds N] = weighted_hist(x,y,edges);
     vals_mat(:,ij) = vals;
     n = histc(x,edges);
     n_mat(:,ij) = n;
+end
+
+if hist_plot
+    vals_mat = n_mat;
 end
 
 figure
@@ -41,12 +43,14 @@ else
         set(h(ij),'FaceColor',cmap(ij,:))
         set(h(ij),'EdgeColor',cmap(ij,:))
     end
-    plot(xx{ij},yy{ij},'.k')
+    if ~hist_plot
+%        plot(xx{ij}+.3*(ij-size(y_mat,2)/2)/size(y_mat,2),yy{ij},'.k')
+    end
 end
 
-xlim([1 7])
-set(gca,'xtick',[2:6])
-set(gca,'xticklabel',{'L2/3', 'L4', 'L5a', 'L5b', 'L6'})
+xlim([1 numel(x_labels)+2])
+set(gca,'xtick',[2:numel(x_labels)+1])
+set(gca,'xticklabel',x_labels)
 
 % sum(n_mat(:,1))
 

@@ -25,7 +25,19 @@ end
 
 for anm_num = anm_range
     anm_id = num2str(all_anm{anm_num}.d.p_nj(1,1))
-    [base_dir run_thresh trial_range_start trial_range_end exp_type layer_4 boundaries boundary_labels] = ephys_anm_id_database(anm_id,0);
+ [base_dir anm_params] = ephys_anm_id_database(anm_id,0);
+    run_thresh = anm_params.run_thresh;
+    trial_range_start = anm_params.trial_range_start;
+    trial_range_end = anm_params.trial_range_end;
+    cell_reject = anm_params.cell_reject;
+    exp_type = anm_params.exp_type;
+    layer_4_CSD = anm_params.layer_4;
+    boundaries = anm_params.boundaries;
+    boundary_labels = anm_params.boundary_labels;
+    layer_4_corr = anm_params.layer_4_corr;
+    AP = anm_params.AP;
+    ML = anm_params.ML;
+    barrel_loc = anm_params.barrel_loc;
     boundaries(isnan(boundaries)) = -Inf;
     
     
@@ -37,7 +49,7 @@ for anm_num = anm_range
     
     %    function tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
     
-    run_thresh = 3;
+    run_thresh = run_thresh/2;
     
     trial_range = [min(trial_range_start):min(max(trial_range_end),4000)];
     
@@ -73,11 +85,16 @@ for anm_num = anm_range
         
         u_ind = find(strcmp(d.u_labels,'run_angle'));
         run_angles = d.u_ck(u_ind,keep_trials);
-        
+    
+        u_ind = find(strcmp(d.u_labels,'mean_speed'));
+        speed = d.u_ck(u_ind,keep_trials);
+    
         u_ind = find(strcmp(d.u_labels,'wall_dist'));
         wall_pos = d.u_ck(u_ind,keep_trials);
         
-        
+    num_trials = length(wall_pos)
+
+
         
         % zscore firing rate as a fn of wall position
         [wall_vals b inds] = unique(wall_pos);
@@ -93,7 +110,6 @@ for anm_num = anm_range
         vals = accumarray(inds,run_angles,[length(wall_vals) 1],@median);
         mean_run_angle = vals(inds);
         high_run = run_angles>mean_run_angle';
-        
         
         subplot(2,2,1)
         hold on
@@ -115,24 +131,49 @@ for anm_num = anm_range
             end
         end
         
-            high_vals = norm_fr(wall_pos >= 20 & high_run&~isnan(norm_fr));
-            low_vals = norm_fr(wall_pos >= 20  & ~high_run&~isnan(norm_fr));
-
-            if length(high_vals) > 1 && length(low_vals) > 1
+            high_vals = norm_fr(wall_pos>=20 & high_run&~isnan(norm_fr));
+            low_vals = norm_fr(wall_pos>=20 & ~high_run&~isnan(norm_fr));
+            try
             S = mwwtest(high_vals,low_vals);
-            choice_prob_far = S.U/length(high_vals)/length(low_vals);
-            else
-            choice_prob_far = NaN;
+            choice_prob_far3 = S.U/length(high_vals)/length(low_vals);
+            catch
+             choice_prob_far3 = NaN;
             end
+
+
+choice_prob_far = nanmean(choice_prob(wall_vals>=20));
+
+    fr_out = pop_fr(wall_pos >= 20);
+    ra_out = run_angles(wall_pos >= 20);
+    fr_out = zscore(fr_out);
+    ra_out = ra_out - median(ra_out);
+    high_vals = fr_out(ra_out > 0);
+    low_vals = fr_out(ra_out < 0);
+    % num_trials = length(fr_out)
+
+             if length(high_vals) > 1 && length(low_vals) > 1
+                 S = mwwtest(high_vals,low_vals);
+                 choice_prob_far2 = S.U/length(high_vals)/length(low_vals);
+             else
+                 choice_prob_far2 = NaN;
+             end
             
-        choice_prob_all = [choice_prob_all;choice_prob_far];
+        choice_prob_all = [choice_prob_all;[choice_prob_far choice_prob_far2 choice_prob_far3]];
         
+        subplot(2,2,3)
+        hold on
+        plot(fr_out,ra_out,'.k')
+
+
+    subplot(2,2,1)
+        hold on
+
         offset_val = 0;
         %scatter(wall_pos,run_angles,[],pop_fr,'fill')
        % plot(wall_pos(high_run),norm_fr(high_run),'.r')
        % plot(wall_pos(~high_run),norm_fr(~high_run),'.b')
         plot(wall_vals,high_curve - offset_val,'linewidth',2,'color','r')
-        plot(wall_vals,low_curve - offset_val,'linewidth',2,'color','b')
+       % plot(wall_vals,low_curve - offset_val,'linewidth',2,'color','b')
         
         % plot(wall_vals,high_curve - low_curve - 100,'linewidth',2,'color','g')
         
@@ -217,6 +258,10 @@ for anm_num = anm_range
     end
 end
 
+        nanmean(choice_prob_all)
+        nanstd(choice_prob_all) 
+choice_prob_all(isnan(choice_prob_all)) = 0.5;
+
 % edges = [-3:.1:3];
 % aa_raw = randn(100,1)+2.2;
 % aa = hist(aa,edges);
@@ -237,7 +282,7 @@ plot([0 30],[0 0],'linewidth',2,'color','k')
 hold on
 plot([0 30],[0.5 .5],'linewidth',2,'color','c')
         
-         
+     
 % figure;
 % hold on
 % %plot(aa-bb,'r')

@@ -165,7 +165,7 @@ switch anm_id
             layer_4_corr = 19.0;
             AP = 1.93;
             ML = 3.47;
-            barrel_loc = 'C2';
+            barrel_loc = 'C2'; % could be C1
             boundaries = [-500  -325    -90 100 300 450 750];
             exp_type = 'ol_cl_different_widths'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
         end

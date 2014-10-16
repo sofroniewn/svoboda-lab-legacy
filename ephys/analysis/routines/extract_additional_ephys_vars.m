@@ -16,7 +16,7 @@ stim_name = 'corPos';
 keep_name = 'ol_running';
 id_type = 'olR';
 
-add_labels = {'no_walls_still_rate';'no_walls_run_rate';'touch_baseline_rate';'touch_peak_rate';'touch_min_rate';'touch_mean_rate';'touch_max_loc';'touch_min_loc';'num_trials';'layer_id';'mod_up';'mod_down';'stab_fr';'layer_4_dist_CSD';'AP';'ML';'barrel_loc'};
+add_labels = {'no_walls_still_rate';'no_walls_run_rate';'touch_baseline_rate';'touch_peak_rate';'touch_min_rate';'touch_mean_rate';'touch_max_loc';'touch_min_loc';'num_trials';'layer_id';'mod_up';'mod_down';'stab_fr';'stab_amp';'layer_4_dist_CSD';'AP';'ML';'barrel_loc'};
 add_vec = zeros(size(p,1),numel(add_labels));
 ik = 0
 for ih = 1:numel(all_anm)
@@ -89,12 +89,36 @@ for ih = 1:numel(all_anm)
         
         tuning_curve = all_anm{ih}.d.summarized_cluster{ij}.TOUCH_TUNING;
         
-        first_third = round(length(all_anm{ih}.d.summarized_cluster{ij}.AMPLITUDES.trial_firing_rate)/2);
-        start_fr = mean(all_anm{ih}.d.summarized_cluster{ij}.AMPLITUDES.trial_firing_rate(1:first_third));
-        end_fr = mean(all_anm{ih}.d.summarized_cluster{ij}.AMPLITUDES.trial_firing_rate(end-first_third:end));
-        tot_fr = mean(all_anm{ih}.d.summarized_cluster{ij}.AMPLITUDES.trial_firing_rate(:));
+        AMPLITUDES = all_anm{ih}.d.summarized_cluster{ij}.AMPLITUDES;
+
+        first_third = round(length(AMPLITUDES.trial_firing_rate)/3);
+
+        start_fr = mean(AMPLITUDES.trial_firing_rate(1:first_third));
+         %mid_fr = mean(AMPLITUDES.trial_firing_rate(first_third:end-first_third));
+         end_fr = mean(AMPLITUDES.trial_firing_rate(end-first_third:end));
+         tot_fr = mean(AMPLITUDES.trial_firing_rate(:));
+         %[val ind] = max([abs(start_fr - end_fr),abs(start_fr - mid_fr),abs(mid_fr - end_fr)]);
+
         stab_fr = (start_fr - end_fr)/tot_fr;
-   
+
+         %if ind == 1
+         % stab_fr = (start_fr - end_fr)/tot_fr;
+          %elseif ind == 2
+          %  stab_fr = (start_fr - mid_fr)/tot_fr;
+           %elseif ind == 3
+           %stab_fr = (mid_fr - end_fr)/tot_fr;
+        %end
+
+        first_third = round(length(AMPLITUDES.trial_firing_rate)/3);
+        start_amp = mean(AMPLITUDES.norm_vals(AMPLITUDES.trial_spks<first_third + AMPLITUDES.trial_range(1)));
+        end_amp = mean(AMPLITUDES.norm_vals(AMPLITUDES.trial_spks>2*first_third + AMPLITUDES.trial_range(1)));
+        full_amp = mean(AMPLITUDES.norm_vals);
+        if ~isnan(start_amp) && ~isnan(end_amp)
+            stab_amp = (start_amp - end_amp)/full_amp;
+        else
+            stab_amp = 2;
+        end
+
 
         full_x = [];
         full_y = [];
@@ -135,7 +159,7 @@ for ih = 1:numel(all_anm)
         constrain_trials = define_keep_trials_ephys(keep_name,id_type,exp_type,trial_range,run_thresh);
         keep_trials = apply_trial_constraints(all_anm{ih}.d.u_ck,all_anm{ih}.d.u_labels,constrain_trials);
              
-        add_vec(ik,3:end) = [baseline pks pksm mean_rate loc locm sum(keep_trials) layer_id (pks - baseline) (baseline - pksm) stab_fr layer_4_dist_CSD AP ML barrel_id];
+        add_vec(ik,3:end) = [baseline pks pksm mean_rate loc locm sum(keep_trials) layer_id (pks - baseline) (baseline - pksm) stab_fr stab_amp layer_4_dist_CSD AP ML barrel_id];
         
     end
 end
@@ -154,10 +178,11 @@ p = cat(2,p,add_vec);
 p_labels = [p_labels;add_labels];
 
 
-add_labels = {'adapt'};
+add_labels = {'adapt';'SNR'};
 add_vec = zeros(size(p,1),numel(add_labels));
 curves.onset = zeros(size(p,1),length(tuning_curve.model_fit.curve));
 curves.offset = zeros(size(p,1),length(tuning_curve.model_fit.curve));
+curves.resamp = zeros(size(p,1),length(tuning_curve.model_fit.curve),100);
 ik = 0;
 for ih = 1:numel(all_anm)
     anm_id = num2str(all_anm{ih}.d.p_nj(1,1));
@@ -185,10 +210,15 @@ for ih = 1:numel(all_anm)
         time_range = [1.5 3];
         tune_curve = get_tuning_curve_ephys(ij+2,all_anm{ih}.d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
         curves.offset(ik,:) = tune_curve.model_fit.curve;
-        add_vec(ik,:) = [mean(curves.onset(ik,:) - curves.offset(ik,:))];
+
+        %time_range = [0 3];
+        %tune_curve = get_tuning_curve_resample_ephys(ij+2,all_anm{ih}.d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+        %curves.resamp(ik,:,:) = tune_curve.model_fit.resamp_tuning_curve';
+
+        SNR_val = 10;
+        add_vec(ik,:) = [mean(curves.onset(ik,:) - curves.offset(ik,:)) SNR_val];
     end
 end
-
 
 
 p = cat(2,p,add_vec);
@@ -200,9 +230,6 @@ for ij = 1:numel(p_labels)
     ps.(p_labels{ij}) = p(:,ij);
 end
 
-
-SNR = repmat(10,size(p,1),1);
-ps.SNR = SNR;
 
 
 % figure(12)
@@ -246,28 +273,3 @@ ps.SNR = SNR;
 %   end
 % end
 
-%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%
-% %% MEAN WAVEFORMS
-%
-% time_vect = all_anm{1}.d.summarized_cluster{1}.WAVEFORMS.time_vect;
-% mean_waves = [];
-% mean_waves_sm = [];
-% tau_new = [];
-% for ih = 1:numel(all_anm)
-%   for ij = 1:numel(all_anm{ih}.d.summarized_cluster)
-%   	avg_wave = all_anm{ih}.d.summarized_cluster{ij}.WAVEFORMS.avg;
-% 	mean_waves = cat(1,mean_waves,avg_wave);
-% 	avg_wave = smooth(avg_wave,5,'sgolay',1);
-% 	mean_waves_sm = cat(1,mean_waves_sm,avg_wave');
-% 	[val ind] = max(avg_wave(20:end));
-% 	tau_new = cat(1,tau_new,time_vect(20-1+ind));
-% 	end
-% end
-
-% norm_waves = bsxfun(@minus,mean_waves,mean(mean_waves(:,1:10),2));
-% %norm_waves = mean_waves;
-% norm_waves = bsxfun(@rdivide,norm_waves,-min(norm_waves,[],2));
-
-% norm_waves_sm = bsxfun(@minus,mean_waves_sm,mean(mean_waves_sm(:,1:10),2));
-% norm_waves_sm = bsxfun(@rdivide,norm_waves_sm,-min(norm_waves_sm,[],2));

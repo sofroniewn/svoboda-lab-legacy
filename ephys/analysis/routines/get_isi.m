@@ -14,6 +14,8 @@ ISI.refractory_period = refractory_period;
 % calculate total number of spikes
 ISI.num_spikes = length(spike_times);
 
+ISI.times = spike_times;
+
 % compute ISI distribution
 ISI_times = diff(spike_times);
 ISI_times = [ISI_times;-ISI_times];
@@ -25,7 +27,6 @@ start_ind = (length(ISI.edges) + 1)/2;
 smoothed_N = smooth(ISI.dist(start_ind:end),10,'sgolay',3);
 [x ind] = max(smoothed_N);
 ISI.peak = ISI.edges(start_ind-1 + ind);
-
 
 % calculate percent ISI violations
 ISI.violations = 100*sum(ISI_times>0 & ISI_times<ISI.refractory_period)/(ISI.num_spikes-1);

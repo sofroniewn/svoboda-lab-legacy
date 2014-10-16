@@ -6,7 +6,7 @@ clear all
 close all
 drawnow
 all_anm_id = {'235585','237723','245918','249872','246702','250492','250494','250495','247871','250496','256043','252776'};
-for ih =  2 %1:numel(all_anm_id)
+for ih =  1:numel(all_anm_id)
 
 anm_id = all_anm_id{ih}
 laser_on = 0;
@@ -64,10 +64,13 @@ end
 all_clust_ids = 3:numel(sorted_spikes);
 plot_on = 0;
 d = [];
-d = summarize_cluster_params(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,trial_range_start,trial_range_end,layer_4,run_thresh,plot_on);
+%d = summarize_cluster_params(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,trial_range_start,trial_range_end,layer_4,run_thresh,plot_on);
+spike_times_cluster = summarize_cluster_ISI(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,trial_range_start,trial_range_end,layer_4,run_thresh,plot_on)
 
-cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev3');
-save(['./' anm_id '_d'],'d','-v7.3');
+cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev4');
+save(['./' anm_id '_spk'],'spike_times_cluster','-v7.3');
+
+%save(['./' anm_id '_d'],'d','-v7.3');
 end
 % num2clip(d.p_nj)
 % %%
@@ -1274,87 +1277,147 @@ set(gca,'yscale','log')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SETUP CLUSTERING
 clear all
 close all
 drawnow
-cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev3');
+cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev4');
 d = [];
 all_anm_id = {'235585','237723','245918','249872','246702','250492','250494','250495','247871','250496','256043','252776'};
 for ih = 1:numel(all_anm_id)
   anm_id = all_anm_id{ih}
   all_anm.data{ih} = load(['./' anm_id '_d'],'d');
+
+  spike_times_cluster = load(['./' anm_id '_spk'],'spike_times_cluster');
+  all_anm.data{ih}.d.spike_times_cluster = spike_times_cluster;
 end
 all_anm.names = all_anm_id;
+x_fit_vals = all_anm.data{1}.d.summarized_cluster{1}.TOUCH_TUNING.regressor_obj.x_fit_vals;
 
 global ps;
 [ps p p_labels curves data] = extract_additional_ephys_vars(all_anm.data); all_anm.data = data;
+load('/Users/sofroniewn/Documents/DATA/ephys_summary_rev4/resamp_curves.mat');
+[ps mean_tuning_curves std_tuning_curves] = get_tuning_curve_SNR(ps,curves.resamp,x_fit_vals);
 total_order = [ps.anm_id, ps.clust_id, [1:length(ps.anm_id)]', ps.layer_4_dist];
+[time_vect norm_waves mean_waves] = get_mean_waveforms(all_anm.data);
 
+
+ps.SNR = ps.touch_mean_rate./ps.ste;
 
 % PUBLISH ALL ANIMALS one by one
 for ij = 1:numel(all_anm_id)
 	  anm_id = all_anm.names{ij}
 	  anm_num = str2num(anm_id);
-	  keep_spikes = ps.anm_id == anm_num;
+	  keep_spikes = ps.anm_id == anm_num & ~clean_clusters;
 	  order_sort = total_order(keep_spikes,:);
-	  [val ind] = sort(order_sort(:,4));
+	  [val ind] = sort(order_sort(:,2));
 	  order = order_sort(ind,:);
-	  outputDir = ['A_' anm_id];
-	  cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev4');
+	  outputDir = ['D_' anm_id];
+	  dir_name = '/Users/sofroniewn/Documents/DATA/ephys_summary_rev5';
+	  if exist(dir_name)~=7
+	  	mkdir(dir_name);
+	  end
+	  cd(dir_name);
 	  publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
 end
 
-% PUBLISH ALL ISI VIOLATORS
-keep_spikes = ps.isi_violations >= 1;
-order_sort = total_order(keep_spikes,:);
-[val ind] = sort(order_sort(:,4));
-order_sort = order_sort(ind,:);
-order = order_sort;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Clean up spikes
+stable_spikes = abs(ps.stab_amp)<1.5 & abs(ps.stab_fr)<1.75;
+clean_isi = ps.isi_violations < 1;
+good_snr = ps.waveform_SNR > 6;
+good_tuning = ps.SNR > 20;
+good_waveform = norm_waves(:,end)>-.4 & max(norm_waves,[],2) < .7;
+clean_clusters = good_tuning & stable_spikes & clean_isi & good_snr & good_waveform;
 
-start_ind = 1;
-iter = 1;
-while start_ind <= size(order_sort,1);
-	end_ind = min(size(order_sort,1),start_ind+51);
-	order = order_sort(start_ind:end_ind,:);
-	outputDir = ['B_isi_violators' num2str(iter)];
-	cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev3');
-	publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
-	start_ind = end_ind+1;
-	iter = iter+1;
-end
+% Spike waveforms
+regular_spikes_slow = ps.spike_tau >= 700;
+regular_spikes_fast = ps.spike_tau >= 500 & ps.spike_tau < 700;
+fast_spikes = ps.spike_tau < 350;
+intermediate_spikes =ps.spike_tau >= 350 & ps.spike_tau < 500;
+regular_spikes = (regular_spikes_slow | regular_spikes_fast);
 
-
-% PUBLISH ALL SNR VIOLATORS
-keep_spikes = ps.waveform_SNR <= 6;
-order_sort = total_order(keep_spikes,:);
-[val ind] = sort(order_sort(:,4));
-order_sort = order_sort(ind,:);
-order = order_sort;
-sum(keep_spikes)
-
-start_ind = 1;
-iter = 1;
-while start_ind <= size(order_sort,1);
-	end_ind = min(size(order_sort,1),start_ind+51);
-	order = order_sort(start_ind:end_ind,:);
-	outputDir = ['B_SNR_violators' num2str(iter)];
-	cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev3');
-	publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
-	start_ind = end_ind+1;
-	iter = iter+1;
-end
+%
+barrel_inds = {'C1','C2','C3','C4','D1','D2','B1','V1'};
+layer_6 = ps.layer_id == 6;
+layer_5b = ps.layer_id == 5;
+layer_5a = ps.layer_id == 4;
+layer_4 = ps.layer_id == 3;
+layer_23 = ps.layer_id == 2;
 
 
+c1c2 = ismember(ps.barrel_loc,[1:2]);
+d1 = ismember(ps.barrel_loc,5);
+c_row = ismember(ps.barrel_loc,[1:4]);
+d_row = ismember(ps.barrel_loc,[5:6]);
+b_row =  ismember(ps.barrel_loc,[7]);
+v1 = ismember(ps.barrel_loc,[8]);
+barrel_id = c_row + b_row+ 2*d_row + 3*v1;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Publish all stability violations
-keep_spikes = abs(ps.stab_fr)>=1;
+keep_spikes = ~stable_spikes;
 order_sort = total_order(keep_spikes,:);
 [val ind] = sort(order_sort(:,4));
 order_sort = order_sort(ind,:);
 order = order_sort;
 outputDir = ['B_stability_violators'];
-cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev3');
+cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev4');
+publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+
+% PUBLISH ALL SNR VIOLATORS
+keep_spikes = ~good_snr & stable_spikes;
+order_sort = total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order_sort = order_sort(ind,:);
+order = order_sort;
+outputDir = ['B_SNR_violators'];
+cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev4');
+publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+
+
+% PUBLISH ALL ISI VIOLATORS
+keep_spikes = layer_23 & good_snr & stable_spikes & good_tuning & all_viol(:,1) >= 1 & all_viol(:,4) < 1;
+order_sort = total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order_sort = order_sort(ind,:);
+order = order_sort;
+
+start_ind = 1;
+iter = 1;
+while start_ind <= size(order_sort,1);
+	end_ind = min(size(order_sort,1),start_ind+51);
+	order = order_sort(start_ind:end_ind,:);
+	outputDir = ['E_isi_violators' num2str(iter)];
+	cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev4');
+	publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+	start_ind = end_ind+1;
+	iter = iter+1;
+end
+
+% PUBLISH ALL TUNING VIOLATORS
+keep_spikes = ~good_tuning & stable_spikes;
+sum(keep_spikes)
+order_sort = total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order_sort = order_sort(ind,:);
+order = order_sort;
+outputDir = ['B_TUNING_SNR_violators'];
+cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev4');
 publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1362,34 +1425,370 @@ publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Spike tau
+keep_spikes = clean_clusters;
+figure(1)
+clf(1)
+hist(ps.spike_tau(keep_spikes),[0:20:900])
+xlabel('Spike tau (us)')
+xlim([0 900])
 
 figure(1)
 clf(1)
-hist(ps.layer_4_dist,[-600:50:600])
+hold on
+keep_spikes = clean_clusters & fast_spikes;
+plot(time_vect,norm_waves(keep_spikes,:),'r')
+keep_spikes = clean_clusters & intermediate_spikes;
+plot(time_vect,norm_waves(keep_spikes,:),'k')
+keep_spikes = clean_clusters & regular_spikes_fast;
+plot(time_vect,norm_waves(keep_spikes,:),'g')
+keep_spikes = clean_clusters & regular_spikes_slow;
+plot(time_vect,norm_waves(keep_spikes,:),'b')
+xlabel('Time (us)')
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% DISTANCE FROM LAYER 4 OF RECORDINGS
+keep_spikes = clean_clusters;
+figure(1)
+clf(1)
+edges = [-600:50:600];
+n = histc(ps.layer_4_dist(keep_spikes),edges);
+h = bar(edges,n);
+set(h,'FaceColor','k')
+set(h,'EdgeColor','k')
 xlabel('Distance from layer 4 (mm)')
 xlim([-600 600])
 
+% LAYER ID OF RECORDINGS
+keep_spikes = clean_clusters & c1_close;
 figure(34)
 clf(34)
 edges = unique(ps.layer_id);
-h = bar(edges,ps.layer_id);
+n = histc(ps.layer_id(keep_spikes),edges);
+h = bar(edges,n);
 set(h,'FaceColor','k')
 set(h,'EdgeColor','k')
 xlim([1 7])
 set(gca,'xtick',[2:6])
 set(gca,'xticklabel',{'L2/3', 'L4', 'L5a', 'L5b', 'L6'})
 
+% INSIDE BARREL vs OUTSIDE BARREL
+keep_spikes = clean_clusters;
+figure(34)
+clf(34)
+insideC1C2 = ismember(ps.barrel_loc,[1 2]);
+surround = ismember(ps.barrel_loc,[3:7]);
+outside = ismember(ps.barrel_loc,[8]);
+h = bar([2 3 4],[sum(insideC1C2(keep_spikes)) sum(surround(keep_spikes)) sum(outside(keep_spikes))]);
+set(h,'FaceColor','k')
+set(h,'EdgeColor','k')
+xlim([1 5])
+set(gca,'xtick',[2:4])
+set(gca,'xticklabel',{'C1/C2', 'surround', 'outside'})
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% number of units by depth
+y_mat = [ones(length(ps.anm_id),1) ones(length(ps.anm_id),1) ones(length(ps.anm_id),1)];
+keep_mat = [regular_spikes_slow, regular_spikes_fast, fast_spikes];
+x_labels = {'L2/3', 'L4', 'L5a', 'L5b', 'L6'};
+x_vec = ps.layer_id;
+firingrate_vs_layer(x_vec,x_labels,y_mat,keep_mat,~layer_6 & clean_clusters,0,1)
+
+
+
+
+
+
+% log running and touch modulation
+run_mod = ps.no_walls_run_rate./ps.no_walls_still_rate;
+run_mod(isinf(run_mod) | isnan(run_mod)) = 10;
+touch_mod = ps.touch_peak_rate./ps.no_walls_run_rate;
+touch_mod(isinf(touch_mod) | isnan(touch_mod)) = 10;
+
+
+% log running and touch modulation by barrel
+y_mat = log([run_mod touch_mod]);
+y_mat(isinf(y_mat)) = 0;
+keep_mat = [];
+x_labels = {'B/C row', 'D row', 'V1'};
+x_vec = barrel_id+1;
+firingrate_vs_layer(x_vec,x_labels,y_mat,keep_mat,~layer_6 & clean_clusters,1,0)
+
+% log running and touch modulation by layer
+y_mat = log([run_mod touch_mod]);
+y_mat(isinf(y_mat) | isnan(y_mat)) = 0;
+keep_mat = [regular_spikes & (c_row | b_row | d_row), regular_spikes & (c_row | b_row | d_row)];
+x_labels = {'L2/3', 'L4', 'L5a', 'L5b', 'L6'};
+x_vec = ps.layer_id;
+firingrate_vs_layer(x_vec,x_labels,y_mat,keep_mat,~layer_6 & clean_clusters,1,0)
+
+
+
+% touch distance preference by arc
+y_mat = [ps.touch_max_loc];
+keep_mat = [];
+x_labels = {'C1', 'C2', 'C3', 'C4'};
+x_vec = ps.barrel_loc+1;
+firingrate_vs_layer(x_vec,x_labels,y_mat,keep_mat,~layer_6 & regular_spikes & c_row & ps.mod_up > 3 & clean_clusters,1,0)
+
+
+
+% log running and touch modulation by layer
+y_mat = [ps.no_walls_still_rate ps.no_walls_run_rate];
+keep_mat = [];
+x_labels = {'L2/3', 'L4', 'L5a', 'L5b', 'L6'};
+x_vec = ps.layer_id;
+firingrate_vs_layer(x_vec,x_labels,y_mat,keep_mat,~layer_6 & regular_spikes & (c_row | b_row | d_row) & clean_clusters,1,0)
+
+
+% log running and touch modulation by layer
+y_mat = [ps.touch_min_rate ps.touch_baseline_rate ps.touch_peak_rate];
+keep_mat = [];
+x_labels = {'L2/3', 'L4', 'L5a', 'L5b', 'L6'};
+x_vec = ps.layer_id;
+firingrate_vs_layer(x_vec,x_labels,y_mat,keep_mat,~layer_6 & regular_spikes & (c_row | b_row | d_row) & clean_clusters,1,0)
+
+
+y_mat = [ps.spk_amplitude];
+keep_mat = [];
+x_labels = {'L2/3', 'L4', 'L5a', 'L5b', 'L6'};
+x_vec = ps.layer_id;
+firingrate_vs_layer(x_vec,x_labels,y_mat,keep_mat, clean_clusters,1,0)
+
+
+% log running and touch modulation by layer
+y_mat = [ps.mod_up > 1 & ps.mod_down <= 1, ps.mod_up > 1 & ps.mod_down > 1, ps.mod_up <= 1 & ps.mod_down > 1, ps.mod_up <= 1 & ps.mod_down <= 1];
+keep_mat = [];
+x_labels = {'L2/3', 'L4', 'L5a', 'L5b', 'L6'};
+x_vec = ps.layer_id;
+firingrate_vs_layer(x_vec,x_labels,y_mat,keep_mat,~layer_6 & c1_close & regular_spikes & clean_clusters,1,0)
+
+y_mat = [ps.mod_up > .5 & ps.mod_down <= .5, ps.mod_up > .5 & ps.mod_down > .5, ps.mod_up <= .5 & ps.mod_down > .5, ps.mod_up <= .5 & ps.mod_down <= .5];
+keep_mat = [];
+x_labels = {'L2/3', 'L4', 'L5a', 'L5b', 'L6'};
+x_vec = ps.layer_id;
+firingrate_vs_layer(x_vec,x_labels,y_mat,keep_mat,~layer_6 & ~c1_close & regular_spikes & clean_clusters,1,0)
+
+
+stable_spikes = abs(ps.stab_amp)<1.5 & abs(ps.stab_fr)<1.75;
+clean_isi = ps.isi_violations < 1;
+good_snr = ps.waveform_SNR > 6;
+good_tuning = ps.SNR > 20;
+
+clean_clusters = good_tuning & stable_spikes & clean_isi & good_snr;
+
+
+
+% log running and touch modulation by layer
+y_mat = ~clean_clusters;
+keep_mat = [];
+x_labels = {'L2/3', 'L4', 'L5a', 'L5b', 'L6'};
+x_vec = ps.layer_id;
+firingrate_vs_layer(x_vec,x_labels,y_mat,keep_mat,true(length(clean_clusters),1),1,0)
+
+
+
+
+y_mat = [choice_prob_all];
+keep_mat = [];
+x_labels = {'L2/3', 'L4', 'L5a', 'L5b', 'L6'};
+x_vec = ps.layer_id;
+firingrate_vs_layer(x_vec,x_labels,y_mat,keep_mat,~layer_6 & regular_spikes & (c_row | b_row | d_row) & clean_clusters,1,0)
+
+y_mat = [choice_prob_all];
+keep_mat = [];
+x_labels = {'C1', 'C2', 'C3', 'C4'};
+x_vec = ps.barrel_loc+1;
+firingrate_vs_layer(x_vec,x_labels,y_mat,keep_mat,~layer_6 & regular_spikes & c_row & clean_clusters,1,0)
+
+% log running and touch modulation by barrel
+y_mat = choice_prob_all;
+keep_mat = [];
+x_labels = {'B/C row', 'D row', 'V1'};
+x_vec = barrel_id+1;
+firingrate_vs_layer(x_vec,x_labels,y_mat,keep_mat,~layer_6 & clean_clusters,1,0)
+
+
+
+% figure(1)
+% clf(1)
+% hold on
+% keep_spikes = ~layer_6 & clean_clusters & ps.barrel_loc==1 & ps.mod_up > 3 ;
+% tc = mean(mean_tuning_curves(keep_spikes,:));
+% plot(x_fit_vals,tc/max(tc),'b');
+% keep_spikes = ~layer_6 & clean_clusters & ps.barrel_loc==2 & ps.mod_up > 3 ;
+% tc = mean(mean_tuning_curves(keep_spikes,:));
+% plot(x_fit_vals,tc/max(tc),'g');
+% keep_spikes = ~layer_6 & clean_clusters & ps.barrel_loc==3 & ps.mod_up > 3 ;
+% tc = mean(mean_tuning_curves(keep_spikes,:));
+% plot(x_fit_vals,tc/max(tc),'r');
+% keep_spikes = ~layer_6 & clean_clusters & ps.barrel_loc==4 & ps.mod_up > 3;
+% tc = mean(mean_tuning_curves(keep_spikes,:));
+% plot(x_fit_vals,tc/max(tc),'c');
+
+
+figure(1)
+clf(1)
+hold on
+keep_spikes = clean_clusters ;
+tc = mean(mean_tuning_curves(keep_spikes,:));
+plot(x_fit_vals,tc,'k');
+keep_spikes = ~layer_6 & clean_clusters & ~v1 & ps.mod_up > 3 ;
+tc = mean(mean_tuning_curves(keep_spikes,:));
+plot(x_fit_vals,tc,'b');
+keep_spikes = ~layer_6 & clean_clusters & ~v1 & ps.mod_down > 1 & ps.mod_up < 1;
+tc = mean(mean_tuning_curves(keep_spikes,:));
+plot(x_fit_vals,tc,'r');
+
+
+% keep_spikes = ~layer_6 & clean_clusters & ps.barrel_loc==2 & ps.mod_up > 3 ;
+% tc = mean(mean_tuning_curves(keep_spikes,:));
+% plot(x_fit_vals,tc/max(tc),'g');
+% keep_spikes = ~layer_6 & clean_clusters & ps.barrel_loc==3 & ps.mod_up > 3 ;
+% tc = mean(mean_tuning_curves(keep_spikes,:));
+% plot(x_fit_vals,tc/max(tc),'r');
+% keep_spikes = ~layer_6 & clean_clusters & ps.barrel_loc==4 & ps.mod_up > 3;
+% tc = mean(mean_tuning_curves(keep_spikes,:));
+% plot(x_fit_vals,tc/max(tc),'c');
+
+%
+keep_spikes = clean_clusters;
+figure(19)
+clf(19)
+subplot(4,1,1)
+hist(ps.spk_amplitude(clean_clusters & layer_23),[0:20:600])
+subplot(4,1,2)
+hist(ps.spk_amplitude(clean_clusters & layer_4),[0:20:600])
+subplot(4,1,3)
+hist(ps.spk_amplitude(clean_clusters & layer_5a),[0:20:600])
+subplot(4,1,4)
+hist(ps.spk_amplitude(clean_clusters & layer_5b),[0:20:600])
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% SPIKE FIRING RATE STABILITY METRIC
+figure(1)
+clf(1)
+hist(abs(ps.stab_fr),[0:.1:3])
+xlabel('stability metric')
+xlim([0 3])
+
+% WAVEFORM SNR
 figure(1)
 clf(1)
 hist(ps.waveform_SNR,[0:.3:30])
 xlabel('waveform SNR')
 xlim([0 30])
 
+% ISI VIOLATIONS
 figure(1)
 clf(1)
 hist(ps.isi_violations,[0:.1:5])
 xlabel('% isi violations')
-xlim([-0.1 5.1])
+xlim([-0.1 5])
+
+% waveform SNR vs ISI
+figure(1)
+clf(1)
+plot(ps.isi_violations,ps.waveform_SNR,'.k')
+xlabel('% isi violations')
+ylabel('waveform SNR')
+xlim([0 70])
+ylim([0 30])
+
+
+% Spike amplitude
+figure(1)
+clf(1)
+hist(ps.spk_amplitude,[0:10:300])
+xlabel('spike amplitude (uV)')
+xlim([0 300])
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+
+
+% PUBLISH ALL CLEAN LAYER 2/3
+keep_spikes = clean_clusters & ps.layer_id == 2;
+sum(keep_spikes)
+order_sort = total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order_sort = order_sort(ind,:);
+order = order_sort;
+
+start_ind = 1;
+iter = 1;
+while start_ind <= size(order_sort,1);
+	end_ind = min(size(order_sort,1),start_ind+51);
+	order = order_sort(start_ind:end_ind,:);
+	outputDir = ['C_layer23_' num2str(iter)];
+	cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev4');
+	publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+	start_ind = end_ind+1;
+	iter = iter+1;
+end
+
+% PUBLISH ALL CLEAN LAYER 4
+keep_spikes = clean_clusters & ps.layer_id == 3;
+sum(keep_spikes)
+order_sort = total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order_sort = order_sort(ind,:);
+order = order_sort;
+
+start_ind = 1;
+iter = 1;
+while start_ind <= size(order_sort,1);
+	end_ind = min(size(order_sort,1),start_ind+51);
+	order = order_sort(start_ind:end_ind,:);
+	outputDir = ['C_layer4' num2str(iter)];
+	cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev4');
+	publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+	start_ind = end_ind+1;
+	iter = iter+1;
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+figure(1)
+clf(1)
+hist(ps.num_spikes,[0:100:10000])
+xlabel('tuning SNR')
+xlim([0 10000])
 
 figure(1)
 clf(1)
@@ -1409,10 +1808,24 @@ ylim([0 30])
 
 figure(1)
 clf(1)
-hist(abs(ps.stab_fr),[0:.1:5])
-xlabel('% stability')
-xlim([0 5])
+plot(ps.SNR,ps.num_spikes,'.k')
 
+
+
+
+figure(1)
+clf(1)
+hist(abs(ps.stab_fr),[0:.1:3])
+xlabel('% stability')
+xlim([0 3])
+
+figure(1)
+clf(1)
+plot(abs(ps.stab_fr),abs(ps.stab_amp),'.k')
+
+figure(1)
+clf(1)
+plot(ps.touch_mean_rate,ps.ste./ps.touch_mean_rate,'.k')
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1428,58 +1841,25 @@ xlim([0 5])
 
 %num2clip(p)
 
-q = [ps.touch_baseline_rate, log(ps.touch_peak_rate - ps.touch_baseline_rate), log(ps.touch_baseline_rate - ps.touch_min_rate)];
+% q = [ps.touch_baseline_rate, log(ps.touch_peak_rate - ps.touch_baseline_rate), log(ps.touch_baseline_rate - ps.touch_min_rate)];
 
-%q = curves.onset;
+% %q = curves.onset;
 
-keep_spikes = ps.spike_tau>500 & ps.waveform_SNR > 5 & ps.isi_violations < 1 & ps.spk_amplitude >= 60 & ps.num_trials > 40 & ps.touch_peak_rate > 2 & SNR > 2.5;
-q = q(keep_spikes,:);
-%q = zscore(q);
+% keep_spikes = ps.spike_tau>500 & ps.waveform_SNR > 5 & ps.isi_violations < 1 & ps.spk_amplitude >= 60 & ps.num_trials > 40 & ps.touch_peak_rate > 2 & SNR > 2.5;
+% q = q(keep_spikes,:);
+% %q = zscore(q);
 
-%q = cat(2,q,H');
-idx = kmeans(zscore(q),3);
+% %q = cat(2,q,H');
+% idx = kmeans(zscore(q),3);
 
-gplotmatrix(q,q,idx);
+% gplotmatrix(q,q,idx);
 
-y_mat = [idx==1,idx==2,idx==3,idx==4,idx==5];
-keep_mat = [];
-firingrate_vs_depth(ps,y_mat,keep_mat,1);
+% y_mat = [idx==1,idx==2,idx==3,idx==4,idx==5];
+% keep_mat = [];
+% firingrate_vs_depth(ps,y_mat,keep_mat,1);
 %%
 
-a = log(ps.touch_peak_rate - ps.touch_baseline_rate) - log(ps.touch_baseline_rate - ps.touch_min_rate);
-a = ps.touch_peak_rate - ps.touch_min_rate;
 
-figure
-hist(a(keep_spikes),10)
-
-% histogram by depth - all units
-figure;
-edges= [-550:50:550];
-hist(ps.layer_4_dist,edges)
-
-% isi_viol wave_snr - all units
-figure;
-plot(ps.isi_violations,ps.waveform_SNR,'.k')
-
-% spike_amp wave_snr - all units
-figure;
-plot(ps.spk_amplitude,ps.waveform_SNR,'.k')
-
-% isi_viol wave_snr - all units
-figure;
-plot(ps.spike_tau,ps.isi_violations,'.k')
-
-
-
-% layer 4 dist vs tau
-figure;
-keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_amp >= 60;
-plot(ps.layer_4_dist(keep_spikes),ps.spike_tau(keep_spikes),'.k')
-
-% layer 4 dist vs tau
-figure;
-keep_spikes = wave_snr > 5 & isi_viol < 1 & spike_amp >= 60;
-plot(spike_tau(keep_spikes),isi_peak(keep_spikes),'.k')
 
 % base_rate
 resp_type = p(:,17);
@@ -1831,13 +2211,13 @@ figure(5);
 clf(5)
 hold on
 
-keep_spikes = ps.waveform_SNR > 5 & ps.isi_violations < 1 & ps.spike_tau > 500 & ps.spk_amplitude >= 60 & ps.num_trials > 40 & ps.touch_peak_rate > 2 & SNR > 2.5;
+keep_spikes = clean_clusters & c1_close;
 
 plot([0 25],[.5 .5],'k')
 plot([.5 .5],[0 25],'k')
 plot([0 25],[0 25],'k')
 
-scatter(mod_up(keep_spikes),mod_down(keep_spikes),[],'r','fill')
+scatter(ps.mod_up(keep_spikes),ps.mod_down(keep_spikes),[],'r','fill')
 xlabel('Peak - Baseline')
 ylabel('Baseline - Min')
 %set(gca,'yscale','log')
@@ -2182,16 +2562,49 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Choice prob
-keep_spikes = ps.waveform_SNR > 5 & ps.isi_violations < 1 & ps.spike_tau <350 & ps.num_trials > 70;
+choice_prob_all = choice_probabilities(ps,all_anm.data,[],[],12);
 
 figure
 hold on
-hist(cp(keep_spikes),[0:.05:1])
-plot([0.5 0.5],[0 20],'r')
+keep_spikes_out = clean_clusters & ismember(ps.barrel_loc,[3 4 6 7]) & ~v1;
+keep_spikes = clean_clusters & ismember(ps.barrel_loc,[1 2 5]) & ~v1;
+n_out = hist(choice_prob_all(keep_spikes_out,1),[0:.05:1])
+n = hist(choice_prob_all(keep_spikes,1),[0:.05:1])
+h = bar([0:.05:1],n/sum(n));
+set(h,'FaceColor','g')
+set(h,'EdgeColor','g')
+h = bar([0:.05:1],n_out/sum(n_out));
+plot([0.5 0.5],[0 .1],'r')
+nanmean(choice_prob_all(keep_spikes_out,:))
+nanstd(choice_prob_all(keep_spikes_out,:))/sqrt(sum(keep_spikes_out))
+nanmean(choice_prob_all(keep_spikes,:))
+nanstd(choice_prob_all(keep_spikes,:))/sqrt(sum(keep_spikes))
 
 
-nanmean(cp(keep_spikes))
-nanstd(cp(keep_spikes))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+refPeriods = [2.5 2.25 2.0 1.75 1.5];
+all_viol = []
+for ih = 1:numel(all_anm.data)
+	for ij = 1:numel(all_anm.data{ih}.d.spike_times_cluster.spike_times_cluster)
+		viols = zeros(1,length(refPeriods));
+		for ik = 1:length(refPeriods)
+			ISI = get_isi(all_anm.data{ih}.d.spike_times_cluster.spike_times_cluster{ij},refPeriods(ik)/1000);
+			viols(ik) = ISI.violations;
+		end
+		all_viol = [all_viol;viols];
+	end
+end
 
 
+figure;
+hold on
+plot(all_viol(:,1),all_viol(:,3),'.k')
+plot(all_viol(examine==2,1),all_viol(examine==2,4),'.r')
+xlabel('2.5 ms ISI')
+ylabel('2.25 ms ISI')
 
+all_viol(examine==2,4)
+
+keep_spikes = examine==2 & all_viol(:,4) < 1.5;

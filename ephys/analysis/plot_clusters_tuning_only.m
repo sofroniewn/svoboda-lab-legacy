@@ -95,7 +95,8 @@ for ij = 1:size(order,1)
     plot_stability(fig_props,AMPLITUDES)
     set(gca,'xticklabel',[])
     xlabel('')
-    text(.04,.87,sprintf('Stable %.2f',ps.stab_fr(tot_ind)),'Units','Normalized','Color','r','Background','w')
+    text(.02,.91,sprintf('Stable %.2f',ps.stab_fr(tot_ind)),'Units','Normalized','Color','r','Background','w')
+    text(.02,.75,sprintf('AMP %.2f',ps.stab_amp(tot_ind)),'Units','Normalized','Color','r','Background','w')
 
     BEHAVIOUR_VECT = d.summarized_cluster{clust_num}.BEHAVIOUR_VECT;
     subtightplot(num_plots_h,num_plots_w,[11 12],gap,marg_h,marg_w)
