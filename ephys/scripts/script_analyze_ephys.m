@@ -6,7 +6,7 @@ clear all
 close all
 drawnow
 all_anm_id = {'235585','237723','245918','249872','246702','250492','250494','250495','247871','250496','256043','252776'};
-for ih =  1:numel(all_anm_id)
+for ih =  2:numel(all_anm_id)
 
 anm_id = all_anm_id{ih}
 laser_on = 0;
@@ -32,6 +32,7 @@ over_write_sorted = 0;
 dir_num = 1;
 global sorted_spikes;
 sorted_spikes = extract_sorted_units_klusters(base_dir,sorted_name,dir_num,over_write_sorted);
+sorted_spikes = sorted_spikes(3:end);
 
 % Load in behaviour data
 base_path_behaviour = fullfile(base_dir, 'behaviour');
@@ -53,7 +54,7 @@ end
     ephys_summary = [];
 
 if strcmp(anm_id,'237723')
-   sorted_spikes = sorted_spikes(1:30);
+   sorted_spikes = sorted_spikes(1:28);
 end
 
 
@@ -61,16 +62,16 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PUBLISH PLOTS OF CLUSTERS
 
-all_clust_ids = 3:numel(sorted_spikes);
+all_clust_ids = 1:numel(sorted_spikes);
 plot_on = 0;
 d = [];
-%d = summarize_cluster_params(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,trial_range_start,trial_range_end,layer_4,run_thresh,plot_on);
+d = summarize_cluster_params(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,trial_range_start,trial_range_end,layer_4,run_thresh,plot_on);
 spike_times_cluster = summarize_cluster_ISI(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,trial_range_start,trial_range_end,layer_4,run_thresh,plot_on)
 
-cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev4');
+cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev6');
 save(['./' anm_id '_spk'],'spike_times_cluster','-v7.3');
+save(['./' anm_id '_d'],'d','-v7.3');
 
-%save(['./' anm_id '_d'],'d','-v7.3');
 end
 % num2clip(d.p_nj)
 % %%
@@ -1392,6 +1393,11 @@ publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all
 
 % PUBLISH ALL ISI VIOLATORS
 keep_spikes = layer_23 & good_snr & stable_spikes & good_tuning & all_viol(:,1) >= 1 & all_viol(:,4) < 1;
+keep_spikes = layer_23 & ~type_on & ~layer_6 & regular_spikes & (c_row | b_row) & ps.touch_peak_rate > 2 & clean_clusters;
+
+keep_spikes = (layer_23 | layer_4) & type_on & ~layer_6 & regular_spikes & (c_row | b_row) & ps.touch_peak_rate > 2 & clean_clusters;
+
+
 order_sort = total_order(keep_spikes,:);
 [val ind] = sort(order_sort(:,4));
 order_sort = order_sort(ind,:);
@@ -1399,10 +1405,11 @@ order = order_sort;
 
 start_ind = 1;
 iter = 1;
+type_on
 while start_ind <= size(order_sort,1);
 	end_ind = min(size(order_sort,1),start_ind+51);
 	order = order_sort(start_ind:end_ind,:);
-	outputDir = ['E_isi_violators' num2str(iter)];
+	outputDir = ['G_type_on' num2str(iter)];
 	cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev4');
 	publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
 	start_ind = end_ind+1;
@@ -2206,6 +2213,30 @@ firingrate_vs_depth(ps,y_mat,keep_mat,1);
 
 
 %%
+ps.touch_baseline_rate(ps.touch_baseline_rate<0) = 0;
+ps.touch_min_rate(ps.touch_min_rate<0) = 0;
+
+mod_up_new = (ps.touch_peak_rate - ps.touch_baseline_rate)./(ps.touch_peak_rate + ps.touch_baseline_rate);
+mod_up_new(isnan(mod_up_new) | isinf(mod_up_new)) = 0;
+
+mod_down_new = (ps.touch_baseline_rate - ps.touch_min_rate)./(ps.touch_min_rate + ps.touch_baseline_rate);
+mod_down_new(isnan(mod_down_new) | isinf(mod_down_new)) = 0;
+
+figure(5);
+clf(5)
+hold on
+keep_spikes = ~layer_6 & regular_spikes & clean_clusters & (c_row | b_row);
+%plot([0 25],[1 1],'r')
+%plot([1 1],[0 25],'r')
+%plot([0 25],[0 25],'r')
+plot(mod_up_new(keep_spikes),mod_down_new(keep_spikes),'.k')
+xlabel('Peak - Baseline')
+ylabel('Baseline - Min')
+%set(gca,'yscale','log')
+%set(gca,'xscale','log')
+set(gca,'FontSize',16)
+
+%%
 
 figure(5);
 clf(5)
@@ -2581,6 +2612,45 @@ nanmean(choice_prob_all(keep_spikes,:))
 nanstd(choice_prob_all(keep_spikes,:))/sqrt(sum(keep_spikes))
 
 
+figure
+hold on
+keep_spikes_out = clean_clusters & ismember(ps.barrel_loc,[3 4 6 7]) & ~v1;
+keep_spikes = clean_clusters & ismember(ps.barrel_loc,[1 2 5]) & ~v1;
+n_out = hist(choice_prob_all(keep_spikes_out,1),[0:.1:1])
+n = hist(choice_prob_all(keep_spikes,1),[0:.1:1])
+h = bar([0:.1:1],n/sum(n));
+set(h,'FaceColor','g')
+set(h,'EdgeColor','g')
+h = bar([0:.1:1],n_out/sum(n_out),.5);
+set(h,'FaceColor','k')
+set(h,'EdgeColor','k')
+aa = nanmean(choice_prob_all(keep_spikes_out,:))
+plot([aa(1) aa(1)],[0 .35],'c','linewidth',2)
+nanstd(choice_prob_all(keep_spikes_out,:))/sqrt(sum(keep_spikes_out))
+aa = nanmean(choice_prob_all(keep_spikes,:))
+plot([aa(1) aa(1)],[0 .35],'m','linewidth',2)
+nanstd(choice_prob_all(keep_spikes,:))/sqrt(sum(keep_spikes))
+xlabel('Choice probability','FontSize',16)
+set(gca,'FontSize',16)
+
+figure
+hold on
+keep_spikes_out = clean_clusters & ismember(ps.barrel_loc,[8]);
+keep_spikes = clean_clusters & ismember(ps.barrel_loc,[3 4 6 7 1 2 5]);
+n_out = hist(choice_prob_all(keep_spikes_out,1),[0:.1:1])
+n = hist(choice_prob_all(keep_spikes,1),[0:.1:1])
+h = bar([0:.1:1],n/sum(n));
+set(h,'FaceColor','g')
+set(h,'EdgeColor','g')
+h = bar([0:.1:1],n_out/sum(n_out),.3);
+plot([0.5 0.5],[0 .1],'r')
+nanmean(choice_prob_all(keep_spikes_out,:))
+nanstd(choice_prob_all(keep_spikes_out,:))/sqrt(sum(keep_spikes_out))
+nanmean(choice_prob_all(keep_spikes,:))
+nanstd(choice_prob_all(keep_spikes,:))/sqrt(sum(keep_spikes))
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -2608,3 +2678,225 @@ ylabel('2.25 ms ISI')
 all_viol(examine==2,4)
 
 keep_spikes = examine==2 & all_viol(:,4) < 1.5;
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+figure;
+hold on
+for ik = [0:2:10]
+
+keep = all_anm.data{1}.d.u_ck(10,:)' == ik & all_anm.data{1}.d.u_ck(1,:)' <= 12;
+
+r_t = mean(squeeze(all_anm.data{1}.d.r_ntk(1,:,keep)),2);
+plot(r_t);
+
+end
+
+
+
+figure(1);
+clf(1);
+hold on
+keep = all_anm.data{1}.d.u_ck(10,:)' <= 30 & all_anm.data{1}.d.u_ck(1,:)' <= 12;
+r_t = mean(squeeze(all_anm.data{1}.d.r_ntk(13,:,keep)),2);
+r_t = zscore(smooth(r_t,50,'sgolay',2));
+plot(r_t)
+
+Cxy = mscohere(r_t,s_t);
+figure
+plot(Cxy)
+
+
+
+figure(1);
+clf(1);
+hold on
+keep = all_anm.data{1}.d.u_ck(10,:)' <= 30 & all_anm.data{1}.d.u_ck(1,:)' <= 12;
+r_t = mean(squeeze(all_anm.data{1}.d.r_ntk(11,:,keep)),2);
+r_t = zscore(smooth(r_t,50,'sgolay',2));
+plot(r_t)
+s_t = mean(squeeze(all_anm.data{1}.d.s_ctk(6,:,keep)),2);
+s_t = zscore(smooth(s_t,50,'sgolay',2));
+plot(s_t,'r')
+r_t = mean(squeeze(all_anm.data{1}.d.r_ntk(13,:,keep)),2);
+r_t = zscore(smooth(r_t,50,'sgolay',2));
+plot(r_t,'k')
+
+
+
+
+figure(1);
+clf(1);
+hold on
+ind = 12;
+anm_name = total_order(ind,1);
+clust_id = total_order(ind,2)-2;
+anm_ind = find(ismember(all_anm.names,num2str(anm_name)));
+target_dist = round(ps.touch_max_loc(ind)/2)*2
+keep = ismember(all_anm.data{anm_ind}.d.u_ck(10,:)',target_dist-2:2:target_dist+2) & all_anm.data{anm_ind}.d.u_ck(1,:)' <= 12;
+r_t = mean(squeeze(all_anm.data{anm_ind}.d.r_ntk(clust_id+2,:,keep)),2)*500;
+r_t = smooth(r_t,25,'sgolay',1);
+baseline = mean(r_t(150:250));
+peak = mean(r_t(450:550));
+adpat_val = mean(r_t(1300:1400));
+(peak-adpat_val)./(peak+adpat_val)
+
+
+plot(r_t)
+target_dist = round(ps.touch_min_loc(ind)/2)*2
+keep = ismember(all_anm.data{anm_ind}.d.u_ck(10,:)',target_dist-2:2:target_dist+2) & all_anm.data{anm_ind}.d.u_ck(1,:)' <= 12;
+r_t = mean(squeeze(all_anm.data{anm_ind}.d.r_ntk(clust_id+2,:,keep)),2)*500;
+r_t = smooth(r_t,25,'sgolay',1);
+plot(r_t,'r')
+baseline = mean(r_t(150:250));
+peak = mean(r_t(450:550));
+adpat_val = mean(r_t(1300:1400));
+(peak-adpat_val)./(peak+adpat_val)
+
+
+xlim([0 2000])
+
+figure(3)
+clf(3)
+plot_tuning_curve_ephys([],all_anm.data{anm_ind}.d.summarized_cluster{clust_id}.TOUCH_TUNING)
+
+figure(4)
+clf(4)
+plot_spk_raster([],all_anm.data{anm_ind}.d.summarized_cluster{clust_id}.RUNNING_RASTER)
+
+
+
+%%%%%%%%%%%%%%%%%%%%
+on_adapt = zeros(304,1);
+off_adapt = zeros(304,1);
+
+for ind = 1:304
+anm_name = total_order(ind,1);
+clust_id = total_order(ind,2)-2;
+anm_ind = find(ismember(all_anm.names,num2str(anm_name)));
+target_dist = round(ps.touch_max_loc(ind)/2)*2;
+keep = ismember(all_anm.data{anm_ind}.d.u_ck(10,:)',target_dist-2:2:target_dist+2) & all_anm.data{anm_ind}.d.u_ck(1,:)' <= 12;
+r_t = mean(squeeze(all_anm.data{anm_ind}.d.r_ntk(clust_id+2,:,keep)),2)*500;
+r_t = smooth(r_t,100,'sgolay',1);
+
+baseline = mean(r_t(150:250));
+peak = mean(r_t(450:550));
+adpat_val = mean(r_t(1300:1400));
+on_adapt(ind) = (peak-adpat_val)./(peak+adpat_val);
+
+
+target_dist = round(ps.touch_min_loc(ind)/2)*2;
+keep = ismember(all_anm.data{anm_ind}.d.u_ck(10,:)',target_dist-2:2:target_dist+2) & all_anm.data{anm_ind}.d.u_ck(1,:)' <= 12;
+r_t = mean(squeeze(all_anm.data{anm_ind}.d.r_ntk(clust_id+2,:,keep)),2)*500;
+r_t = smooth(r_t,100,'sgolay',1);
+
+baseline = mean(r_t(150:250));
+peak = mean(r_t(450:550));
+adpat_val = mean(r_t(1300:1400));
+off_adapt(ind) = -(peak-adpat_val)./(peak+adpat_val);
+
+end
+
+off_adapt(isnan(off_adapt)) = 0;
+on_adapt(isnan(on_adapt)) = 0;
+on_adapt(on_adapt<0) = 0;
+off_adapt(off_adapt<0) = 0;
+
+
+ps.on_adapt = on_adapt;
+ps.off_adapt = off_adapt;
+
+
+%%%%%%%%%%%%%%%%%%%%
+figure;
+hold on
+plot(spike_times_cluster{1}.spike_trials,spike_times_cluster{1}.spike_times_ephys,'.k')
+plot(spike_times_cluster{2}.spike_trials,spike_times_cluster{2}.spike_times_ephys,'.r')
+
+
+
+x = spike_times_cluster{1}.spike_times;
+y = spike_times_cluster{2}.spike_times;
+spike_diffs = bsxfun(@minus,x,y');
+
+spike_diffs = spike_diffs(:);
+spike_diffs(spike_diffs>1) = [];
+spike_diffs(spike_diffs<-1) = [];
+
+
+range_val = 100; %in ms
+step_val = 2; %in ms
+
+edges = [-range_val/1000:step_val/1000:range_val/1000];
+n = histc(spike_diffs(:),edges);
+
+figure
+h = bar(edges,n);
+set(h,'FaceColor','k')
+set(h,'EdgeColor','k')
+xlim([edges(1) edges(end)])
+
+
+SPK_CORR = get_spike_corr(x,y);
+figure; plot_spk_corr([],SPK_CORR);
+
+
+x = spike_times_cluster{1}.spike_times;
+y = spike_times_cluster{4}.spike_times;
+
+time_range = [0 4];
+
+
+keep_name = 'running';
+id_type = 'olR';
+trial_range = [1:4000];
+
+SPK_CORR = get_trial_spk_corr(1,4,spike_times_cluster,d,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+
+figure; plot_spk_corr([],SPK_CORR);
+
+
+stim_name = 'corPos';
+tuning_curve = get_tuning_curve_ephys(1,d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+figure; plot_tuning_curve_ephys([],tuning_curve)
+    
+
+stim_name = 'corPos';
+tuning_curve = get_tuning_curve_ephys(4,d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+figure; plot_tuning_curve_ephys([],tuning_curve)
+    
+
+keep_name = 'running';
+id_type = 'olL';
+trial_range = [1:4000];
+
+%SPK_CORR = get_trial_spk_corr(1,4,spike_times_cluster,d,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+SPK_CORR = get_full_trial_spk_corr([1:4],[1:4],spike_times_cluster,d,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+
+
+figure; plot_spk_corr([],SPK_CORR{1});
+
+stim_name = 'corPos';
+tuning_curve = get_tuning_curve_ephys(1,d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+figure; plot_tuning_curve_ephys([],tuning_curve)
+    
+
+stim_name = 'corPos';
+tuning_curve = get_tuning_curve_ephys(4,d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+figure; plot_tuning_curve_ephys([],tuning_curve)
+    
+
+
+
+
+    [group_ids_RASTER groups_RASTER] = define_group_ids(exp_type,id_type_RASTER,trial_inds);
+    keep_trials = trial_range;
+    keep_trials = keep_trials(ismember(keep_trials,find(session.trial_info.mean_speed > 5 & ismember(groups_RASTER,group_ids_RASTER))));
+    time_range = [0 4];
+    mean_ds = 4;
+    temp_smooth = 80;
+    RASTER = get_spk_raster(spike_times_ephys,spike_trials,keep_trials,groups_RASTER,group_ids_RASTER,time_range,mean_ds,temp_smooth);
+
+

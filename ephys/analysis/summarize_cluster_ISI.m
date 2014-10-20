@@ -24,7 +24,7 @@ for ij = 1:length(all_clust_ids)
         % get cluster id information
     clust_id = all_clust_ids(ij);
 
-               trial_range = [trial_range_start(clust_id):min(trial_range_end(clust_id),numel(session.data))];
+    trial_range = [trial_range_start(clust_id):min(trial_range_end(clust_id),numel(session.data))];
 
     spike_times = sorted_spikes{clust_id}.session_time/ephys_sampling_rate;
     mean_spike_amp = sorted_spikes{clust_id}.mean_spike_amp(1:num_chan);
@@ -40,6 +40,13 @@ for ij = 1:length(all_clust_ids)
     spike_wave_detect(~ismember(spike_trials,trial_range),:) = [];
     spike_trials(~ismember(spike_trials,trial_range)) = [];
     
-    spike_times_cluster{ij} = spike_times;
-      
+    spike_times_cluster{ij}.spike_times = spike_times;
+    spike_times_cluster{ij}.spike_times_ephys = spike_times_ephys;
+    spike_times_cluster{ij}.spike_trials = spike_trials;
+
+    [peak_channel interp_amp] = get_peak_channel(mean_spike_amp,[]);
+    spike_times_cluster{ij}.mean_spike_amp = mean_spike_amp;
+    spike_times_cluster{ij}.interp_amp = interp_amp;
+    spike_times_cluster{ij}.peak_channel = peak_channel;
+
 end

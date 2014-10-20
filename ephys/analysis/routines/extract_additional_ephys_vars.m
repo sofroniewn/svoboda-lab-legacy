@@ -16,7 +16,7 @@ stim_name = 'corPos';
 keep_name = 'ol_running';
 id_type = 'olR';
 
-add_labels = {'no_walls_still_rate';'no_walls_run_rate';'touch_baseline_rate';'touch_peak_rate';'touch_min_rate';'touch_mean_rate';'touch_max_loc';'touch_min_loc';'num_trials';'layer_id';'mod_up';'mod_down';'stab_fr';'stab_amp';'layer_4_dist_CSD';'AP';'ML';'barrel_loc'};
+add_labels = {'no_walls_still_rate';'no_walls_run_rate';'walls_run_rate';'touch_baseline_rate';'touch_peak_rate';'touch_min_rate';'touch_mean_rate';'touch_max_loc';'touch_min_loc';'num_trials';'layer_id';'mod_up';'mod_down';'stab_fr';'stab_amp';'layer_4_dist_CSD';'AP';'ML';'barrel_loc'};
 add_vec = zeros(size(p,1),numel(add_labels));
 ik = 0
 for ih = 1:numel(all_anm)
@@ -153,13 +153,14 @@ for ih = 1:numel(all_anm)
         loc = tuning_curve.regressor_obj.x_fit_vals(loc);
         locm = tuning_curve.regressor_obj.x_fit_vals(locm);
         
-        
+        walls_run_rate = mean(full_y(full_x<18));
+
         trial_range = [trial_range_start(clust_id):min(trial_range_end(clust_id),4000)];
         
         constrain_trials = define_keep_trials_ephys(keep_name,id_type,exp_type,trial_range,run_thresh);
         keep_trials = apply_trial_constraints(all_anm{ih}.d.u_ck,all_anm{ih}.d.u_labels,constrain_trials);
              
-        add_vec(ik,3:end) = [baseline pks pksm mean_rate loc locm sum(keep_trials) layer_id (pks - baseline) (baseline - pksm) stab_fr stab_amp layer_4_dist_CSD AP ML barrel_id];
+        add_vec(ik,3:end) = [walls_run_rate baseline pks pksm mean_rate loc locm sum(keep_trials) layer_id (pks - baseline) (baseline - pksm) stab_fr stab_amp layer_4_dist_CSD AP ML barrel_id];
         
     end
 end

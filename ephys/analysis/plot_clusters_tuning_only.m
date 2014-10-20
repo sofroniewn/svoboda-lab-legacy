@@ -122,7 +122,10 @@ for ij = 1:size(order,1)
     subtightplot(num_plots_h,num_plots_w,[14 15],gap,marg_h,marg_w)
     plot_spk_psth(fig_props,RASTER);
     text(.02,.93,sprintf('%s','olR run'),'Units','Normalized','Color','r','Background','w')
-    
+   
+    text(.73,.9,sprintf('ON  ADAPT %.2f',ps.on_adapt(tot_ind)),'Units','Normalized','Color','r','Background','w')
+    text(.73,.73,sprintf('OFF ADAPT %.2f',ps.off_adapt(tot_ind)),'Units','Normalized','Color','r','Background','w')
+ 
     % Make touch tuning
     tuning_curve = d.summarized_cluster{clust_num}.TOUCH_TUNING;
     

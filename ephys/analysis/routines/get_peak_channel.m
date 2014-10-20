@@ -1,4 +1,4 @@
-function peak_channel = get_peak_channel(mean_spike_amp,ch_exclude)
+function [peak_channel interp_amp] = get_peak_channel(mean_spike_amp,ch_exclude)
 % get depth of spike by upsampling amplitude across channels, and finding the max 
 
 num_channels = length(mean_spike_amp);

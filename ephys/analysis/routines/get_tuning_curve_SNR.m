@@ -17,12 +17,12 @@ for ij = 1:size(curves,1);
       
 	ps.std(ij) = mean(std_tuning_curves(ij,:));
 
-	ps.touch_baseline_rate(ij) = baseline;
-	ps.touch_peak_rate(ij) = pks;
-	ps.touch_min_rate(ij) = pksm;
-	ps.touch_mean_rate(ij) = mean_rate;
-	ps.touch_max_loc(ij) = loc;
-	ps.touch_min_loc(ij) = locm;
+	% ps.touch_baseline_rate(ij) = baseline;
+	% ps.touch_peak_rate(ij) = pks;
+	% ps.touch_min_rate(ij) = pksm;
+	% ps.touch_mean_rate(ij) = mean_rate;
+	% ps.touch_max_loc(ij) = loc;
+	% ps.touch_min_loc(ij) = locm;
 
 
 end

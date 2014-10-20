@@ -57,7 +57,7 @@ for anm_num = anm_range
     keep_trials = apply_trial_constraints(d.u_ck,d.u_labels,constrain_trials);
     
     
-    time_range = [0 3];
+    time_range = [0 4];
     time_range_inds = floor([d.samp_rate*time_range(1):d.samp_rate*time_range(2)])+1;
     time_range_inds(time_range_inds>size(d.r_ntk,2)) = [];
     

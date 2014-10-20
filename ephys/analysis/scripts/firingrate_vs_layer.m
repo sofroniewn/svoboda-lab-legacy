@@ -2,6 +2,7 @@ function firingrate_vs_layer(x_vec,x_labels,y_mat,keep_mat,keep_spikes_all,comb,
 
 edges = unique(x_vec);
 vals_mat = zeros(length(edges),size(y_mat,2));
+std_mat = zeros(length(edges),size(y_mat,2));
 n_mat = zeros(length(edges),size(y_mat,2));
 for ij = 1:size(y_mat,2)
     if ~isempty(keep_mat)
@@ -19,6 +20,7 @@ for ij = 1:size(y_mat,2)
     yy{ij} = y;
     [vals stds N] = weighted_hist(x,y,edges);
     vals_mat(:,ij) = vals;
+    std_mat(:,ij) = stds;
     n = histc(x,edges);
     n_mat(:,ij) = n;
 end
@@ -42,7 +44,15 @@ else
     for ij = 1:size(y_mat,2)
         set(h(ij),'FaceColor',cmap(ij,:))
         set(h(ij),'EdgeColor',cmap(ij,:))
+        hj = get(h(ij),'children');
+        xdat = get(hj,'XData');
+        for ik = 1:size(xdat,2)
+            x_val = (xdat(1,ik) + xdat(3,ik))/2;
+            y_val = vals_mat(ik,ij) + [-std_mat(ik,ij) std_mat(ik,ij)]/sqrt(n_mat(ik,ij));
+            plot([x_val x_val],y_val,'LineWidth',2,'Color','k')
+        end
     end
+
     if ~hist_plot
 %        plot(xx{ij}+.3*(ij-size(y_mat,2)/2)/size(y_mat,2),yy{ij},'.k')
     end

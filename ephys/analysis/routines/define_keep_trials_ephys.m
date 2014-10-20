@@ -1,7 +1,7 @@
 function constrain_trials = define_keep_trials_ephys(keep_type_name,id_type,exp_type,trial_range,run_thresh)
 
 switch keep_type_name
-	case 'ol_base'
+	case 'base'
 		[group_ids groups] = define_group_ids(exp_type,id_type,[]);
 		constrain_trials = cell(2,1);
 		constrain_trials{1}.name = 'group_id';
@@ -10,7 +10,7 @@ switch keep_type_name
 		constrain_trials{2}.name = 'mean_speed';
 		constrain_trials{2}.vals = [0 Inf];
 		constrain_trials{2}.type = 'range';
-	case 'ol_running'
+	case 'running'
 		[group_ids groups] = define_group_ids(exp_type,id_type,[]);
 		constrain_trials = cell(2,1);
 		constrain_trials{1}.name = 'group_id';
@@ -19,7 +19,7 @@ switch keep_type_name
 		constrain_trials{2}.name = 'mean_speed';
 		constrain_trials{2}.vals = [run_thresh Inf];
 		constrain_trials{2}.type = 'range';
-	case 'ol_not_running'
+	case 'not_running'
 		[group_ids groups] = define_group_ids(exp_type,id_type,[]);
 		constrain_trials = cell(2,1);
 		constrain_trials{1}.name = 'group_id';
@@ -28,7 +28,7 @@ switch keep_type_name
 		constrain_trials{2}.name = 'mean_speed';
 		constrain_trials{2}.vals = [0 1];
 		constrain_trials{2}.type = 'range';
-	case 'ol_whisking'
+	case 'whisking'
 		[group_ids groups] = define_group_ids(exp_type,id_type,[]);
 		constrain_trials = cell(3,1);
 		constrain_trials{1}.name = 'group_id';

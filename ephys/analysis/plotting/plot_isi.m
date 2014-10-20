@@ -9,8 +9,8 @@ end
 cla
 hold on
 phandle = bar(1000*ISI.edges,ISI.dist,'histc');
-set(phandle,'LineStyle','none');
-set(phandle,'FaceColor',[0 0 0]);
+set(phandle,'FaceColor','k')
+set(phandle,'EdgeColor','k')
 xlabel('Time between events (milliseconds)');
 ylabel('Number of events');
 xlim([-40 40])

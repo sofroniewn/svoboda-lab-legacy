@@ -62,7 +62,7 @@ for ij = 1:length(all_clust_ids)
     spike_trials(~ismember(spike_trials,trial_range)) = [];
     
     % get depth information
-    peak_channel = get_peak_channel(mean_spike_amp,[]);
+    [peak_channel interp_amp] = get_peak_channel(mean_spike_amp,[]);
     s_ind = find(strcmp(d.p_labels,'chan_depth'));
     d.p_nj(ij,s_ind) = peak_channel;
 
@@ -150,7 +150,7 @@ for ij = 1:length(all_clust_ids)
     time_range = [0 4];
     % Make running tuning
     stim_name = 'running';
-    keep_name = 'ol_base';
+    keep_name = 'base';
     id_type_speed_tuning = 'outOfReach';
     tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type_speed_tuning,time_range,trial_range,run_thresh);
     running_modulation = tuning_curve.means(2)/tuning_curve.means(1);
@@ -169,7 +169,7 @@ for ij = 1:length(all_clust_ids)
     
     % Make trial Raster to running and contra touch
     id_type_wall_tuning = 'olR';
-    keep_name = 'ol_running';
+    keep_name = 'running';
     [group_ids_RASTER groups_RASTER] = define_group_ids(exp_type,id_type_wall_tuning,trial_inds);
     keep_trials = trial_range;
     keep_trials = keep_trials(ismember(keep_trials,find(session.trial_info.mean_speed > run_thresh & ismember(groups_RASTER,group_ids_RASTER))));
@@ -189,7 +189,7 @@ for ij = 1:length(all_clust_ids)
     
     % Make touch tuning
     stim_name = 'corPos';
-    keep_name = 'ol_running';
+    keep_name = 'running';
     id_type_wall_tuning = 'olR';
     tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type_wall_tuning,time_range,trial_range,run_thresh);
     [peak_rate loc] = max(tuning_curve.model_fit.curve);
@@ -209,7 +209,7 @@ for ij = 1:length(all_clust_ids)
     % Make trial Raster to not running and contra touch
     id_type_wall_tuning = 'olR';
     stim_name = 'corPos';
-    keep_name = 'ol_not_running';
+    keep_name = 'not_running';
     [group_ids_RASTER groups_RASTER] = define_group_ids(exp_type,id_type_wall_tuning,trial_inds);
     keep_trials = trial_range;
     keep_trials = keep_trials(ismember(keep_trials,find(session.trial_info.mean_speed <= run_thresh & ismember(groups_RASTER,group_ids_RASTER))));
@@ -231,7 +231,7 @@ for ij = 1:length(all_clust_ids)
     id_type_wall_tuning = 'olR';
     % Make touch tuning when not running
     stim_name = 'corPos';
-    keep_name = 'ol_not_running';
+    keep_name = 'not_running';
     id_type_wall_tuning = 'olR';
     tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type_wall_tuning,time_range,trial_range,run_thresh);
     [peak_rate loc] = max(tuning_curve.model_fit.curve);
@@ -245,7 +245,7 @@ for ij = 1:length(all_clust_ids)
     end
     
     % Make touch tuning when wall moving
-    keep_name = 'ol_running';
+    keep_name = 'running';
     stim_name = 'wall_direction';
     stim_name2 = 'corPos';
     tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type_wall_tuning,time_range,trial_range,run_thresh);
@@ -256,7 +256,7 @@ for ij = 1:length(all_clust_ids)
     end
 
     % Make touch tuning when running left/right
-    keep_name = 'ol_running';
+    keep_name = 'running';
     stim_name = 'run_direction';
     stim_name2 = 'corPos';
     tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type_wall_tuning,time_range,trial_range,run_thresh);
@@ -281,7 +281,7 @@ for ij = 1:length(all_clust_ids)
      end
 
     % Make touch tuning when running slow / fast
-    keep_name = 'ol_base';
+    keep_name = 'base';
     stim_name = 'running_grouped';
     stim_name2 = 'corPos';
     tuning_curve = get_tuning_curve_2D_ephys(clust_id,d,stim_name,stim_name2,keep_name,exp_type,id_type_wall_tuning,time_range,trial_range,run_thresh);

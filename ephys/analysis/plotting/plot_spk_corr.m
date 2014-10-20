@@ -1,0 +1,59 @@
+function plot_spk_corr(fig_props,SPK_CORR)
+
+% create figure if properties specified
+if ~isempty(fig_props)
+    figure(fig_props.id)
+    clf(fig_props.id)
+    set(gcf,'Position',fig_props.position)
+end
+cla
+
+if iscell(SPK_CORR)
+    gap = [0.01 0.01];
+    marg_h = [0.01 0.01];
+    marg_w = [0.01 0.01];
+    num_plots_h = size(SPK_CORR,2);
+    num_plots_w = size(SPK_CORR,1);
+    ind = 1;
+    for ij = 1:size(SPK_CORR,1)
+        for ik = 1:size(SPK_CORR,2)
+            subtightplot(num_plots_h,num_plots_w,ind,gap,marg_h,marg_w)
+			hold on
+            phandle = bar(1000*SPK_CORR{ij,ik}.edges,SPK_CORR{ij,ik}.dist,'histc');
+            set(phandle,'FaceColor','k')
+            set(phandle,'EdgeColor','k')
+            
+            plot(1000*[SPK_CORR{ij,ik}.edges(1) SPK_CORR{ij,ik}.edges(end)],[SPK_CORR{ij,ik}.mean SPK_CORR{ij,ik}.mean],'r','LineWidth',2)
+            %xlabel('Time (ms)');
+            %ylabel('Fraction of events');
+            xlim([-100 100])
+            set(gca,'ytick',[])
+            set(gca,'xtick',[])
+            ymax = max(SPK_CORR{ij,ik}.dist);
+            if ymax == 0 || isnan(ymax) || isempty(ymax)
+                ymax = 1;
+            end
+            ylim([0 ymax]);
+            ind = ind+1;
+        end
+    end
+    
+else
+    hold on
+    phandle = bar(1000*SPK_CORR.edges,SPK_CORR.dist,'histc');
+    set(phandle,'FaceColor','k')
+    set(phandle,'EdgeColor','k')
+    
+    plot(1000*[SPK_CORR.edges(1) SPK_CORR.edges(end)],[SPK_CORR.mean SPK_CORR.mean],'r','LineWidth',2)
+    
+    
+    xlabel('Time between events (milliseconds)');
+    ylabel('Fraction of events');
+    xlim([-100 100])
+    
+    ymax = max(SPK_CORR.dist);
+    if ymax == 0 || isnan(ymax) || isempty(ymax)
+        ymax = 1;
+    end
+    ylim([0 ymax]);
+end

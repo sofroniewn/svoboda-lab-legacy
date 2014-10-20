@@ -14,7 +14,7 @@ ISI.refractory_period = refractory_period;
 % calculate total number of spikes
 ISI.num_spikes = length(spike_times);
 
-ISI.times = spike_times;
+%ISI.times = spike_times;
 
 % compute ISI distribution
 ISI_times = diff(spike_times);
