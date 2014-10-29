@@ -6,7 +6,7 @@ clear all
 close all
 drawnow
 all_anm_id = {'235585','237723','245918','249872','246702','250492','250494','250495','247871','250496','256043','252776'};
-for ih =  2:numel(all_anm_id)
+for ih =  1:numel(all_anm_id)
 
 anm_id = all_anm_id{ih}
 laser_on = 0;
@@ -25,6 +25,7 @@ global trial_range_end;
 
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250492/2014_08_15/run_02'; %anm #1 for olR and olB and olL
 %base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250495/2014_08_14/run_03'; %anm #2 for olR and olB and olL
+[bv_sync] = func_extract_bv_sync(base_dir, [], 'bv_sync', 0);
 
 % Load in ephys data
 sorted_name = 'klusters_data';
@@ -33,6 +34,12 @@ dir_num = 1;
 global sorted_spikes;
 sorted_spikes = extract_sorted_units_klusters(base_dir,sorted_name,dir_num,over_write_sorted);
 sorted_spikes = sorted_spikes(3:end);
+
+if strcmp(anm_id,'237723')
+   sorted_spikes = sorted_spikes(1:28);
+end
+
+sorted_spikes = time_shift_sorted_spikes(sorted_spikes,bv_sync);
 
 % Load in behaviour data
 base_path_behaviour = fullfile(base_dir, 'behaviour');
@@ -53,9 +60,7 @@ else
 end
     ephys_summary = [];
 
-if strcmp(anm_id,'237723')
-   sorted_spikes = sorted_spikes(1:28);
-end
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -66,9 +71,9 @@ all_clust_ids = 1:numel(sorted_spikes);
 plot_on = 0;
 d = [];
 d = summarize_cluster_params(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,trial_range_start,trial_range_end,layer_4,run_thresh,plot_on);
-spike_times_cluster = summarize_cluster_ISI(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,trial_range_start,trial_range_end,layer_4,run_thresh,plot_on)
+spike_times_cluster = summarize_cluster_ISI(all_clust_ids,sorted_spikes,session,exp_type,trial_range_start,trial_range_end,layer_4,run_thresh,plot_on)
 
-cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev6');
+cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev7');
 save(['./' anm_id '_spk'],'spike_times_cluster','-v7.3');
 save(['./' anm_id '_d'],'d','-v7.3');
 
@@ -1292,7 +1297,7 @@ set(gca,'yscale','log')
 clear all
 close all
 drawnow
-cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev4');
+cd('/Users/sofroniewn/Documents/DATA/ephys_summary_rev7');
 d = [];
 all_anm_id = {'235585','237723','245918','249872','246702','250492','250494','250495','247871','250496','256043','252776'};
 for ih = 1:numel(all_anm_id)
@@ -1315,22 +1320,22 @@ total_order = [ps.anm_id, ps.clust_id, [1:length(ps.anm_id)]', ps.layer_4_dist];
 
 ps.SNR = ps.touch_mean_rate./ps.ste;
 
-% PUBLISH ALL ANIMALS one by one
-for ij = 1:numel(all_anm_id)
-	  anm_id = all_anm.names{ij}
-	  anm_num = str2num(anm_id);
-	  keep_spikes = ps.anm_id == anm_num & ~clean_clusters;
-	  order_sort = total_order(keep_spikes,:);
-	  [val ind] = sort(order_sort(:,2));
-	  order = order_sort(ind,:);
-	  outputDir = ['D_' anm_id];
-	  dir_name = '/Users/sofroniewn/Documents/DATA/ephys_summary_rev5';
-	  if exist(dir_name)~=7
-	  	mkdir(dir_name);
-	  end
-	  cd(dir_name);
-	  publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
-end
+% % PUBLISH ALL ANIMALS one by one
+% for ij = 1:numel(all_anm_id)
+% 	  anm_id = all_anm.names{ij}
+% 	  anm_num = str2num(anm_id);
+% 	  keep_spikes = ps.anm_id == anm_num & ~clean_clusters;
+% 	  order_sort = total_order(keep_spikes,:);
+% 	  [val ind] = sort(order_sort(:,2));
+% 	  order = order_sort(ind,:);
+% 	  outputDir = ['D_' anm_id];
+% 	  dir_name = '/Users/sofroniewn/Documents/DATA/ephys_summary_rev5';
+% 	  if exist(dir_name)~=7
+% 	  	mkdir(dir_name);
+% 	  end
+% 	  cd(dir_name);
+% 	  publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2810,93 +2815,953 @@ ps.off_adapt = off_adapt;
 
 
 %%%%%%%%%%%%%%%%%%%%
-figure;
-hold on
-plot(spike_times_cluster{1}.spike_trials,spike_times_cluster{1}.spike_times_ephys,'.k')
-plot(spike_times_cluster{2}.spike_trials,spike_times_cluster{2}.spike_times_ephys,'.r')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Spike corr analysis
 
-
-
-x = spike_times_cluster{1}.spike_times;
-y = spike_times_cluster{2}.spike_times;
-spike_diffs = bsxfun(@minus,x,y');
-
-spike_diffs = spike_diffs(:);
-spike_diffs(spike_diffs>1) = [];
-spike_diffs(spike_diffs<-1) = [];
-
-
-range_val = 100; %in ms
-step_val = 2; %in ms
-
-edges = [-range_val/1000:step_val/1000:range_val/1000];
-n = histc(spike_diffs(:),edges);
-
-figure
-h = bar(edges,n);
-set(h,'FaceColor','k')
-set(h,'EdgeColor','k')
-xlim([edges(1) edges(end)])
-
-
-SPK_CORR = get_spike_corr(x,y);
-figure; plot_spk_corr([],SPK_CORR);
-
-
-x = spike_times_cluster{1}.spike_times;
-y = spike_times_cluster{4}.spike_times;
+d = all_anm.data{1}.d; 
+anm_id = all_anm.names{1};
+spike_times_cluster = d.spike_times_cluster.spike_times_cluster;
+    [base_dir anm_params] = ephys_anm_id_database(anm_id,0);
+    run_thresh = anm_params.run_thresh;
+    trial_range_start = anm_params.trial_range_start;
+    trial_range_end = anm_params.trial_range_end;
+    cell_reject = anm_params.cell_reject;
+    exp_type = anm_params.exp_type;
+    layer_4_CSD = anm_params.layer_4;
+    boundaries = anm_params.boundaries;
+    boundary_labels = anm_params.boundary_labels;
+    layer_4 = anm_params.layer_4_corr;
+trial_range = trial_range_start(1):min(4000,trial_range_end(1));
 
 time_range = [0 4];
 
+  
 
-keep_name = 'running';
+
 id_type = 'olR';
-trial_range = [1:4000];
-
-SPK_CORR = get_trial_spk_corr(1,4,spike_times_cluster,d,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
-
-figure; plot_spk_corr([],SPK_CORR);
-
-
-stim_name = 'corPos';
-tuning_curve = get_tuning_curve_ephys(1,d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
-figure; plot_tuning_curve_ephys([],tuning_curve)
-    
-
-stim_name = 'corPos';
-tuning_curve = get_tuning_curve_ephys(4,d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
-figure; plot_tuning_curve_ephys([],tuning_curve)
-    
-
 keep_name = 'running';
-id_type = 'olL';
-trial_range = [1:4000];
+constrain_trials = define_keep_trials_ephys(keep_name,id_type,exp_type,trial_range,run_thresh);
+keep_trials_tmp = apply_trial_constraints(d.u_ck,d.u_labels,constrain_trials);
+u_ind = find(strcmp(d.u_labels,'trial_num'));
+raw_trial_nums = d.u_ck(u_ind,:);
+keep_trials = raw_trial_nums(keep_trials_tmp);
+[group_ids_RASTER groups_RASTER] = define_group_ids(exp_type,id_type,[]);
+groups_RASTER = d.u_ck(1,keep_trials_tmp);
+g_tmp = zeros(4000,1);
+g_tmp(keep_trials) = groups_RASTER;
+groups_RASTER = g_tmp;
 
-%SPK_CORR = get_trial_spk_corr(1,4,spike_times_cluster,d,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
-SPK_CORR = get_full_trial_spk_corr([1:4],[1:4],spike_times_cluster,d,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+mean_ds = 1;
+temp_smooth = 80;
+
+all_psth = [];
+%tmp = []
+for clust_id = 1:numel(spike_times_cluster)
+    RASTER = get_spk_raster(spike_times_cluster{clust_id}.spike_times_ephys,spike_times_cluster{clust_id}.spike_trials,keep_trials,groups_RASTER,group_ids_RASTER,time_range,mean_ds,temp_smooth);
+    tmpP = RASTER.psth(:,50:end-50);
+    all_psth = cat(3,all_psth,tmpP);
+%    tmp = cat(2,tmp,tmpP(:));
+end
 
 
-figure; plot_spk_corr([],SPK_CORR{1});
+id_type = 'olR';
+keep_name = 'running';
+constrain_trials = define_keep_trials_ephys(keep_name,id_type,exp_type,trial_range,run_thresh);
+keep_trials_tmp = apply_trial_constraints(d.u_ck,d.u_labels,constrain_trials);
+groups = d.u_ck(1,keep_trials_tmp);
+group_ids = unique(groups);
+inds = d.u_ck(1,:);
 
-stim_name = 'corPos';
-tuning_curve = get_tuning_curve_ephys(1,d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
-figure; plot_tuning_curve_ephys([],tuning_curve)
+avg_s = zeros(size(d.s_ctk,1),size(d.s_ctk,2),length(group_ids));
+avg_r = zeros(size(d.r_ntk,1),size(d.r_ntk,2),length(group_ids));
+for ij = 1:length(group_ids)
+    sum(inds == ij & keep_trials_tmp)
+    avg_s(:,:,ij) = squeeze(mean(d.s_ctk(:,:,inds == group_ids(ij) & keep_trials_tmp),3));
+    avg_r(:,:,ij) = squeeze(mean(d.r_ntk(:,:,inds == group_ids(ij) & keep_trials_tmp),3));
+end
+
+% avg_s = zeros(size(d.s_ctk,1),size(d.s_ctk,2),length(group_ids));
+% avg_r = zeros(size(d.r_ntk,1),size(d.r_ntk,2),length(group_ids));
+ %avg_s = d.s_ctk(:,:,keep_trials_tmp);
+ %avg_r = d.r_ntk(:,:,keep_trials_tmp);
+
+avg_r = convn(avg_r,ones(1,temp_smooth,1)/temp_smooth,'same');
+
+avg_r = avg_r(:,50:end-50,:);
+avg_s = avg_s(:,50:end-50,:);
+avg_r = permute(avg_r,[3 2 1]);
+avg_s = permute(avg_s,[3 2 1]);
+
+%%%%avg_r = squeeze(mean(avg_r,1));
+ % X = reshape(avg_r,[size(avg_r,1)*size(avg_r,2), size(avg_r,3)]);
+ % X = zscore(X,1);
+ %X = bsxfun(@minus,X,mean(X,2));
+ % [coeff,score,latent] = pca(X);
+
+ % Y = reshape(score,[size(avg_r,1), size(avg_r,2), size(avg_r,3)]);
+
+X = reshape(avg_r,[size(avg_r,1)*size(avg_r,2), size(avg_r,3)]);
+X = bsxfun(@minus,X,mean(X,2));
+X = bsxfun(@minus,X,mean(X,1));
+score = X*coeff;
+Z = reshape(score,[size(avg_r,1), size(avg_r,2), size(avg_r,3)]);
+
+
+figure
+hold on
+for ij = 1:size(avg_s,1)
+   %  traj = squeeze(cumsum(avg_s(ij,:,4:5)))/500;
+   %  norm_traj_x = traj(120,1);
+   %  norm_traj_y = traj(120,2);
+   %  rot = [norm_traj_x norm_traj_y;norm_traj_y -norm_traj_x]/sqrt(norm_traj_x^2 + norm_traj_y^2);
+   %  traj = traj*rot;
+
+   %  tmp = traj(:,2);
+   %  tmp = [zeros(500,1);tmp;repmat(tmp(end),1000,1)];
+   % tmp = filtfilt(b,a,tmp);
+   %  tmp = tmp(501:end-1000);
+   %  tmp = diff(tmp);
+   %  tmp = -[0;tmp];
+       
+        theta = atan2(Z(ij,:,9),Z(ij,:,8));
+        theta = 2*pi - mod(theta+pi/2,2*pi);
+       
+        %theta = unwrap(theta)*180/pi;
+        % inds = 1:length(theta);
+        % theta(inds>400&theta<1) = theta(inds>400&theta<1)+2*pi;
+
+        dist = sqrt(Z(ij,:,1).^2+Z(ij,:,2).^2);
+       % scatter3([1:1902],Z(ij,1:1902,1),Z(ij,1:1902,2),[],avg_s(ij,1:1902,1))
+       scatter3([1:1300]-t_shift,Z(ij,1:1300,8),Z(ij,1:1300,9),[],time(1:1300))
+       % scatter3([1:1902]-t_shift,Z(ij,1:1902,1),Z(ij,1:1902,2),[],avg_s(ij,1:1902,1))
+      %  scatter3(Y(ij,1:1902,3),Y(ij,1:1902,1),Y(ij,1:1902,2),[],avg_s(ij,1:1902,2))
+      %  scatter3(Y(ij,1:1902,3),Y(ij,1:1902,1),Y(ij,1:1902,2),[],avg_s(ij,1:1902,2))
+    %     scatter3([1:1300],avg_s(ij,1:1300,2),theta(1:1300),[],avg_s(ij,1:1300,2))
+%        col_vec = -[diff(Y(ij,:,3)) 0];
+  %      col_vec = Y(ij,:,8);
+
+     %  scatter3([1:1300]-t_shift,Y(ij,1:1300,1),repmat(0,1300,1),[],'k')
+     %  scatter3([1:1300]-t_shift,Y(ij,1:1300,2),repmat(1,1300,1),[],'b')
+%%        scatter3(avg_s(ij,1:1300,1),theta(1:1300),tmp(1:1300),[],'k')
+    %  scatter3(avg_s(ij,1:1902,1),theta(1:1902),dist(1:1902),[],avg_s(ij,1:1902,3))
+      %  scatter3([1:1300]-t_shift,theta(1:1300),avg_s(ij,1:1300,1),[],avg_s(ij,1:1300,1))
+end  
+
+avg_all = squeeze(mean(Z(:,800:1300,:),2));
+
+avg_1 = mean(Z(:,800:1300,1),2);
+avg_2 = mean(Z(:,800:1300,2),2);
+theta = atan2(avg_2,avg_1);
+%theta = unwrap(theta)*180/pi;
+dist = sqrt(avg_1.^2+avg_2.^2);
+%plot3(repmat(2000,12,1),theta,dist,'k','linewidth',2)
+plot3(repmat(1300,12,1),avg_1,avg_2,'k','linewidth',2)
+plot3(1300,0,0,'.k','MarkerSize',50)
+
+
+wall_vals = squeeze(avg_s(:,700,1))
+
+figure
+hold on
+plot(wall_vals,avg_all(:,1),'Color','b','LineWidth',2)
+plot(wall_vals,avg_all(:,2),'Color','k','LineWidth',2)
+plot(wall_vals,avg_all(:,3),'Color','r','LineWidth',2)
+
+
+p = 10^-1;
+curve1 = csaps(wall_vals,avg_1,p,x_fit_vals);
+curve2 = csaps(wall_vals,avg_2,p,x_fit_vals);
+curve3 = csaps(wall_vals,avg_all(:,3),p,x_fit_vals);
+plot(x_fit_vals,curve1,'Color','b','LineWidth',2)
+plot(x_fit_vals,curve2,'Color','k','LineWidth',2)
+plot(x_fit_vals,curve3,'Color','r','LineWidth',2)
+
+
+           
+figure
+hold on
+plot(curve1,curve2,'Color','b','LineWidth',2)
+plot(avg_1,avg_2,'Color','k','LineWidth',2)
+
+
+
+figure
+subplot(1,3,1)
+hold on
+plot(x_fit_vals,curve1,'Color','b','LineWidth',2)
+subplot(1,3,2)
+hold on
+plot(x_fit_vals,curve2,'Color','b','LineWidth',2)
+plot(x_fit_vals,[diff(curve1) 0]*10,'Color','k','LineWidth',2)
+subplot(1,3,3)
+hold on
+plot(x_fit_vals,zscore(curve3),'Color','b','LineWidth',2)
+plot(x_fit_vals,-zscore([diff(curve2) 0]),'Color','k','LineWidth',2)
+
+
+coeff_mod = coeff;
+
+coeff_mod(abs(coeff_mod)<.4) = 0;
+figure
+hold on
+plot(coeff(:,1),coeff(:,2),'.k')
+plot(coeff_mod(:,1),coeff_mod(:,2),'.b')
+
+
+find(coeff_mod(:,1))
+coeff_mod(abs(coeff_mod(:,1))>0,1)
+find(coeff_mod(:,2))
+coeff_mod(abs(coeff_mod(:,2))>0,2)
+
+
+
+
+
+
+
+
+
+
+
+figure
+hold on
+for ij = 1:size(avg_s,1)
+        traj = squeeze(cumsum(avg_s(ij,:,4:5)))/500;
+    norm_traj_x = traj(120,1);
+    norm_traj_y = traj(120,2);
+    rot = [norm_traj_x norm_traj_y;norm_traj_y -norm_traj_x]/sqrt(norm_traj_x^2 + norm_traj_y^2);
+    traj = traj*rot;
+%    scatter3(Y(ij,:,1),Y(ij,:,2),Y(ij,:,3),[],traj(:,2))
+    scatter3(Y(ij,:,1),Y(ij,:,2),Y(ij,:,3),[],avg_s(ij,:,1))
+end
+
+figure
+hold on
+for ij = 1:12
+scatter3([1:1802],avg_s(ij,:,5) - mean(avg_s(ij,1:100,5)),avg_s(ij,:,1),[],avg_s(ij,:,4))
+end
+
+figure
+hold on
+for ij = 1:12
+plot(avg_s(ij,:,1),avg_s(ij,:,5),[],avg_s(ij,:,5))
+end
+
+
+norm_traj_x = sum(avg_s(12,:,4))/500;
+norm_traj_y = sum(avg_s(12,:,5))/500;
+
+rot = [norm_traj_x norm_traj_y;norm_traj_y -norm_traj_x]/sqrt(norm_traj_x^2 + norm_traj_y^2);
+figure
+hold on
+for ij = 1:size(avg_s,1)
+    traj = squeeze(cumsum(avg_s(ij,:,4:5)))/500;
+    norm_traj_x = traj(200,1);
+    norm_traj_y = traj(200,2);
+    rot = [norm_traj_x norm_traj_y;norm_traj_y -norm_traj_x]/sqrt(norm_traj_x^2 + norm_traj_y^2);
+    traj = traj*rot;
+    %traj = bsxfun(@minus,traj,mean(traj(1:50,:)));
+    scatter3(traj(:,1),traj(:,2),avg_s(ij,:,1),[],Y(ij,:,1))
+    plot3(traj(200,1),traj(200,2),avg_s(ij,200,1),'.','MarkerEdgeColor','k','MarkerSize',20)
+end
+
+
+
+d_F = fdesign.lowpass('N,Fc',4,1,500);
+H_bp = design(d_F,'butter');
+[b a] = sos2tf(H_bp.sosMatrix,H_bp.scaleValues);
     
 
+figure
+hold on
+for ij = 1:size(avg_s,1)
+    traj = squeeze(cumsum(avg_s(ij,:,4:5)))/500;
+    norm_traj_x = traj(120,1);
+    norm_traj_y = traj(120,2);
+    rot = [norm_traj_x norm_traj_y;norm_traj_y -norm_traj_x]/sqrt(norm_traj_x^2 + norm_traj_y^2);
+    traj = traj*rot;
+
+    tmp = traj(:,2);
+    tmp = [zeros(500,1);tmp;repmat(tmp(end),1000,1)];
+   tmp = filtfilt(b,a,tmp);
+    tmp = tmp(501:end-1000);
+    tmp = diff(tmp);
+    tmp = [0;tmp];
+    t_shift = find(Y(ij,:,1)>.01,1,'first');
+    if isempty(t_shift) || t_shift > 600
+        t_shift = 500;
+    else
+        avg_s(ij,t_shift,1)
+        tmp(t_shift)
+        scatter3([1:size(traj,1)]-t_shift,tmp,Y(ij,:,2),[],avg_s(ij,:,1))
+    end
+end
+
+
+figure
+hold on
+for ij = 1:1:size(avg_s,1)
+    traj = squeeze(cumsum(avg_s(ij,:,4:5)))/500;
+    norm_traj_x = traj(120,1);
+    norm_traj_y = traj(120,2);
+    rot = [norm_traj_x norm_traj_y;norm_traj_y -norm_traj_x]/sqrt(norm_traj_x^2 + norm_traj_y^2);
+    traj = traj*rot;
+
+    tmp = traj(:,2);
+    tmp = [zeros(500,1);tmp;repmat(tmp(end),1000,1)];
+   tmp = filtfilt(b,a,tmp);
+    tmp = tmp(501:end-1000);
+    tmp = diff(tmp);
+    tmp = -[0;tmp];
+    t_shift = find(tmp>.002,1,'first');
+    if isempty(t_shift) || t_shift > 300
+        t_shift = 500;
+    else
+        theta = atan2(Z(ij,:,2),Z(ij,:,1));
+        theta = 2*pi - mod(theta+pi/2,2*pi);
+        %theta = unwrap(theta)*180/pi;
+        inds = 1:length(theta);
+        theta(inds>400&theta<1) = theta(inds>400&theta<1)+2*pi;
+
+        dist = sqrt(Z(ij,:,1).^2+Z(ij,:,2).^2);
+      %  scatter3([1:1300]-t_shift,Y(ij,1:1300,1),Y(ij,1:1300,2),[],avg_s(ij,1:1300,1))
+    %    scatter3([1:1902]-t_shift,Y(ij,1:1902,1),Y(ij,1:1902,2),[],avg_s(ij,1:1902,2))
+      %  scatter3(Y(ij,1:1902,3),Y(ij,1:1902,1),Y(ij,1:1902,2),[],avg_s(ij,1:1902,2))
+      %  scatter3(Y(ij,1:1902,3),Y(ij,1:1902,1),Y(ij,1:1902,2),[],avg_s(ij,1:1902,2))
+        %scatter3([1:1300]-t_shift,theta(1:1300),dist(1:1300),[],avg_s(ij,1:1300,1))
+%        col_vec = -[diff(Y(ij,:,3)) 0];
+        col_vec = avg_s(ij,1:1300,1);
+
+   %    scatter3([1:t_shift+250] - t_shift,Y(ij,1:t_shift+250,3),Y(ij,1:t_shift+250,6),[],tmp(1:t_shift+250)-mean(tmp(1:t_shift)))
+       scatter3([1:t_shift+250] - t_shift,tmp(1:t_shift+250)-mean(tmp(1:t_shift)),col_vec(1:t_shift+250),[],col_vec(1:t_shift+250))
+    %    scatter3(avg_s(ij,1:1300,1),theta(1:1300),tmp(1:1300),[],avg_s(ij,1:1300,1))
+  %      scatter3([1:1300]-t_shift,dist(1:1300),avg_s(ij,1:1300,1),[],avg_s(ij,1:1300,6))
+    end
+end   
+
+
+
+figure
+hold on
+for ij = 1:size(avg_s,1)
+    traj = squeeze(cumsum(avg_s(ij,:,4:5)))/500;
+    norm_traj_x = traj(120,1);
+    norm_traj_y = traj(120,2);
+    rot = [norm_traj_x norm_traj_y;norm_traj_y -norm_traj_x]/sqrt(norm_traj_x^2 + norm_traj_y^2);
+    traj = traj*rot;
+
+    tmp = traj(:,2);
+    tmp = [zeros(500,1);tmp;repmat(tmp(end),1000,1)];
+   tmp = filtfilt(b,a,tmp);
+    tmp = tmp(501:end-1000);
+    tmp = diff(tmp);
+    tmp = -[0;tmp];
+    t_shift = find(Y(ij,:,1)>.01,1,'first');
+    if isempty(t_shift) || t_shift > 600
+        t_shift = 500;
+    else
+        theta = atan2(Y(ij,:,2),Y(ij,:,1));
+        theta = 2*pi - mod(theta+pi/2,2*pi);
+        %theta = unwrap(theta)*180/pi;
+        inds = 1:length(theta);
+        theta(inds>400&theta<1) = theta(inds>400&theta<1)+2*pi;
+
+        dist = sqrt(Y(ij,:,1).^2+Y(ij,:,2).^2);
+    %    scatter3([1:1300]-t_shift,Y(ij,1:1300,1),Y(ij,1:1300,2),[],avg_s(ij,1:1300,1))
+    %    scatter3([1:1902]-t_shift,Y(ij,1:1902,1),Y(ij,1:1902,2),[],avg_s(ij,1:1902,2))
+      %  scatter3(Y(ij,1:1902,3),Y(ij,1:1902,1),Y(ij,1:1902,2),[],avg_s(ij,1:1902,2))
+      %  scatter3(Y(ij,1:1902,3),Y(ij,1:1902,1),Y(ij,1:1902,2),[],avg_s(ij,1:1902,2))
+       % scatter3([1:1300],avg_s(ij,1:1300,2),dist(1:1300),[],avg_s(ij,1:1300,2))
+%        col_vec = -[diff(Y(ij,:,3)) 0];
+  %      col_vec = Y(ij,:,8);
+
+     %  scatter3([1:1300]-t_shift,Y(ij,1:1300,1),repmat(0,1300,1),[],'k')
+     %  scatter3([1:1300]-t_shift,Y(ij,1:1300,2),repmat(1,1300,1),[],'b')
+  %      scatter3(avg_s(ij,1:1300,1),theta(1:1300),tmp(1:1300),[],avg_s(ij,1:1300,1))
+        scatter3([1:1300]-t_shift,theta(1:1300),avg_s(ij,1:1300,1),[],avg_s(ij,1:1300,1))
+    end
+end  
+
+
+figure
+hold on
+for ij = 1:1:size(avg_s,1)
+    traj = squeeze(cumsum(avg_s(ij,:,4:5)))/500;
+    norm_traj_x = traj(120,1);
+    norm_traj_y = traj(120,2);
+    rot = [norm_traj_x norm_traj_y;norm_traj_y -norm_traj_x]/sqrt(norm_traj_x^2 + norm_traj_y^2);
+    traj = traj*rot;
+
+    tmp = traj(:,2);
+    tmp = [zeros(500,1);tmp;repmat(tmp(end),1000,1)];
+   tmp = filtfilt(b,a,tmp);
+    tmp = tmp(501:end-1000);
+    tmp = diff(tmp);
+    tmp = -[0;tmp];
+    t_shift = find(Y(ij,:,1)>.01,1,'first');
+    if isempty(t_shift) || t_shift > 600
+        t_shift = 500;
+    else
+        theta = atan2(Y(ij,:,2),Y(ij,:,1));
+        theta = 2*pi - mod(theta+pi/2,2*pi);
+        %theta = unwrap(theta)*180/pi;
+        inds = 1:length(theta);
+        theta(inds>400&theta<1) = theta(inds>400&theta<1)+2*pi;
+
+        dist = sqrt(Y(ij,:,1).^2+Y(ij,:,2).^2);
+      %  scatter3([1:1300]-t_shift,Y(ij,1:1300,1),Y(ij,1:1300,2),[],avg_s(ij,1:1300,1))
+    %    scatter3([1:1902]-t_shift,Y(ij,1:1902,1),Y(ij,1:1902,2),[],avg_s(ij,1:1902,2))
+      %  scatter3(Y(ij,1:1902,3),Y(ij,1:1902,1),Y(ij,1:1902,2),[],avg_s(ij,1:1902,2))
+      %  scatter3(Y(ij,1:1902,3),Y(ij,1:1902,1),Y(ij,1:1902,2),[],avg_s(ij,1:1902,2))
+        %scatter3([1:1300]-t_shift,theta(1:1300),dist(1:1300),[],avg_s(ij,1:1300,1))
+%        col_vec = -[diff(Y(ij,:,3)) 0];
+        col_vec = Y(ij,:,8);
+
+       scatter3([1:1300],avg_s(ij,1:1300,1),tmp(1:1300),[],col_vec(1:1300))
+    %    scatter3(avg_s(ij,1:1300,1),theta(1:1300),tmp(1:1300),[],avg_s(ij,1:1300,1))
+  %      scatter3([1:1300]-t_shift,dist(1:1300),avg_s(ij,1:1300,1),[],avg_s(ij,1:1300,6))
+    end
+end   
+
+avg_1 = mean(Y(:,800:1300,1),2);
+avg_2 = mean(Y(:,800:1300,2),2);
+theta = atan2(avg_2,avg_1);
+%theta = unwrap(theta)*180/pi;
+dist = sqrt(avg_1.^2+avg_2.^2);
+%plot3(repmat(2000,12,1),theta,dist,'k','linewidth',2)
+plot3(repmat(1300,12,1),avg_1,avg_2,'k','linewidth',2)
+plot3(1300,0,0,'.k','MarkerSize',50)
+
+
+wall_vals = squeeze(avg_s(:,700,1))
+
+figure
+hold on
+plot(wall_vals,avg_1,'Color','b','LineWidth',2)
+plot(wall_vals,avg_2,'Color','k','LineWidth',2)
+
+
+
+
+figure
+hold on
+for ij = 2:size(avg_s,1)
+    traj = squeeze(cumsum(avg_s(ij,:,4:5)))/500;
+    norm_traj_x = traj(120,1);
+    norm_traj_y = traj(120,2);
+    rot = [norm_traj_x norm_traj_y;norm_traj_y -norm_traj_x]/sqrt(norm_traj_x^2 + norm_traj_y^2);
+    traj = traj*rot;
+
+    tmp = traj(:,2);
+    tmp = [zeros(500,1);tmp;repmat(tmp(end),1000,1)];
+   tmp = filtfilt(b,a,tmp);
+    tmp = tmp(501:end-1000);
+    tmp = diff(tmp);
+    tmp = [0;tmp];
+%    t_shift = find(Y(ij,:,1)>.01,1,'first');
+    shift_vec = Y(ij,1:1750,1);
+    t_shift = find(shift_vec>0,1,'last')
+    if isempty(t_shift) %|| t_shift > 600
+        t_shift = 500;
+    else
+        theta = atan2(Y(ij,:,2),Y(ij,:,1));
+        theta = 2*pi - mod(theta+pi/2,2*pi);
+        %theta = unwrap(theta)*180/pi;
+        inds = 1:length(theta);
+        theta(inds<1500&theta<1) = theta(inds<1500&theta<1)+2*pi;
+        
+        dist = sqrt(Y(ij,:,1).^2+Y(ij,:,2).^2);
+     %   scatter3([1:1902]-t_shift,Y(ij,1:end,1),Y(ij,1:end,2),[],avg_s(ij,1:end,1))
+        %scatter3([1:1300]-t_shift,theta(1:1300),dist(1:1300),[],avg_s(ij,1:1300,1))
+        scatter3([1301:1902]-t_shift,theta(1301:1902),avg_s(ij,1301:1902,1),[],avg_s(ij,1301:1902,1))
+  %      scatter3([1:1300]-t_shift,theta(1:1300),tmp(1:1300),[],avg_s(ij,1:1300,1))
+  %      scatter3([1:1300]-t_shift,dist(1:1300),avg_s(ij,1:1300,1),[],avg_s(ij,1:1300,6))
+    end
+end
+     
+
+
+
+avg_1 = mean(Y(:,800:1300,1),2);
+avg_2 = mean(Y(:,800:1300,2),2);
+
+theta = atan2(avg_2,avg_1);
+theta = unwrap(theta)*180/pi
+dist = sqrt(avg_1.^2+avg_2.^2)
+
+figure
+hold on
+%plot(avg_1,avg_2)
+plot(theta)
+
+
+
+
+
+
+
+
+figure
+hold on
+for ij = 1:12
+    traj = squeeze(cumsum(avg_s(ij,:,4:5)))/500;
+    norm_traj_x = traj(120,1);
+    norm_traj_y = traj(120,2);
+    rot = [norm_traj_x norm_traj_y;norm_traj_y -norm_traj_x]/sqrt(norm_traj_x^2 + norm_traj_y^2);
+    traj = traj*rot;
+    %traj = bsxfun(@minus,traj,mean(traj(1:50,:)));
+    plot(traj(:,2),Y(ij,:,2),'r')
+end
+
+
+
+
+
+figure;
+plot(squeeze(BV(3,:,:)))
+
+time = RASTER.time(:,50:end-50);
+row_psth = squeeze(mean(all_psth,3));
+X = reshape(all_psth,[size(all_psth,1)*size(all_psth,2), size(all_psth,3)]);
+X = bsxfun(@minus,X,mean(X,2));
+[coeff,score,latent] = pca(X);
+
+Y = reshape(score,[size(all_psth,1), size(all_psth,2), size(all_psth,3)]);
+
+wall_mat = zeros(length(group_ids_RASTER),4000);
+for ij = 1:length(group_ids_RASTER)
+    ind = find(d.u_ck(1,:) == ij,1,'first');
+    wall_val = d.u_ck(11,ind);
+    wall_mat(ij,1:1000) = linspace(30,wall_val,1000);
+    wall_mat(ij,1001:3000) = wall_val;
+    wall_mat(ij,3001:4000) = linspace(wall_val,30,1000);
+end
+wall_mat = wall_mat(:,time(1)*1000:time(1)*1000+length(time)-1);
+wall_vel = diff(wall_mat,[],2);
+wall_vel = cat(2,wall_vel(:,1),wall_vel);
+
+col_mat = zeros(12,3);
+col_mat(:,3) = linspace(1,0,12);
+figure
+hold on
+for ij = 1:12
+plot3(Y(ij,:,1),Y(ij,:,2),Y(ij,:,3),'Color',col_mat(ij,:))
+end
+
+figure
+hold on
+for ij = 1:12
+scatter3(Y(ij,:,1),Y(ij,:,2),Y(ij,:,3),[],time)
+end
+
+figure
+hold on
+for ij = [1 12]
+scatter3(Y(ij,:,1),Y(ij,:,2),Y(ij,:,3),[],wall_mat(ij,:))
+time_ind = find(time==1);
+plot3(Y(ij,time_ind,1),Y(ij,time_ind,2),Y(ij,time_ind,3),'.','MarkerEdgeColor','k','MarkerSize',20)
+time_ind = find(time==3);
+plot3(Y(ij,time_ind,1),Y(ij,time_ind,2),Y(ij,time_ind,3),'.','MarkerEdgeColor','k','MarkerSize',20)
+end
+
+figure
+hold on
+for ij = 1:12
+scatter3(Y(ij,:,1),Y(ij,:,2),Y(ij,:,3),[],wall_vel(ij,:))
+end
+
+
+scatter3(Y(3,:,1),Y(3,:,2),Y(3,:,3),[],time)
+
+
+figure
+plot_spk_raster([],RASTER)
+figure
+plot_spk_psth([],RASTER);
+
+
+id_type = 'olR';
+time_range = [0 4];
+%SPK_CORR_ALL = get_full_trial_spk_corr(1:numel(spike_times_cluster),1:numel(spike_times_cluster),spike_times_cluster,d,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+SPK_CORR_ALL = get_full_trial_spk_corr([10:11],[10:11],spike_times_cluster,d,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
 stim_name = 'corPos';
-tuning_curve = get_tuning_curve_ephys(4,d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
-figure; plot_tuning_curve_ephys([],tuning_curve)
-    
+
+figure; plot_spk_corr([],SPK_CORR_ALL);
+
+
+clust_id1 = 9;
+clust_id2 = 21;
+plot_tuning_and_corr;
+
+plot_depth_all(d,spike_times_cluster)
+
+
+spike_times = cat(1,spike_times_cluster{10}.spike_times,spike_times_cluster{11}.spike_times);
+spike_times = sort(spike_times);
+ISI = get_isi(spike_times,[]);
+figure; plot_isi([],ISI)
+
+
+
+AMPLITUDES = spike_times_cluster{1}.interp_amp;
+figure; plot_depth_amp([],AMPLITUDES)
 
 
 
 
-    [group_ids_RASTER groups_RASTER] = define_group_ids(exp_type,id_type_RASTER,trial_inds);
-    keep_trials = trial_range;
-    keep_trials = keep_trials(ismember(keep_trials,find(session.trial_info.mean_speed > 5 & ismember(groups_RASTER,group_ids_RASTER))));
-    time_range = [0 4];
-    mean_ds = 4;
-    temp_smooth = 80;
-    RASTER = get_spk_raster(spike_times_ephys,spike_trials,keep_trials,groups_RASTER,group_ids_RASTER,time_range,mean_ds,temp_smooth);
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+keep_name = 'base';
+spike_times_cluster = get_all_LFP_hist(spike_times_cluster,lfp_data,d,keep_name,exp_type,id_type,time_range,trial_range,run_thresh)
+
+
+clust_id = 9;
+figure;
+hold on
+edges = linspace(-pi,pi,16);
+curve = histc(spike_times_cluster{clust_id}.spike_phase,edges);
+curve = curve(1:end-1);
+edges = edges(1:end-1) + mean(diff(edges))/2;
+curve = curve/sum(curve);
+h = bar(edges,curve)
+set(h,'FaceColor','k')
+set(h,'EdgeColor','k')
+p = 10^-.5;
+edges_int = linspace(-pi,pi,40);
+model_fit_curve = csaps(edges,curve,p,edges_int);
+plot(edges_int,model_fit_curve,'linewidth',2,'color','b')
+xlim([-pi pi])
+
+figure;
+for clust_id = [8 9];
+hold on
+edges = linspace(-pi,pi,16);
+curve = histc(spike_times_cluster{clust_id}.spike_phase,edges);
+curve = curve(1:end-1);
+edges = edges(1:end-1) + mean(diff(edges))/2;
+curve = curve/sum(curve);
+%h = bar(edges,curve)
+plot(edges,curve,'linewidth',2,'color','k')
+xlim([-pi pi])
+end
+
+
+p = 10^-.5;
+edges_int = linspace(-pi,pi,40);
+model_fit_curve = csaps(edges,curve,p,edges_int);
+           
+figure
+hold on
+plot(edges,curve,'linewidth',2,'color','r')
+plot(edges_int,model_fit_curve,'linewidth',2,'color','k')
+
+
+
+
+
+figure;
+for clust_id = [8 9 21 26];
+hold on
+edges = linspace(-pi,pi,16);
+curve = histc(spike_times_cluster{clust_id}.spike_phase,edges);
+curve = curve(1:end-1);
+edges = edges(1:end-1) + mean(diff(edges))/2;
+curve = curve/sum(curve);
+curve = zscore(curve);
+%h = bar(edges,curve)
+p = 10^-.5;
+edges_int = linspace(-pi,pi,40);
+model_fit_curve = csaps(edges,curve,p,edges_int);
+plot(edges_int,model_fit_curve,'linewidth',2,'color','b')
+xlim([-pi pi])
+end
+for clust_id = [2 5 15 18 25 27];
+hold on
+edges = linspace(-pi,pi,16);
+curve = histc(spike_times_cluster{clust_id}.spike_phase,edges);
+curve = curve(1:end-1);
+edges = edges(1:end-1) + mean(diff(edges))/2;
+curve = curve/sum(curve);
+curve = zscore(curve);
+%h = bar(edges,curve)
+p = 10^-.5;
+edges_int = linspace(-pi,pi,40);
+model_fit_curve = csaps(edges,curve,p,edges_int);
+plot(edges_int,model_fit_curve,'linewidth',2,'color','k')
+xlim([-pi pi])
+end
+
+[l_ctk l_labels] = get_behaviour_LFP(d,lfp_data)
+
+%%
+figure
+hold on
+plot(zscore(lfp_data.flt_vlt_ephys{1}))
+plot(angle(hilbert(lfp_data.flt_vlt_ephys{1})),'r')
+
+
+figure;
+hold on
+plot(zscore(l_ctk(1,:,17)))
+plot(zscore(l_ctk(2,:,17)),'r')
+plot(zscore(ex_ctk(4,:,17)),'g')
+
+aa = squeeze(l_ctk(4,:,:));
+bb = squeeze(ex_ctk(3,:,:));
+cc = squeeze(d.s_ctk(3,:,:));
+X = [aa(:) bb(:)];
+y = cc(:);
+
+n2 = hist3(X(y>5,:),[20 20]);
+figure
+imagesc(n2)
+
+
+             freq = 500;
+             d_F = fdesign.bandpass('N,Fc1,Fc2',4,2,8,freq);
+             H_bp = design(d_F,'butter');
+             [b a] = sos2tf(H_bp.sosMatrix,H_bp.scaleValues);
+             d_F2 = fdesign.bandpass('N,Fc1,Fc2',4,12,25,freq);
+             H_bp2 = design(d_F2,'butter');
+             [b2 a2] = sos2tf(H_bp2.sosMatrix,H_bp2.scaleValues);
+        
+      
+      ex_ctk = zeros(4,size(d.s_ctk,2),size(d.s_ctk,3));
+for ij = 1:size(d.s_ctk,3)
+    x = d.s_ctk(3,:,ij);
+    tmp = filtfilt(b,a,x);
+    ex_ctk(1,:,ij) = tmp;
+    tmp = filtfilt(b2,a2,x);
+    ex_ctk(2,:,ij) = tmp;
+    ex_ctk(3,:,ij) = angle(hilbert(ex_ctk(1,:,ij)));
+    ex_ctk(4,:,ij) = angle(hilbert(ex_ctk(2,:,ij)));
+end
+
+Cxy_all = zeros(size(d.s_ctk,3),513);
+for ij = 1:size(d.s_ctk,3)
+    x = squeeze(d.s_ctk(3,:,ij));
+    y = squeeze(l_ctk(1,:,ij));
+    [Cxy F] = mscohere(x,y,hamming(500),450,1024,500);;
+    Cxy_all(ij,:) = Cxy;
+end
+
+n = mean(Cxy_all(d.u_ck(2,:)>5,:));
+
+figure
+plot(F,n)
+
+
+Cxy_all = zeros(size(d.s_ctk,3),513);
+for ij = 1:size(d.s_ctk,3)-1
+    x = squeeze(d.s_ctk(5,:,ij));
+    y = squeeze(l_ctk(1,:,ij));
+    [Cxy F] = mscohere(x,y,hamming(500),450,1024,500);
+    Cxy_all(ij,:) = Cxy;
+end
+
+n = mean(Cxy_all(d.u_ck(2,:)>5,:));
+
+figure
+plot(F,n)
+xlim([0 40])
+
+
+
+
+
+
+figure
+plot(sorted_spikes{1}.ephys_index,sorted_spikes{1}.ephys_time,'.k')
+
+
+sorted_spikes{33}.clust_id = 34;
+sorted_spikes{33}.detected_chan = sorted_spikes{10}.detected_chan;
+sorted_spikes{33}.trial_num = cat(1,sorted_spikes{10}.trial_num,sorted_spikes{11}.trial_num);
+sorted_spikes{33}.session_id_num = cat(1,sorted_spikes{10}.session_id_num,sorted_spikes{11}.session_id_num);
+sorted_spikes{33}.ephys_index = cat(1,sorted_spikes{10}.ephys_index,sorted_spikes{11}.ephys_index);
+sorted_spikes{33}.ephys_time = cat(1,sorted_spikes{10}.ephys_time,sorted_spikes{11}.ephys_time);
+sorted_spikes{33}.bv_index = cat(1,sorted_spikes{10}.bv_index,sorted_spikes{11}.bv_index);
+sorted_spikes{33}.laser_power = cat(1,sorted_spikes{10}.laser_power,sorted_spikes{11}.laser_power);
+sorted_spikes{33}.spike_amp = cat(1,sorted_spikes{10}.spike_amp,sorted_spikes{11}.spike_amp);
+sorted_spikes{33}.session_time = cat(1,sorted_spikes{10}.session_time,sorted_spikes{11}.session_time);
+sorted_spikes{33}.spike_waves = cat(1,sorted_spikes{10}.spike_waves,sorted_spikes{11}.spike_waves);
+sorted_spikes{33}.mean_spike_amp = (sorted_spikes{10}.mean_spike_amp+sorted_spikes{11}.mean_spike_amp)/2;
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% OPEN / CLOSED LOOP COMPARISION
+
+gap = [0.08 0.06];
+marg_h = [0.07 0.02];
+marg_w = [0.03 0.02];
+2
+clust_id = 23;
+figure
+set(gcf,'position',[38   594   962   204])
+id_type = 'olR';
+keep_name = 'running';
+tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+curve1 = tuning_curve.model_fit.curve;
+subtightplot(1,4,1,gap,marg_h,marg_w);
+plot_tuning_curve_ephys([],tuning_curve)
+id_type = 'clR';
+keep_name = 'running';
+subtightplot(1,4,2,gap,marg_h,marg_w);
+tuning_curve = get_tuning_curve_ephys(clust_id,d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+curve2 = tuning_curve.model_fit.curve;
+plot_tuning_curve_ephys([],tuning_curve)
+subtightplot(1,4,3,gap,marg_h,marg_w);
+hold on
+plot(x_fit_vals,curve1,'Color',[0 0 0],'LineWidth',2)
+plot(x_fit_vals,curve2,'Color',[0 0 .6],'LineWidth',2)
+xlim([tuning_curve.regressor_obj.x_range])
+xlabel(tuning_curve.regressor_obj.x_label)
+ylabel('firing rate')
+set(gca,'xtick',tuning_curve.regressor_obj.x_tick)
+subtightplot(1,4,4,gap,marg_h,marg_w);
+hold on
+plot(x_fit_vals,zscore(curve1),'Color',[0 0 0],'LineWidth',2)
+plot(x_fit_vals,zscore(curve2),'Color',[0 0 .6],'LineWidth',2)
+xlim([tuning_curve.regressor_obj.x_range])
+xlabel(tuning_curve.regressor_obj.x_label)
+ylabel('z-score firing rate')
+set(gca,'xtick',tuning_curve.regressor_obj.x_tick)
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Spike corr analysis
+X_all = [];
+for ikk = 1:numel(all_anm.data)
+d = all_anm.data{ikk}.d; 
+anm_id = all_anm.names{ikk};
+spike_times_cluster = d.spike_times_cluster.spike_times_cluster;
+    [base_dir anm_params] = ephys_anm_id_database(anm_id,0);
+    run_thresh = anm_params.run_thresh;
+    trial_range_start = anm_params.trial_range_start;
+    trial_range_end = anm_params.trial_range_end;
+    cell_reject = anm_params.cell_reject;
+    exp_type = anm_params.exp_type;
+    layer_4_CSD = anm_params.layer_4;
+    boundaries = anm_params.boundaries;
+    boundary_labels = anm_params.boundary_labels;
+    layer_4 = anm_params.layer_4_corr;
+trial_range = trial_range_start(1):min(4000,trial_range_end(1));
+
+time_range = [0 4];
+
+  
+id_type = 'olR';
+keep_name = 'running';
+constrain_trials = define_keep_trials_ephys(keep_name,id_type,exp_type,trial_range,run_thresh);
+keep_trials_tmp = apply_trial_constraints(d.u_ck,d.u_labels,constrain_trials);
+groups = d.u_ck(1,keep_trials_tmp);
+group_ids = unique(groups);
+inds = d.u_ck(1,:);
+
+avg_s = zeros(size(d.s_ctk,1),size(d.s_ctk,2),length(group_ids));
+avg_r = zeros(size(d.r_ntk,1),size(d.r_ntk,2),length(group_ids));
+for ij = 1:length(group_ids)
+    sum(inds == ij & keep_trials_tmp)
+    avg_s(:,:,ij) = squeeze(mean(d.s_ctk(:,:,inds == group_ids(ij) & keep_trials_tmp),3));
+    avg_r(:,:,ij) = squeeze(mean(d.r_ntk(:,:,inds == group_ids(ij) & keep_trials_tmp),3));
+end
+
+% avg_s = zeros(size(d.s_ctk,1),size(d.s_ctk,2),length(group_ids));
+% avg_r = zeros(size(d.r_ntk,1),size(d.r_ntk,2),length(group_ids));
+% avg_s = d.s_ctk(:,:,keep_trials_tmp);
+% avg_r = d.r_ntk(:,:,keep_trials_tmp);
+
+
+avg_r = convn(avg_r,ones(1,temp_smooth,1)/temp_smooth,'same');
+
+avg_r = avg_r(:,50:end-50,:);
+avg_s = avg_s(:,50:end-50,:);
+avg_r = permute(avg_r,[3 2 1]);
+avg_s = permute(avg_s,[3 2 1]);
+
+X = reshape(avg_r,[size(avg_r,1)*size(avg_r,2), size(avg_r,3)]);
+X = bsxfun(@minus,X,mean(X,2));
+
+X_all = cat(2,X_all,X);
+end
+
+[coeff,score,latent] = pca(X_all);
+
+Y = reshape(score,[size(avg_r,1), size(avg_r,2), size(avg_r,3)]);
+
+
+norm_mat = zeros(100,300);
+for ij = 1:100
+    mu = rand*300;
+    %mu = randn*70+150;                                %// Mean
+    sigma = 30                            %// Standard deviation
+    %// Plot curve
+    x = (-5 * sigma:0.01:5 * sigma) + mu;
+    y = exp(- 0.5 * ((x - mu) / sigma) .^ 2) / (sigma * sqrt(2 * pi));
+
+    x = round(x);
+    ind = x>=1 & x <=300;
+    norm_mat(ij,x(ind)) = y(ind);
+end
+figure; imagesc(norm_mat)
+
+[coeff,score,latent] = pca(norm_mat');
+
+figure
+hold on
+plot([1 size(norm_mat,2)],[0 0],'k','linewidth',2)
+plot(score(:,1))
+plot(score(:,2),'g')
+plot(score(:,3),'r')
+
+figure
+hold on
+plot(0,0,'.k')
+plot(score(:,1),score(:,2))
+
+figure
+hold on
+plot([1 size(norm_mat,2)],[0 0],'k','linewidth',2)
+plot(zscore(diff(score(:,1))))
+plot(zscore(score(:,2)),'g')
+
+figure
+hold on
+plot([1 size(norm_mat,2)],[0 0],'k','linewidth',2)
+plot(zscore(diff(score(:,2))))
+plot(-zscore(score(:,3)),'g')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

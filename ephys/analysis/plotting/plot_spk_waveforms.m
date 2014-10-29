@@ -1,4 +1,4 @@
-function plot_spk_waveforms(fig_props,WAVEFORMS)
+function plot_spk_waveforms(fig_props,WAVEFORMS,flag,col_mat)
 
 % create figure if properties specified
 if ~isempty(fig_props)
@@ -9,10 +9,13 @@ end
 cla
 hold on
 
-plot(WAVEFORMS.time_vect,WAVEFORMS.waves','Color','b','LineWidth',0.5)
-plot(WAVEFORMS.time_vect,WAVEFORMS.avg,'Color','k','LineWidth',3)
-plot(WAVEFORMS.time_vect,WAVEFORMS.avg + WAVEFORMS.std,'Color','k','LineWidth',1)
-plot(WAVEFORMS.time_vect,WAVEFORMS.avg - WAVEFORMS.std,'Color','k','LineWidth',1)
+if flag
+	plot(WAVEFORMS.time_vect,WAVEFORMS.waves','Color','b','LineWidth',0.5)
+end
+
+plot(WAVEFORMS.time_vect,WAVEFORMS.avg,'Color',col_mat,'LineWidth',3)
+plot(WAVEFORMS.time_vect,WAVEFORMS.avg + WAVEFORMS.std,'Color',col_mat,'LineWidth',1)
+plot(WAVEFORMS.time_vect,WAVEFORMS.avg - WAVEFORMS.std,'Color',col_mat,'LineWidth',1)
     
 %text(.6,.08,sprintf('t1 %.0f us',1000*WAVEFORMS.tau_1),'units','normalized')
 %text(.6,.14,sprintf('t2 %.0f us',1000*WAVEFORMS.tau_2),'units','normalized')

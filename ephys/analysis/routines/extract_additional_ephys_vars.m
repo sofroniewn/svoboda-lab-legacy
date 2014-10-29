@@ -13,7 +13,7 @@ p = cat(2,p,[1:size(p,1)]');
 
 time_range = [0 4];
 stim_name = 'corPos';
-keep_name = 'ol_running';
+keep_name = 'running';
 id_type = 'olR';
 
 add_labels = {'no_walls_still_rate';'no_walls_run_rate';'walls_run_rate';'touch_baseline_rate';'touch_peak_rate';'touch_min_rate';'touch_mean_rate';'touch_max_loc';'touch_min_loc';'num_trials';'layer_id';'mod_up';'mod_down';'stab_fr';'stab_amp';'layer_4_dist_CSD';'AP';'ML';'barrel_loc'};
@@ -64,8 +64,8 @@ for ih = 1:numel(all_anm)
     tmp = mode(tmp);
     add_u_vec(4,:) = tmp;
     
-    all_anm{ih}.d.u_ck = cat(1,all_anm{ih}.d.u_ck(1:6,:),add_u_vec);
-    all_anm{ih}.d.u_labels = [all_anm{ih}.d.u_labels(1:6);add_u_labels];
+    all_anm{ih}.d.u_ck = cat(1,all_anm{ih}.d.u_ck(1:7,:),add_u_vec);
+    all_anm{ih}.d.u_labels = [all_anm{ih}.d.u_labels(1:7);add_u_labels];
     
     for ij = 1:numel(all_anm{ih}.d.summarized_cluster)
         ik = ik+1;
@@ -206,10 +206,10 @@ for ih = 1:numel(all_anm)
         [ih numel(all_anm) ij numel(all_anm{ih}.d.summarized_cluster)]
         ik = ik+1;
         time_range = [0 1.5];
-        tune_curve = get_tuning_curve_ephys(ij+2,all_anm{ih}.d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+        tune_curve = get_tuning_curve_ephys(ij,all_anm{ih}.d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
         curves.onset(ik,:) = tune_curve.model_fit.curve;
         time_range = [1.5 3];
-        tune_curve = get_tuning_curve_ephys(ij+2,all_anm{ih}.d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+        tune_curve = get_tuning_curve_ephys(ij,all_anm{ih}.d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
         curves.offset(ik,:) = tune_curve.model_fit.curve;
 
         %time_range = [0 3];

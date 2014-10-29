@@ -1,4 +1,4 @@
-function spike_times_cluster = summarize_cluster_ISI(d,ephys_summary,all_clust_ids,sorted_spikes,session,exp_type,trial_range_start,trial_range_end,layer_4,run_thresh,plot_on)
+function spike_times_cluster = summarize_cluster_ISI(all_clust_ids,sorted_spikes,session,exp_type,trial_range_start,trial_range_end,layer_4,run_thresh,plot_on)
 
 
 trial_range_full = [min(trial_range_start):min(max(trial_range_end),numel(session.data))];
@@ -14,9 +14,6 @@ id_type_base = 'base';
 max_length_trial = 2001;
 
 
-% d.p_labels = {'anm_id';'clust_id';'chan_depth';'layer_4_dist';'num_spikes';'isi_peak';'isi_violations';'waveform_SNR';'spk_amplitude';'spike_tau';'spike_tau1';'spike_tau2';'baseline_rate';'running_modulation';'peak_rate';'peak_distance'};
-
-% d.p_nj = NaN(length(all_clust_ids),numel(d.p_labels));
 spike_times_cluster = cell(length(all_clust_ids),1);
 
 for ij = 1:length(all_clust_ids)

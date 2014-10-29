@@ -23,10 +23,12 @@ for i_group = 1:length(group_ids)
 		start_ind = session.trial_info.trial_start(trial_id(i_trial));
     	cur_trial_length = min(max_length_trial,length(session.data{trial_id(i_trial)}.trial_matrix(1,start_ind:end)));
 		for cluster_id = 1:num_clusters
-    		spike_times = sorted_spikes{cluster_id}.ephys_time;
+    		spike_bv_inds = sorted_spikes{cluster_id}.bv_index;
 			trials = sorted_spikes{cluster_id}.trial_num;
-	    	spike_times_psth = spike_times(trials == trial_id(i_trial))';
-			spike_times_ind = round(spike_times_psth*session.rig_config.sample_freq);
+    		%spike_times = sorted_spikes{cluster_id}.ephys_time;
+	    	%spike_times_psth = spike_times(trials == trial_id(i_trial))';
+	    	%spike_times_ind = round(spike_times_psth*session.rig_config.sample_freq);
+			spike_times_ind = spike_bv_inds(trials == trial_id(i_trial))';
 			spike_times_ind(spike_times_ind<1) = [];
 			spike_times_ind(spike_times_ind>cur_trial_length) = [];	
         	hist_vals = accumarray(spike_times_ind',ones(size(spike_times_ind')),[cur_trial_length 1]);

@@ -2,7 +2,7 @@ function [lfp_data] = func_extract_lfp(base_dir, file_nums, lfp_name, over_write
 %%
 disp(['--------------------------------------------']);
 lite = 1;
-f_name_save = fullfile(base_dir,'ephys','sorted',lfp_name);
+f_name_save = fullfile(base_dir,'ephys','sorted',[lfp_name '.mat']);
 
 
 if over_write == 0 && exist(f_name_save) == 2
@@ -15,8 +15,11 @@ else
 
     lfp_data.trial = NaN(numel(file_list)-1,1);
     lfp_data.Hpsd = cell(numel(file_list)-1,1);
+    %lfp_data.TimeStamps = cell(numel(file_list)-1,1);
+    %lfp_data.flt_vlt_session = cell(numel(file_list)-1,1);
     lfp_data.raw_vlt = cell(numel(file_list)-1,1);
-    lfp_data.flt_vlt = cell(numel(file_list)-1,1);
+    lfp_data.flt_vlt_theta = cell(numel(file_list)-1,1);
+    lfp_data.flt_vlt_gamma = cell(numel(file_list)-1,1);
     
     for i_trial = 1:numel(file_list)-1
         disp(file_list{i_trial});
@@ -47,19 +50,28 @@ else
 
         x = mean(d.vlt_chan,2);
 
-        if i_trial == 1
-            freq = 1/mean(diff(d.TimeStamps));
-            d_F = fdesign.bandpass('N,Fc1,Fc2',4,4,10,freq);
-            H_bp = design(d_F,'butter');
-            [b a] = sos2tf(H_bp.sosMatrix,H_bp.scaleValues);
-            Hs=spectrum.mtm(4);
-        end
+         if i_trial == 1
+             freq = 1/mean(diff(d.TimeStamps));
+             d_F = fdesign.bandpass('N,Fc1,Fc2',4,4,10,freq);
+             H_bp = design(d_F,'butter');
+             [b a] = sos2tf(H_bp.sosMatrix,H_bp.scaleValues);
+             d_F2 = fdesign.bandpass('N,Fc1,Fc2',4,12,25,freq);
+             H_bp2 = design(d_F2,'butter');
+             [b2 a2] = sos2tf(H_bp2.sosMatrix,H_bp2.scaleValues);
+             Hs=spectrum.mtm(4);
+         end
 
         xz = filtfilt(b,a,x);
+        xz2 = filtfilt(b2,a2,x);
 
-        lfp_data.Hpsd{i_trial} = psd(Hs,x,'Fs',freq);
+        Hpsd = psd(Hs,x,'Fs',freq);
+        lfp_data.Hpsd{i_trial}.Frequencies = Hpsd.Frequencies(1:1500);
+        lfp_data.Hpsd{i_trial}.Data = Hpsd.Data(1:1500);
         lfp_data.raw_vlt{i_trial} = accumarray(aux_chan(aux_chan(:,4)>0,4),x(aux_chan(:,4)>0));
-        lfp_data.flt_vlt{i_trial} = accumarray(aux_chan(aux_chan(:,4)>0,4),xz(aux_chan(:,4)>0));
+        lfp_data.flt_vlt_theta{i_trial} = accumarray(aux_chan(aux_chan(:,4)>0,4),xz(aux_chan(:,4)>0));
+        lfp_data.flt_vlt_gamma{i_trial} = accumarray(aux_chan(aux_chan(:,4)>0,4),xz2(aux_chan(:,4)>0));
+%       lfp_data.flt_vlt_ephys{i_trial} = xz;
+%       lfp_data.TimeStamps{i_trial} = d.TimeStamps;
 
 
         disp(['--------------------------------------------']);

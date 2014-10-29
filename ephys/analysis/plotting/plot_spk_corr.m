@@ -34,6 +34,7 @@ if iscell(SPK_CORR)
                 ymax = 1;
             end
             ylim([0 ymax]);
+            h = plot([0 0],[0 ymax],'r','LineWidth',1,'LineStyle','--');
             ind = ind+1;
         end
     end
@@ -45,8 +46,10 @@ else
     set(phandle,'EdgeColor','k')
     
     plot(1000*[SPK_CORR.edges(1) SPK_CORR.edges(end)],[SPK_CORR.mean SPK_CORR.mean],'r','LineWidth',2)
+
     
-    
+                set(gca,'ytick',[])
+
     xlabel('Time between events (milliseconds)');
     ylabel('Fraction of events');
     xlim([-100 100])
@@ -56,4 +59,5 @@ else
         ymax = 1;
     end
     ylim([0 ymax]);
+    h = plot([0 0],[0 ymax],'r','LineWidth',1,'LineStyle','--');
 end

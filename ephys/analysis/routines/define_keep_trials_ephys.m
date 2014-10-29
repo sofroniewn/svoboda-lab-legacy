@@ -19,6 +19,18 @@ switch keep_type_name
 		constrain_trials{2}.name = 'mean_speed';
 		constrain_trials{2}.vals = [run_thresh Inf];
 		constrain_trials{2}.type = 'range';
+	case 'running_no_wall'
+		[group_ids groups] = define_group_ids(exp_type,id_type,[]);
+		constrain_trials = cell(2,1);
+		constrain_trials{1}.name = 'group_id';
+		constrain_trials{1}.vals = group_ids;
+		constrain_trials{1}.type = 'equal';
+		constrain_trials{2}.name = 'mean_speed';
+		constrain_trials{2}.vals = [run_thresh Inf];
+		constrain_trials{2}.type = 'range';
+		constrain_trials{3}.name = 'wall_dist';
+		constrain_trials{3}.vals = [20 Inf];
+		constrain_trials{3}.type = 'range';
 	case 'not_running'
 		[group_ids groups] = define_group_ids(exp_type,id_type,[]);
 		constrain_trials = cell(2,1);

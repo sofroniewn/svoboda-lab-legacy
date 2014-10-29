@@ -3,11 +3,11 @@ clear all
 close all
 drawnow
 
-base_dir = '/Users/sofroniewn/Documents/DATA/WGNR_DATA/anm_0221172/2014_02_21/run_09';
-base_dir = '/Users/sofroniewn/Documents/DATA/ephys_ex/artifact/run_06/'
+base_dir2 = '/Users/sofroniewn/Documents/DATA/WGNR_DATA/anm_0221172/2014_02_21/run_09';
+base_dir2 = '/Users/sofroniewn/Documents/DATA/ephys_ex/artifact/run_06/'
 
-f_name = [base_dir '/ephys/raw/anm_235584_2014x05x22_run_09_trial_40.bin'];
-f_name = [base_dir '/ephys/raw/anm_anm_235585_2014x06x04_run_06_trial_1.bin'];
+f_name = [base_dir2 '/ephys/raw/anm_235584_2014x05x22_run_09_trial_40.bin'];
+f_name = [base_dir2 '/ephys/raw/anm_anm_235585_2014x06x04_run_06_trial_2.bin'];
 
 %f_name = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_231090/2014_04_24/run_01/ephys/raw/anm_anm_231090_2014x04x24_run_01_trial_2.bin';
 

@@ -4,8 +4,8 @@ freqSampling = 20833.33; %%% 19531.25 or 20833.33;
 gain = 4*200;
 ch_ids.num_tot = 35;
 ch_ids.num_spike = 32;
-ch_ids.file_trigger = 3;
-ch_ids.frame_trigger = 2;
+ch_ids.file_trigger = 2;
+ch_ids.frame_trigger = 3;
 ch_ids.artifact = 1;
 ch_ids.bitcode = [];
 

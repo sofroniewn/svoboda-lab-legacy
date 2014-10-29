@@ -21,7 +21,7 @@ set(hb,'EdgeColor',col_mat)
 max_y = zeros(length(tuning_curve.regressor_obj.x_vals),1);
 plot(tuning_curve.regressor_obj.x_range,[0 0],'k')
 for ij = 1:length(tuning_curve.regressor_obj.x_vals)
-    plot([tuning_curve.regressor_obj.x_vals(ij),tuning_curve.regressor_obj.x_vals(ij)],[(tuning_curve.means(ij)-tuning_curve.std(ij)/sqrt(length(tuning_curve.data{ij}))), (tuning_curve.means(ij)+tuning_curve.std(ij)/sqrt(length(tuning_curve.data{ij})))],'LineWidth',2,'Color',[0.5 0.5 0.5])
+%    plot([tuning_curve.regressor_obj.x_vals(ij),tuning_curve.regressor_obj.x_vals(ij)],[(tuning_curve.means(ij)-tuning_curve.std(ij)/sqrt(length(tuning_curve.data{ij}))), (tuning_curve.means(ij)+tuning_curve.std(ij)/sqrt(length(tuning_curve.data{ij})))],'LineWidth',2,'Color',[0.5 0.5 0.5])
     max_y(ij) = ceil(tuning_curve.means(ij)+tuning_curve.std(ij)/sqrt(length(tuning_curve.data{ij})));
 end
 

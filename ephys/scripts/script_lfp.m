@@ -1,7 +1,10 @@
 
 
-base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_237723/2014_06_17/run_03'; %anm #3 for olR and old cl
-[lfp_data] = func_extract_lfp(base_dir, [], 'lfp_data_short', 0);
+%base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_237723/2014_06_17/run_03'; %anm #3 for olR and old cl
+
+[lfp_data] = func_extract_lfp(base_dir, [], 'lfp_data_rev2', 0);
+
+
 
 lfp_data.trial_length = zeros(numel(lfp_data.raw_vlt),1);
 for ij = 1:numel(lfp_data.raw_vlt)

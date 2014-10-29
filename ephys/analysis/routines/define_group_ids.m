@@ -16,7 +16,9 @@ switch exp_type
 				group_ids = [6:9];
 			case 'clB'
 				group_ids = 13;
-			otherwise
+			case 'clR'
+				group_ids = 13;
+            otherwise
 				error('WGNR :: unrecognized groupd id')
 		end
 	case 'ol_cl_different_widths'

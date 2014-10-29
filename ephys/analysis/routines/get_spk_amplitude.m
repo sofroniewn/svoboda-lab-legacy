@@ -16,4 +16,4 @@ spike_amps = spike_amps-min(spike_amps);
 AMPLITUDES.norm_vals = (spike_amps/max(spike_amps)+1.2)*max(AMPLITUDES.trial_firing_rate);
 AMPLITUDES.trial_spks = spike_trials;
 
- end
+end
