@@ -61,7 +61,7 @@ else
     if roi_draw_mode == 0
         im_plot = get(handles.axes_images,'Children');
         set(handles.axes_images,'clim',clim_data)
-        set(im_plot,'CData',im_data)
+        set(im_plot(end),'CData',im_data)
     else
         if isempty(ref.roi_array{plot_planes}.guiHandles)
             fig_handle = handles.figure1;

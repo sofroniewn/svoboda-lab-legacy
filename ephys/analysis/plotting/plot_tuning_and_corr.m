@@ -7,13 +7,13 @@ clf(141)
 set(gcf,'Position',[198   360   4/3*717   2*223])
 subtightplot(2,4,1,gap,marg_h,marg_w);
 keep_name = 'not_running';%'running_no_wall';
-SPK_CORR = get_full_trial_spk_corr(clust_id1,clust_id2,spike_times_cluster,d,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+SPK_CORR = get_full_trial_spk_corr(clust_id1,clust_id2,d,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
 plot_spk_corr([],SPK_CORR{1,1});
 keep_name = 'running';
 text(0.02,.07,sprintf('no running'),'Units','Normalized','FontSize',12,'Color',[0 0 0],'Background','w')
 
 subtightplot(2,4,5,gap,marg_h,marg_w);
-SPK_CORR = get_full_trial_spk_corr(clust_id1,clust_id2,spike_times_cluster,d,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+SPK_CORR = get_full_trial_spk_corr(clust_id1,clust_id2,d,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
 plot_spk_corr([],SPK_CORR{1,1});
 text(0.02,.1,sprintf('+ blue -> black\n- black -> blue'),'Units','Normalized','FontSize',12,'Color',[0 0 0],'Background','w')
 
@@ -50,10 +50,10 @@ ylim([-150 50])
 subtightplot(2,4,6,gap,marg_h,marg_w);
 hold on
 layer_4_dist_vals = (layer_4 - [1:1/10:32])*20;
-AMPLITUDES = spike_times_cluster{clust_id1}.interp_amp;
+AMPLITUDES = d.summarized_cluster{clust_id1}.interp_amp;
 max1 = max(AMPLITUDES/10)*10;
 plot(AMPLITUDES, layer_4_dist_vals,'Color',[0 0 0],'LineWidth',2);
-AMPLITUDES = spike_times_cluster{clust_id2}.interp_amp;
+AMPLITUDES = d.summarized_cluster{clust_id2}.interp_amp;
 max2 = max(AMPLITUDES/10)*10;
 plot(AMPLITUDES, layer_4_dist_vals,'Color',[0 0 .6],'LineWidth',2);
 ylabel('Layer 4 distance (um)')

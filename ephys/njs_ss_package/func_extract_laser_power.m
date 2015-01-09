@@ -58,7 +58,12 @@ else
         laser_data.offset_inds{i_trial} = tmp_inds;
     
         if length(laser_data.offset_inds{i_trial}) ~= length(laser_data.onset_inds{i_trial})
-            error('onsets and offsets not same length')
+            %error('onsets and offsets not same length')
+            if length(laser_data.offset_inds{i_trial}) > length(laser_data.onset_inds{i_trial})
+                laser_data.offset_inds{i_trial}(end) = [];
+            else
+                laser_data.onset_inds{i_trial}(end) = [];
+            end
         end
 
         laser_data.onset_times{i_trial} = d.TimeStamps(laser_data.onset_inds{i_trial});

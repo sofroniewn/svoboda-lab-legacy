@@ -1,4 +1,4 @@
-function SPK_CORR = get_full_trial_spk_corr(all_clust_id1,all_clust_id2,spike_times_cluster,d,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
+function SPK_CORR = get_full_trial_spk_corr(all_clust_id1,all_clust_id2,d,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
 
 constrain_trials = define_keep_trials_ephys(keep_name,id_type,exp_type,trial_range,run_thresh);
 keep_trials = apply_trial_constraints(d.u_ck,d.u_labels,constrain_trials);
@@ -16,8 +16,8 @@ for ij = 1:length(all_clust_id1)
         else
             same_flag = 1;
         end
-        spike_times1 = spike_times_cluster{clust_id1}.spike_times(ismember(spike_times_cluster{clust_id1}.spike_trials,keep_trials)&spike_times_cluster{clust_id1}.spike_times_ephys>=time_range(1)&spike_times_cluster{clust_id1}.spike_times_ephys<=time_range(2));
-        spike_times2 = spike_times_cluster{clust_id2}.spike_times(ismember(spike_times_cluster{clust_id2}.spike_trials,keep_trials)&spike_times_cluster{clust_id2}.spike_times_ephys>=time_range(1)&spike_times_cluster{clust_id2}.spike_times_ephys<=time_range(2));
+        spike_times1 = d.summarized_cluster{clust_id1}.spike_times(ismember(d.summarized_cluster{clust_id1}.spike_trials,keep_trials)&d.summarized_cluster{clust_id1}.spike_times_ephys>=time_range(1)&d.summarized_cluster{clust_id1}.spike_times_ephys<=time_range(2));
+        spike_times2 = d.summarized_cluster{clust_id2}.spike_times(ismember(d.summarized_cluster{clust_id2}.spike_trials,keep_trials)&d.summarized_cluster{clust_id2}.spike_times_ephys>=time_range(1)&d.summarized_cluster{clust_id2}.spike_times_ephys<=time_range(2));
         SPK_CORR{ij,ik} = get_spike_corr(spike_times1,spike_times2,same_flag);
     end
 end

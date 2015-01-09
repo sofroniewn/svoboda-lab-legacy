@@ -1,4 +1,6 @@
-function [ps p p_labels curves all_anm] = extract_additional_ephys_vars(all_anm)
+function [ps p p_labels curves all_anm] = extract_additional_ephys_vars(all_anm,names)
+
+x_fit_vals = all_anm{1}.d.summarized_cluster{1}.TOUCH_TUNING.regressor_obj.x_fit_vals;
 
 barrel_inds = {'C1','C2','C3','C4','D1','D2','B1','V1'};
 
@@ -205,10 +207,10 @@ for ih = 1:numel(all_anm)
         
         [ih numel(all_anm) ij numel(all_anm{ih}.d.summarized_cluster)]
         ik = ik+1;
-        time_range = [0 1.5];
+        time_range = [0 1.2];
         tune_curve = get_tuning_curve_ephys(ij,all_anm{ih}.d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
         curves.onset(ik,:) = tune_curve.model_fit.curve;
-        time_range = [1.5 3];
+        time_range = [2.8 4.0];
         tune_curve = get_tuning_curve_ephys(ij,all_anm{ih}.d,stim_name,keep_name,exp_type,id_type,time_range,trial_range,run_thresh);
         curves.offset(ik,:) = tune_curve.model_fit.curve;
 
@@ -230,6 +232,102 @@ ps = [];
 for ij = 1:numel(p_labels)
     ps.(p_labels{ij}) = p(:,ij);
 end
+
+orig_curves = curves;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%load('/Users/sofroniewn/Documents/DATA/ephys_summary_rev4/resamp_curves.mat');
+[ps mean_tuning_curves std_tuning_curves] = get_tuning_curve_SNR(ps,curves.resamp,x_fit_vals);
+curves.mean_tuning_curves = mean_tuning_curves;
+curves.std_tuning_curves = std_tuning_curves;
+ps.total_order = [ps.anm_id, ps.clust_id, [1:length(ps.anm_id)]', ps.layer_4_dist];
+[time_vect norm_waves mean_waves] = get_mean_waveforms(all_anm);
+
+ps.SNR = ps.touch_mean_rate./ps.ste;
+
+curves.onset = orig_curves.onset;
+curves.offset = orig_curves.offset;
+
+%%%%%%%%%%%%%%%%%%%%
+on_adapt = zeros(size(p,1),1);
+off_adapt = zeros(size(p,1),1);
+
+for ind = 1:size(p,1)
+anm_name = ps.total_order(ind,1);
+clust_id = ps.total_order(ind,2)-2;
+anm_ind = find(ismember(names,num2str(anm_name)));
+target_dist = round(ps.touch_max_loc(ind)/2)*2;
+keep = ismember(all_anm{anm_ind}.d.u_ck(10,:)',target_dist-2:2:target_dist+2) & all_anm{anm_ind}.d.u_ck(1,:)' <= 12;
+r_t = mean(squeeze(all_anm{anm_ind}.d.r_ntk(clust_id+2,:,keep)),2)*500;
+r_t = smooth(r_t,100,'sgolay',1);
+
+baseline = mean(r_t(150:250));
+peak = mean(r_t(450:550));
+adpat_val = mean(r_t(1300:1400));
+on_adapt(ind) = (peak-adpat_val)./(peak+adpat_val);
+
+
+target_dist = round(ps.touch_min_loc(ind)/2)*2;
+keep = ismember(all_anm{anm_ind}.d.u_ck(10,:)',target_dist-2:2:target_dist+2) & all_anm{anm_ind}.d.u_ck(1,:)' <= 12;
+r_t = mean(squeeze(all_anm{anm_ind}.d.r_ntk(clust_id+2,:,keep)),2)*500;
+r_t = smooth(r_t,100,'sgolay',1);
+
+baseline = mean(r_t(150:250));
+peak = mean(r_t(450:550));
+adpat_val = mean(r_t(1300:1400));
+off_adapt(ind) = -(peak-adpat_val)./(peak+adpat_val);
+
+end
+
+off_adapt(isnan(off_adapt)) = 0;
+on_adapt(isnan(on_adapt)) = 0;
+on_adapt(on_adapt<0) = 0;
+off_adapt(off_adapt<0) = 0;
+
+
+ps.on_adapt = on_adapt;
+ps.off_adapt = off_adapt;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Clean up spikes
+ps.stable_spikes = abs(ps.stab_amp)<1.5 & abs(ps.stab_fr)<1.75;
+ps.clean_isi = ps.isi_violations < 1;
+ps.good_snr = ps.waveform_SNR > 6;
+ps.good_tuning = ps.SNR > 20;
+ps.good_waveform = norm_waves(:,end)>-.4 & max(norm_waves,[],2) < .7;
+ps.clean_clusters = ps.good_tuning & ps.stable_spikes & ps.clean_isi & ps.good_snr & ps.good_waveform;
+
+% Spike waveforms
+ps.regular_spikes_slow = ps.spike_tau >= 700;
+ps.regular_spikes_fast = ps.spike_tau >= 500 & ps.spike_tau < 700;
+ps.fast_spikes = ps.spike_tau < 350;
+ps.intermediate_spikes = ps.spike_tau >= 350 & ps.spike_tau < 500;
+ps.regular_spikes = (ps.regular_spikes_slow | ps.regular_spikes_fast);
+
+%
+barrel_inds = {'C1','C2','C3','C4','D1','D2','B1','V1'};
+ps.layer_id(ps.layer_id==6) = 5;
+ps.layer_6 = ps.layer_id == 6;
+ps.layer_5b = ps.layer_id == 5;
+ps.layer_5a = ps.layer_id == 4;
+ps.layer_4 = ps.layer_id == 3;
+ps.layer_23 = ps.layer_id == 2;
+
+
+ps.c1c2 = ismember(ps.barrel_loc,[1:2]);
+ps.d1 = ismember(ps.barrel_loc,5);
+ps.c_row = ismember(ps.barrel_loc,[1:4]);
+ps.d_row = ismember(ps.barrel_loc,[5:6]);
+ps.b_row =  ismember(ps.barrel_loc,[7]);
+ps.v1 = ismember(ps.barrel_loc,[8]);
+ps.barrel_id = ps.c_row + ps.b_row+ 2*ps.d_row + 3*ps.v1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 
 

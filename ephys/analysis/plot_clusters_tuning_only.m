@@ -7,7 +7,7 @@ barrel_inds = {'C1','C2','C3','C4','D1','D2','B1','V1'};
 for ij = 1:size(order,1)
     anm_num = order(ij,1);
     anm_index = find(ismember(all_anm.names,num2str(anm_num)));
-    clust_num = order(ij,2)-2;
+    clust_num = order(ij,2);
     d = all_anm.data{anm_index}.d;
     
     s_ind = find(strcmp(d.p_labels,'clust_id'));
@@ -19,7 +19,8 @@ for ij = 1:size(order,1)
     figure(110+ij)
     clf(110+ij)
     fig_props = [];
-        
+    set(gcf,'Color',[1 1 1])
+
     if full
         set(gcf,'Position',[10 560 1400 480])
         gap = [0.0355 0.0355];
@@ -73,6 +74,13 @@ for ij = 1:size(order,1)
     text(.04,.28,sprintf('ML %.2f',ps.ML(tot_ind)),'Units','Normalized','Color','r','Background','w')
     
 
+    clean_ind = ps.clean_clusters(tot_ind);
+    if clean_ind
+        text(.725,.82,sprintf('CLEAN'),'Units','Normalized','Color','r','Background','w')
+     else
+        text(.725,.82,sprintf('NOT CLEAN'),'Units','Normalized','Color','r','Background','w')
+    end
+
     if spike_tau <= 350
         text(.04,.73,sprintf('Fast spiking'),'Units','Normalized','Color','r','Background','w')
     elseif spike_tau > 500
@@ -85,7 +93,7 @@ for ij = 1:size(order,1)
     % get spike waveform information
     WAVEFORMS = d.summarized_cluster{clust_num}.WAVEFORMS;
     subtightplot(num_plots_h,num_plots_w,[2 10],gap,marg_h,marg_w)
-    plot_spk_waveforms(fig_props,WAVEFORMS);
+    plot_spk_waveforms(fig_props,WAVEFORMS,1,[0 0 0]);
     
     
     
@@ -114,9 +122,13 @@ for ij = 1:size(order,1)
     text(.05,.89,sprintf('Modulation %.2fx',running_modulation),'Units','Normalized','Color','r','Background','w')
     
     % Make trial Raster to running and contra touch
-    RASTER = d.summarized_cluster{clust_num}.RUNNING_RASTER;
+    RASTER = d.summarized_cluster{clust_num}.LASER_RUNNING_RASTER;
     subtightplot(num_plots_h,num_plots_w,[6 7],gap,marg_h,marg_w)
-    plot_spk_raster(fig_props,RASTER)
+    
+    [raster_mat raster_mat_full raster_mat_rescale_full raster_col_mat rescale_time] = get_raster_col_mat(d);
+
+    %plot_spk_raster(fig_props,RASTER,[],[],[])
+    plot_spk_raster_col([],RASTER,[],[],raster_mat_full);
     set(gca,'xticklabel',[])
     xlabel('')
     subtightplot(num_plots_h,num_plots_w,[14 15],gap,marg_h,marg_w)
@@ -127,7 +139,7 @@ for ij = 1:size(order,1)
     text(.73,.73,sprintf('OFF ADAPT %.2f',ps.off_adapt(tot_ind)),'Units','Normalized','Color','r','Background','w')
  
     % Make touch tuning
-    tuning_curve = d.summarized_cluster{clust_num}.TOUCH_TUNING;
+    tuning_curve = d.summarized_cluster{clust_num}.LASER_RUNNING_TOUCH_TUNING;
     
     full_x = [];
     full_y = [];
@@ -183,13 +195,15 @@ for ij = 1:size(order,1)
     peak_rate = d.p_nj(clust_num,s_ind);
     s_ind = find(strcmp(d.p_labels,'peak_distance'));
     peak_dist = d.p_nj(clust_num,s_ind);
-    plot_tuning_curve_ephys(fig_props,tuning_curve)
+%    plot_tuning_curve_ephys(fig_props,tuning_curve)
+    plot_tuning_curve_ephys_col(fig_props,tuning_curve)
+
     text(.05,.95,sprintf('Peak rate %.2f Hz',peak_rate),'Units','Normalized','Color','r','Background','w')
     text(.05,.89,sprintf('Peak distance %.1f mm',peak_dist),'Units','Normalized','Color','r','Background','w')
     
-    plot([0 30],[baseline baseline],'r','linewidth',3)
-    plot(tuning_curve.regressor_obj.x_fit_vals(loc),tuning_curve.model_fit.curve(loc),'.g','MarkerSize',30)
-    plot(tuning_curve.regressor_obj.x_fit_vals(locm),tuning_curve.model_fit.curve(locm),'.r','MarkerSize',30)
+   % plot([0 30],[baseline baseline],'r','linewidth',3)
+   % plot(tuning_curve.regressor_obj.x_fit_vals(loc),tuning_curve.model_fit.curve(loc),'.g','MarkerSize',30)
+   % plot(tuning_curve.regressor_obj.x_fit_vals(locm),tuning_curve.model_fit.curve(locm),'.r','MarkerSize',30)
     
     tmp = (pks-baseline);
     tmpm = (baseline-pksm);
@@ -236,5 +250,23 @@ for ij = 1:size(order,1)
         subtightplot(num_plots_h,num_plots_w,[19 27],gap,marg_h,marg_w)
         plot_tuning_curve_multi_ephys(fig_props,tuning_curve)
     end
-    
+
+%c_map = cbrewer('seq','Blues',64);
+%c_map = cbrewer('seq','PuBu',64);
+%c_map = jet(64);
+%96c6fd
+c_map = zeros(64,3);
+%c_map(:,1) = linspace(253,144,64)/256;
+%c_map(:,2) = linspace(174,185,64)/256;
+%c_map(:,3) = linspace(107,247,64)/256;
+c_map(1:20,1) = linspace(253,(253+144)/2,20)/256;
+c_map(1:20,2) = linspace(174,(174+185)/2,20)/256;
+c_map(1:20,3) = linspace(107,(107+247)/2,20)/256;
+c_map(21:64,1) = linspace((253+144)/2,144,44)/256;
+c_map(21:64,2) = linspace((174+185)/2,185,44)/256;
+c_map(21:64,3) = linspace((107+247)/2,247,44)/256;
+
+%c_map(:,2) = 1;
+set(gcf,'colormap',c_map)
+
 end

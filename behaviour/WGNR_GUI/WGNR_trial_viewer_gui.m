@@ -79,6 +79,7 @@ handles.pathstr = pathstr;
 
 p = path;
 start_str = strfind(p,'DATA');
+if ~isempty(start_str)
 start_file = strfind(p,':');
 start_file_ind= find(start_file < start_str,1,'last');
 if isempty(start_file_ind) == 1
@@ -93,7 +94,9 @@ else
     end
 end
 handles.datastr = p(start_ind:end_ind);
-
+else
+handles.datastr = pwd;    
+end
 
 set(handles.uitable1,'Data',[]);
 set(handles.uitable_plotting,'Data',[]);

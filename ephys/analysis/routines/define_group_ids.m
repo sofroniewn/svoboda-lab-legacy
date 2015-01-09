@@ -77,6 +77,35 @@ switch exp_type
 			otherwise
 				error('WGNR :: unrecognized groupd id')
 		end
+	case 'laser_ol_new'
+		groups = trial_inds;
+		groups(trial_inds==15) = 4;
+		groups(trial_inds==4) = 5;
+		groups(trial_inds==16) = 6;
+		groups(trial_inds==5) = 7;
+		groups(trial_inds==17) = 8;
+		groups(trial_inds==6) = 9;
+		groups(trial_inds==18) = 10;
+		groups(trial_inds==7) = 11;
+		groups(trial_inds==8) = 12;
+		groups(trial_inds==9) = 13;
+		groups(trial_inds==10) = 14;
+		groups(trial_inds==11) = 15;
+		groups(trial_inds==12) = 16;
+		groups(trial_inds==13) = 17;
+		groups(trial_inds==14) = 18;
+		switch id_type
+			case 'base'
+				group_ids = [1:18];
+			case 'olR'
+				group_ids = [1:11]; %[1 2 3 15 4 16 5 17 6 18 7];
+			case 'olLP'
+				group_ids = [18 17 16 15 14 13 12 11]; %7 8:13
+			case 'outOfReach'
+				group_ids = [11];
+			otherwise
+				error('WGNR :: unrecognized groupd id')
+		end
 	otherwise
 		error('WGNR :: unrecognized expriment type')
 end		

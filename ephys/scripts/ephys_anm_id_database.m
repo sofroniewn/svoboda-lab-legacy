@@ -254,6 +254,109 @@ case '256043'
             exp_type = 'classic_ol_cl'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
         else
         end
+
+    case '252778'
+        if laser_on
+        else
+            base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_252778/2014_12_11/run_02'; %anm #1 for olR and old cl
+            trial_range_start = 1;
+            trial_range_end = 4000;
+            cell_reject = [];
+            run_thresh = 5; 
+            exp_type = 'laser_ol_new'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
+            layer_4 = 15.7;
+            layer_4_corr = 21.5;
+            AP = 1.97;
+            ML = 3.6;
+            barrel_loc = 'C2';
+            boundaries = [-550 -395    -130    70  220 425 670];
+        end
+
+    case '266642'
+        if laser_on
+        else
+            base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_266642/2014_12_16/run_02'; %anm #1 for olR and old cl
+            trial_range_start = 1;
+            trial_range_end = 4000;
+            cell_reject = [];
+            run_thresh = 5; 
+            exp_type = 'laser_ol_new'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
+            layer_4 = 15.7;
+            layer_4_corr = 21.5;
+            AP = 1.97;
+            ML = 3.6;
+            barrel_loc = 'C2';
+            boundaries = [-550 -395    -130    70  220 425 670];
+        end
+
+    case '266644'
+        if laser_on
+        else
+            base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_266644/2014_12_17/run_02'; %anm #1 for olR and old cl
+            trial_range_start = 1;
+            trial_range_end = 4000;
+            cell_reject = [];
+            run_thresh = 5; 
+            exp_type = 'laser_ol_new'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
+            layer_4 = 15.7;
+            layer_4_corr = 21.5;
+            AP = 1.97;
+            ML = 3.6;
+            barrel_loc = 'C2';
+            boundaries = [-550 -395    -130    70  220 425 670];
+        end
+
+    case '270330'
+        if laser_on
+        else
+            base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_270330/2014_12_18/run_02'; %anm #1 for olR and old cl
+            trial_range_start = 1;
+            trial_range_end = 4000;
+            cell_reject = [];
+            run_thresh = 5; 
+            exp_type = 'laser_ol_new'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
+            layer_4 = 15.7;
+            layer_4_corr = 21.5;
+            AP = 1.97;
+            ML = 3.6;
+            barrel_loc = 'C2';
+            boundaries = [-550 -395    -130    70  220 425 670];
+        end
+
+    case '270329'
+        if laser_on
+        else
+            base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_270329/2014_12_18/run_02'; %anm #1 for olR and old cl
+            trial_range_start = 1;
+            trial_range_end = 4000;
+            cell_reject = [];
+            run_thresh = 5; 
+            exp_type = 'laser_ol_new'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
+            layer_4 = 15.7;
+            layer_4_corr = 21.5;
+            AP = 1.97;
+            ML = 3.6;
+            barrel_loc = 'C2';
+            boundaries = [-550 -395    -130    70  220 425 670];
+        end
+
+    case '270331'
+        if laser_on
+        else
+            base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_270331/2014_12_17/run_02'; %anm #1 for olR and old cl
+            trial_range_start = 1;
+            trial_range_end = 4000;
+            cell_reject = [];
+            run_thresh = 5; 
+            exp_type = 'laser_ol_new'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
+            layer_4 = 15.7;
+            layer_4_corr = 21.5;
+            AP = 1.97;
+            ML = 3.6;
+            barrel_loc = 'C2';
+            boundaries = [-550 -395    -130    70  220 425 670];
+        end
+
        otherwise
         error('Unrecognized animal id')
 end
