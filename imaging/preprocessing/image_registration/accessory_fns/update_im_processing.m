@@ -2,7 +2,7 @@ function update_im_processing(obj,event,handles)
 
 % Check number of imaging files
 global im_session;
-cur_files = dir(fullfile(im_session.basic_info.data_dir,'*_main_*.tif'));
+cur_files = dir(fullfile(im_session.basic_info.data_dir,'raw','*_main_*.tif'));
 if numel(cur_files) > numel(im_session.basic_info.cur_files)
     im_session.basic_info.cur_files = cur_files;
     set(handles.text_imaging_trials,'String',['Imaging trials ' num2str(numel(cur_files))]);

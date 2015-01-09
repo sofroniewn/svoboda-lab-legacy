@@ -154,8 +154,8 @@ if folder_name ~= 0
     set(handles.text_run,'String',im_session.basic_info.run_str)
     set(handles.text_imaging_trials,'String',['Imaging trials ' num2str(numel(im_session.basic_info.cur_files))]);
     
-    type_name = 'text';
-    handles.text_path = fullfile(im_session.basic_info.data_dir,type_name);
+    %type_name = 'text';
+    handles.text_path = handles.base_path; %fullfile(im_session.basic_info.data_dir);
     
     % LOAD EXISTING REF IMAGES
     set(handles.popupmenu_ref,'enable','on')

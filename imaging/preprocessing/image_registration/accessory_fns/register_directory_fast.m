@@ -14,7 +14,7 @@ num_chan = im_session.ref.im_props.nchans;
 text_dir = handles.text_path;
 
 % Go through new files
-cur_file = fullfile(data_dir,im_session.basic_info.cur_files(trial_num).name);
+cur_file = fullfile(data_dir,'raw',im_session.basic_info.cur_files(trial_num).name);
 trial_name = cur_file(end-6:end-4);
 [pathstr, base_name, ext] = fileparts(cur_file);
 
@@ -77,9 +77,11 @@ end
 
 
 % save registered data
-if (save_registered_on || save_text_on) && ~isempty(im_shifted)
+if (save_registered_on) && ~isempty(im_shifted)
     % create and save registered file data
-    save_registered_data(data_dir,base_name,trial_str,im_shifted,num_planes,num_chan,text_dir,down_sample,trial_data,save_registered_on,save_text_on);
+    %save_registered_data(data_dir,base_name,trial_str,im_shifted,num_planes,num_chan,text_dir,down_sample,trial_data,save_registered_on,save_text_on);
+    prev_frame_num = (im_summary.props.firstFrame - 1)/(num_planes*num_chan);
+    save_registered_data_frame(text_dir,base_name,trial_str,prev_frame_num,im_shifted,num_planes,num_chan,trial_data);
 end
 end
 
