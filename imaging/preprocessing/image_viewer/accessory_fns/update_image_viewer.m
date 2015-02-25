@@ -23,7 +23,7 @@ if update_plot
     plot_im_gui(handles,0);
 end
 
-cur_files = dir(fullfile(im_session.basic_info.data_dir,'*_main_*.tif'));
+cur_files = dir(fullfile(im_session.basic_info.data_dir,'raw','*_main_*.tif'));
 if numel(cur_files) <= numel(im_session.basic_info.cur_files)
     %    	disp('No new files')
 else

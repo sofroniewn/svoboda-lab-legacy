@@ -89,10 +89,16 @@ else
 
 
         laser_data.powers{i_trial} = NaN(length(laser_data.onset_inds{i_trial}),1);
-        for ij = 1:length(laser_data.onset_inds{i_trial})
-            laser_data.powers{i_trial}(ij) = mean(d.aux_chan(laser_data.onset_inds{i_trial}(ij):laser_data.offset_inds{i_trial}(ij),laser_chan));
+        for ij = 1:min(length(laser_data.onset_inds{i_trial}),length(laser_data.offset_inds{i_trial}))
             if laser_data.offset_inds{i_trial}(ij) <= laser_data.onset_inds{i_trial}(ij)
-                error('offset does not follow onset')
+                %error('offset does not follow onset')
+                if ij < length(laser_data.onset_inds{i_trial})
+                    laser_data.powers{i_trial}(ij) = mean(d.aux_chan(laser_data.onset_inds{i_trial}(ij):laser_data.offset_inds{i_trial}(ij+1),laser_chan));
+                else
+                    laser_data.powers{i_trial}(ij) = 0;
+                end
+            else
+                laser_data.powers{i_trial}(ij) = mean(d.aux_chan(laser_data.onset_inds{i_trial}(ij):laser_data.offset_inds{i_trial}(ij),laser_chan));
             end
             window = laser_data.onset_inds{i_trial}(ij) + window_range;
             if min(window) > 0 && max(window) < size(ch_LFP,1)

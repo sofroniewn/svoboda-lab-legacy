@@ -24,11 +24,10 @@ merge_ephys_behaviour(all_anm_id,local_save_path);
 clear all
 close all
 drawnow
-local_save_path = '/Users/sofroniewn/Documents/DATA/ephys_summary_rev8';
+local_save_path = '/Users/sofroniewn/Documents/DATA/ephys_summary_rev11';
 cd(local_save_path);
 
-all_anm_id = {'235585','237723','245918','249872','246702','250492','250494','250495','247871','250496'}; % ,'256043','252776'};
-%all_anm_id = {'252778','266642','266644','270330','270329','270331'};
+all_anm_id = {'235585','237723','245918','249872','246702','250492','250494','250495','247871','252776','250496','256043','252778','266642','266644','270330','270329','270331'}; % ,'256043','252776'};
 
 for ih = 1:numel(all_anm_id)
   anm_id = all_anm_id{ih}
@@ -39,9 +38,58 @@ end
 
 all_anm.names = all_anm_id;
 global ps;
-[ps p p_labels curves data] = extract_additional_ephys_vars(all_anm.data,all_anm.names); all_anm.data = data; clear data;
+global rasters;
+[ps curves rasters data] = extract_additional_ephys_vars_paper(all_anm.data,all_anm.names); all_anm.data = data; clear data;
+
+
+save('matlab_session_all.mat','-v7.3')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+all_anm_id = {'235585','237723','245918','249872','246702','250492','250494','250495','247871','252776','250496','256043','252778','266642','266644','270330','270329','270331'}; % ,'256043','252776'};
+p_labels = all_anm.data{1}.d.p_labels;
+
+ik = 0;
+for ih = 1:numel(all_anm_id)
+  anm_id = all_anm_id{ih}
+  [base_dir anm_params] = ephys_anm_id_database(anm_id,0);
+  all_anm.data{ih}.d.anm_params = anm_params;
+    for ij = 1:numel(all_anm.data{ih}.d.summarized_cluster)
+        ik = ik+1
+        s_ind = find(strcmp(p_labels,'chan_depth'));
+        peak_channel = all_anm.data{ih}.d.p_nj(ij,s_ind);
+        
+        layer_4_dist = (anm_params.layer_4_corr - peak_channel)*20;
+        
+    
+    boundaries = anm_params.boundaries;
+    boundaries(isnan(boundaries)) = -Inf;
+    layer_id = find(boundaries<layer_4_dist,1,'last');
+        
+        ps.layer_4_dist_FINAL(ik) = layer_4_dist;
+        ps.layer_id_FINAL(ik) = layer_id;
+    end
+end
+ps.layer_id_FINAL = ps.layer_id_FINAL';
+ps.layer_4_dist_FINAL = ps.layer_4_dist_FINAL';
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% LOAD SESSION
+clear all
+close all
+drawnow
+local_save_path = '/Users/sofroniewn/Documents/DATA/ephys_summary_rev13';
+cd(local_save_path);
+load('matlab_session_all2.mat')
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -53,35 +101,57 @@ global ps;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PUBLISH UNIT INFORMATION
 
-plot_clusters_tuning_only(all_anm,ps,order,0)
+plot_clusters_tuning_paper2(all_anm,ps,order)
 
 
-dir_name = '/Users/sofroniewn/Documents/DATA/ephys_summary_rev10';
+dir_name = '/Users/sofroniewn/Documents/DATA/ephys_summary_rev13';
 if exist(dir_name)~=7
    mkdir(dir_name);
 end
 cd(dir_name);
 
 %% PUBLISH ALL ANIMALS one by one
- for ij = 1:numel(all_anm_id)
+ for ij = 11:numel(all_anm_id)
       anm_id = all_anm.names{ij}
       anm_num = str2num(anm_id);
       keep_spikes = ps.anm_id == anm_num;
       order_sort = ps.total_order(keep_spikes,:);
       [val ind] = sort(order_sort(:,4));
       order = order_sort(ind,:);
-      outputDir = ['ALL_LASER_' anm_id];
-      publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+      outputDir = ['ALL_opto' anm_id];
+      publish('publish_all_ephys3.m','showCode',false,'outputDir',outputDir); close all;
  end
 
 % PUBLISH ALL CLEAN CLUSTERS IN C1C2, L2/3, L4
 %keep_spikes = ~ps.c1c2 & (ps.layer_23 | ps.layer_4) & ps.clean_clusters;
-keep_spikes = ps.clean_clusters & ps.regular_spikes & ps.c1c2;
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6 & (ps.layer_23 | ps.layer_4);
 sum(keep_spikes)
 order_sort = ps.total_order(keep_spikes,:);
 [val ind] = sort(order_sort(:,4));
 order = order_sort(ind,:);
-outputDir = ['ACCEPT_all_C1C2'];
+outputDir = ['ACCEPT_all_AB_sup'];
+publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+
+
+% PUBLISH ALL CLEAN CLUSTERS IN C1C2, L2/3, L4
+%keep_spikes = ~ps.c1c2 & (ps.layer_23 | ps.layer_4) & ps.clean_clusters;
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6 & ~(ps.layer_23 | ps.layer_4);
+sum(keep_spikes)
+order_sort = ps.total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order = order_sort(ind,:);
+outputDir = ['ACCEPT_all_AB_deep'];
+publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+
+
+% PUBLISH ALL CLEAN CLUSTERS IN C1C2, L2/3, L4
+%keep_spikes = ~ps.c1c2 & (ps.layer_23 | ps.layer_4) & ps.clean_clusters;
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~(ps.c1c2 | ps.v1);
+sum(keep_spikes)
+order_sort = ps.total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order = order_sort(ind,:);
+outputDir = ['ACCEPT_other_barrel_S'];
 publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
 
 % PUBLISH ALL CLEAN CLUSTERS IN C1C2, L5a, L5b, L6
@@ -145,6 +215,18 @@ while start_ind <= size(order_sort,1);
      iter = iter+1;
 end
 
+
+% PUBLISH ALL CLEAN CLUSTERS IN C1C2, L2/3, L4
+%keep_spikes = ~ps.c1c2 & (ps.layer_23 | ps.layer_4) & ps.clean_clusters;
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1;
+sum(keep_spikes)
+order_sort = ps.total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order = order_sort(ind,:);
+outputDir = ['ACCEPT_all_barrel'];
+publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -155,6 +237,588 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%% FIGURE 2 sensory variables
+
+output = summarize_tuning_sig(all_anm.data{1}.d,1);
+
+%
+output = summarize_tuning(all_anm.data{1}.d,1);
+
+figure(312); clf(312);
+hold on
+x_vals = repmat(linspace(0,4,2001),12,1);
+scatter(x_vals(:),output.sense_mat_avg(:),[],30-output.sense_mat_avg(:),'filled')
+
+c_map = zeros(64,3);
+c_map(1:24,1) = linspace(144,(253+144)/2,24)/256;
+c_map(1:24,2) = linspace(185,(174+185)/2,24)/256;
+c_map(1:24,3) = linspace(247,(107+247)/2,24)/256;
+c_map(24:42,1) = linspace((253+144)/2,253,19)/256;
+c_map(24:42,2) = linspace((174+185)/2,174,19)/256;
+c_map(24:42,3) = linspace((107+247)/2,107,19)/256;
+c_map(42:64,1) = linspace(253,239,23)/256;
+c_map(42:64,2) = linspace(174,101,23)/256;
+c_map(42:64,3) = linspace(107,72,23)/256;
+set(gcf,'colormap',c_map)
+%set(gca,'ydir','rev')
+set(gca,'visible','off')
+scatter(linspace(0,4,2001),output.sense_mat_avg(3,:),[],'k','filled')
+
+figure; plot(output.sense_trace_time,'k','LineWidth',2)
+set(gca,'visible','off'); xlim([1 500]); ylim([8 22.5])
+%plot(linspace(0,4,2001),output.sense_mat_avg(3,:),'k','LineWidth',3)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%% FIGURE 2 WALL DIST TUNING
+
+ih = 10; % all on
+plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters)
+
+ih = 168; % tuned on
+plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters)
+
+ih = 208; % all off
+plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters)
+
+ih = 32; % tuned off
+plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters)
+
+ih = 13; % towards on
+plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters)
+
+ih = 59; % mixed
+plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters)
+
+ih = 76; % mixed
+plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%% FIGURE 2 WALL DIST TUNING
+
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6;
+
+mod_up = keep_spikes & ps.tc_mod >=0;
+tc = curves.tuning_curve(mod_up,:);
+max_loc = ps.act_loc(mod_up);
+[ord ind] = sort(max_loc');
+tc = zscore(tc')';
+%plot(ps.touch_max_loc(keep_spikes),ps.touch_peak_rate(keep_spikes),'.k')
+tc_sort = tc(ind,:);
+%tc_sort(tc_sort<-1.5) = -1.5;
+
+mod_down = keep_spikes & ps.tc_mod <0;
+tc = curves.tuning_curve(mod_down,:);
+min_loc = ps.sup_loc(mod_down);
+[ord ind] = sort(min_loc','descend');
+tc = zscore(tc')';
+%plot(ps.touch_max_loc(keep_spikes),ps.touch_peak_rate(keep_spikes),'.k')
+tc_sort = cat(1,tc_sort,tc(ind,:));
+tc_sort(tc_sort>3) = 3;
+tc_sort(tc_sort<-2) = -2;
+
+figure(22)
+clf(22)
+set(gcf,'Position',[394   366   516   440])
+imagesc(tc_sort)
+%cmap = cbrewer('seq','Greys',64);
+cmap = cbrewer('div','RdYlBu',64);
+cmap = flipdim(cmap,1);
+colormap(cmap);
+set(gca,'visible','off')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+tc = curves.tuning_curve(keep_spikes,:);
+layer_id_red = ps.layer_id(keep_spikes);
+[coeff,score,latent] = pca(tc);
+
+[score,coeff] = nnmf(tc,2);
+coeff = coeff';
+%
+figure; plot(coeff(:,1:2))
+figure; hold on;
+plot(score(layer_id_red>3,1),score(layer_id_red>3,2),'.k')
+plot(score(layer_id_red<=3,1),score(layer_id_red<=3,2),'.r')
+
+figure; plot(coeff(:,4))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%% FIGURE 2 TEMPORAL TUNING
+
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6;
+
+mod_up = keep_spikes; % & abs(ps.dir_mod) <=0.2;
+tc = [curves.trace_towards(mod_up,:) curves.trace_away(mod_up,:)];
+[max_val ind_max] = max(tc');
+%ind_max(ind_max>500) = 1000 - ind_max(ind_max>500);
+[ord ind] = sort(ind_max');
+tc = zscore(tc')';
+%plot(ps.touch_max_loc(keep_spikes),ps.touch_peak_rate(keep_spikes),'.k')
+tc_sort = [tc(ind,:)];
+%tc_sort(tc_sort<-1.5) = -1.5;
+
+figure(23)
+clf(23)
+set(gcf,'Position',[911   366   516/2   440])
+imagesc(tc_sort(:,1:500))
+%cmap = cbrewer('seq','Greys',64);
+cmap = cbrewer('div','RdYlBu',64);
+cmap = flipdim(cmap,1);
+colormap(cmap);
+set(gca,'visible','off')
+
+figure(24)
+clf(24)
+set(gcf,'Position',[1169   366   516/2   440])
+imagesc(tc_sort(:,501:end))
+%cmap = cbrewer('seq','Greys',64);
+cmap = cbrewer('div','RdYlBu',64);
+cmap = flipdim(cmap,1);
+colormap(cmap);
+set(gca,'visible','off')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%% FIGURE 2 SUMMARY SCATTER PLOTS
+
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6;
+sum(keep_spikes)
+
+%%
+figure(6); clf(6)
+hold on
+set(gcf,'Position',[   440   648   408   408])
+act = ps.act(keep_spikes);
+sup = ps.sup(keep_spikes);
+act(act>20) = 20;
+plot(act,sup,'.k','MarkerSize',15)
+xlabel('Activation (Hz)','FontSize',20)
+ylabel('Supression (Hz)','FontSize',20)
+set(gca,'box','off')
+set(gca,'TickDir','out')
+set(gca,'position',[0.2163    0.1635    0.7    0.7])
+xlim([0 20]); ylim([0 20]);
+set(gca,'xtick',[0:5:20])
+set(gca,'ytick',[0:5:20])
+set(gca,'FontSize',20)
+
+%%
+figure(9); clf(9);
+set(gcf,'Position',[   440   648   408   408])
+set(gca,'position',[0.2163    0.1635    0.7    0.7])
+hold on;
+plot(ps.towards(keep_spikes),ps.away(keep_spikes),'.k','MarkerSize',15)
+%plot([0 30],[0 30],'r','LineWidth',2)
+xlabel('Towards (Hz)','FontSize',20)
+ylabel('Away (Hz)','FontSize',20)
+set(gca,'box','off')
+set(gca,'TickDir','out')
+xlim([0 30]); ylim([0 30]);
+set(gca,'FontSize',20)
+
+figure(8); clf(8);
+set(gcf,'Position',[   440   648   408   408])
+hold on;
+plot([-1 1],[0 0],'r'); plot([0 0],[-1 1],'r');
+plot(ps.tc_mod(keep_spikes),ps.dir_mod(keep_spikes),'.k','MarkerSize',15)
+ylabel('Direction modulation index','FontSize',20); xlabel('Tuning modulation index','FontSize',20)
+xlim([-1 1]); ylim([-1 1]);
+set(gca,'box','off')
+set(gca,'TickDir','out')
+set(gca,'position',[0.2163    0.1635    0.7    0.7])
+set(gca,'FontSize',20)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6;
+sum(keep_spikes)
+
+figure; hold on;
+plot([-300 500],[0 0],'r');
+plot(ps.layer_4_dist_CSD(keep_spikes),ps.tc_mod(keep_spikes),'.k')
+
+
+
+figure; hold on;
+plot([-300 500],[0 0],'r');
+plot(ps.layer_4_dist_FINAL(keep_spikes),ps.dir_mod(keep_spikes),'.k')
+
+
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6;
+edges = [-250:100:450];
+firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.tc_mod(keep_spikes),edges)
+plot(ps.layer_4_dist_FINAL(keep_spikes),ps.tc_mod(keep_spikes),'.k')
+xlim([-250 450])
+
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6;
+edges = [-250:100:450];
+firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.dir_mod(keep_spikes),edges)
+plot(ps.layer_4_dist_FINAL(keep_spikes),ps.dir_mod(keep_spikes),'.k')
+xlim([-250 450])
+
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6;
+edges = [-250:100:450];
+firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.baseline(keep_spikes),edges)
+plot(ps.layer_4_dist_FINAL(keep_spikes),ps.baseline(keep_spikes),'.k')
+xlim([-250 450])
+
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6;
+edges = [-250:100:450];
+firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.baseline(keep_spikes) + ps.act(keep_spikes),edges)
+plot(ps.layer_4_dist_FINAL(keep_spikes),ps.baseline(keep_spikes) + ps.act(keep_spikes),'.k')
+xlim([-250 450])
+
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6;
+edges = [-250:100:450];
+firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.layer_4_dist_FINAL(keep_spikes),edges)
+xlim([-250 450])
+
+
+keep_spikes = ~ps.v1 & ps.r2 > 0.6 & (ps.layer_4_dist_FINAL > -250 & ps.layer_4_dist_FINAL < 450);
+edges = [-250:100:450];
+firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.dir_mod(keep_spikes),edges)
+plot(ps.layer_4_dist_FINAL(keep_spikes),ps.dir_mod(keep_spikes),'.k')
+xlim([-250 450])
+
+keep_spikes = ~ps.v1 & ps.r2 > 0.6 & (ps.layer_4_dist_FINAL > -250 & ps.layer_4_dist_FINAL < 450);
+edges = [-250:100:450];
+firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.tc_mod(keep_spikes),edges)
+plot(ps.layer_4_dist_FINAL(keep_spikes),ps.tc_mod(keep_spikes),'.k')
+xlim([-250 450])
+
+keep_spikes = ~ps.v1 & ps.r2 > 0.6 & (ps.layer_4_dist_FINAL > -250 & ps.layer_4_dist_FINAL < 450);
+edges = [-250:100:450];
+firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.baseline(keep_spikes),edges)
+plot(ps.layer_4_dist_FINAL(keep_spikes),ps.baseline(keep_spikes),'.k')
+xlim([-250 450])
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%% FIGURE 3
+
+edges = [-1:.25:1];
+sup_mod = hist(ps.tc_mod(keep_spikes & (ps.layer_4 | ps.layer_23)),edges);
+sup_mod = sup_mod/sum(sup_mod);
+deep_mod = hist(ps.tc_mod(keep_spikes & (ps.layer_5a | ps.layer_5b)),edges);
+deep_mod = deep_mod/sum(deep_mod);
+figure(1); clf(1); hold on;
+set(gcf,'Position',[306   651   3*187   3*155])
+subplot(2,1,2)
+hd = bar(edges,deep_mod);
+set(hd,'FaceColor','k');
+set(hd,'EdgeColor','k');
+xlim([-1.2 1.2])
+ylim([0 1])
+set(gca,'FontSize',20)
+subplot(2,1,1)
+hs = bar(edges,sup_mod);
+set(hs,'FaceColor','r');
+set(hs,'EdgeColor','r');
+xlim([-1.2 1.2])
+ylim([0 1])
+set(gca,'FontSize',20)
+
+
+edges = [-1:.25:1];
+sup_mod = hist(ps.dir_mod(keep_spikes & (ps.layer_4 | ps.layer_23)),edges);
+sup_mod = sup_mod/sum(sup_mod);
+deep_mod = hist(ps.dir_mod(keep_spikes & (ps.layer_5a | ps.layer_5b)),edges);
+deep_mod = deep_mod/sum(deep_mod);
+figure(2); clf(2); hold on;
+set(gcf,'Position',[494   651   3*187   3*155])
+subplot(2,1,2)
+hd = bar(edges,deep_mod);
+set(hd,'FaceColor','k');
+set(hd,'EdgeColor','k');
+xlim([-1.2 1.2])
+ylim([0 .5])
+set(gca,'FontSize',20)
+subplot(2,1,1)
+hs = bar(edges,sup_mod);
+set(hs,'FaceColor','r');
+set(hs,'EdgeColor','r');
+xlim([-1.2 1.2])
+ylim([0 .5])
+set(gca,'FontSize',20)
+
+
+edges = [0:1:8];
+sup_mod = hist(ps.baseline(keep_spikes & (ps.layer_4 | ps.layer_23)),edges);
+sup_mod = sup_mod/sum(sup_mod);
+deep_mod = hist(ps.baseline(keep_spikes & (ps.layer_5a | ps.layer_5b)),edges);
+deep_mod = deep_mod/sum(deep_mod);
+figure(3); clf(3); hold on;
+set(gcf,'Position',[119   651   3*187   3*155])
+subplot(2,1,2)
+hd = bar(edges,deep_mod);
+set(hd,'FaceColor','k');
+set(hd,'EdgeColor','k');
+xlim([-0.5 8.5])
+ylim([0 .75])
+set(gca,'FontSize',20)
+subplot(2,1,1)
+hs = bar(edges,sup_mod);
+set(hs,'FaceColor','r');
+set(hs,'EdgeColor','r');
+xlim([-0.5 8.5])
+ylim([0 .75])
+set(gca,'FontSize',20)
+
+
+ps.peak = ps.baseline + ps.act;
+edges = [0:2:14];
+sup_mod = hist(ps.peak(keep_spikes & (ps.layer_4 | ps.layer_23)),edges);
+sup_mod = sup_mod/sum(sup_mod);
+deep_mod = hist(ps.peak(keep_spikes & (ps.layer_5a | ps.layer_5b)),edges);
+deep_mod = deep_mod/sum(deep_mod);
+figure(4); clf(4); hold on;
+set(gcf,'Position',[681   651   3*187   3*155])
+subplot(2,1,2)
+hd = bar(edges,deep_mod);
+set(hd,'FaceColor','k');
+set(hd,'EdgeColor','k');
+xlim([-0.5 15.5])
+ylim([0 .75])
+set(gca,'FontSize',20)
+subplot(2,1,1)
+hs = bar(edges,sup_mod);
+set(hs,'FaceColor','r');
+set(hs,'EdgeColor','r');
+xlim([-0.5 15.5])
+ylim([0 .75])
+set(gca,'FontSize',20)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+anm_id = all_anm.names{13}
+anm_num = str2num(anm_id);
+keep_spikes = ps.anm_id == anm_num;
+order_sort = ps.total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order = order_sort(ind,:);
+
+plot_clusters_tuning_paper_opto(all_anm,ps,order(1,:),1,[])
+
+
+
+plot_clusters_tuning_paper_opto(all_anm,ps,ps.total_order(284,:),1,[])
+plot_clusters_tuning_paper_opto(all_anm,ps,ps.total_order(338,:),1,[])
+
+plot_clusters_tuning_only(all_anm,ps,ps.total_order(335,:),0)
+plot_clusters_tuning_only(all_anm,ps,ps.total_order(338,:),0)
+
+plot_clusters_tuning_only(all_anm,ps,ps.total_order(258,:),0)
+plot_clusters_tuning_only(all_anm,ps,ps.total_order(262,:),0)
+
+
+plot_clusters_tuning_paper3_both(all_anm,ps,ps.total_order(258,:),1,rasters)
+
+
+i_anm = 11;
+i_c1 = 6;
+i_c2 = 10;
+
+amp_1 = all_anm.data{i_anm}.d.summarized_cluster{i_c1}.mean_spike_amp;
+amp_2 = all_anm.data{i_anm}.d.summarized_cluster{i_c2}.mean_spike_amp;
+
+figure;
+clf;
+hold on
+plot(amp_1,'k')
+plot(amp_2,'b')
+
+mean_spike_amp
+
+
+i_anm = 13;
+i_c1 = 2;
+spike_times = all_anm.data{i_anm}.d.summarized_cluster{i_c1}.spike_times_ephys;
+spike_trials = all_anm.data{i_anm}.d.summarized_cluster{i_c1}.spike_trials;
+trial_range = [all_anm.data{i_anm}.d.anm_params.trial_range_start(1):min(all_anm.data{i_anm}.d.anm_params.trial_range_end(1),4000)];
+laser_data = all_anm.data{i_anm}.laser_data;
+first_only = 0;
+RASTER = get_evoked_spike_probability(spike_times,spike_trials,trial_range,laser_data,first_only)
+figure; plot_spk_psth([],RASTER)
+figure; plot_spk_raster([],RASTER,[],[],[])
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+dir_name = '/Users/sofroniewn/Documents/DATA/ephys_summary_rev14';
+if exist(dir_name)~=7
+   mkdir(dir_name);
+end
+cd(dir_name);
+
+%% PUBLISH ALL ANIMALS one by one
+ps.opto_anm = zeros(length(ps.anm_id),1);
+ for ij = 11:numel(all_anm_id)
+      anm_id = all_anm.names{ij}
+      anm_num = str2num(anm_id);
+      ps.opto_anm = ps.opto_anm | (ps.anm_id == anm_num);
+end
+
+keep_spikes = ps.opto_anm & ps.clean_clusters;
+      order_sort = ps.total_order(keep_spikes,:);
+      [val ind] = sort(order_sort(:,4));
+      order = order_sort(ind,:);
+      outputDir = ['ALL_both_clean'];
+      publish('publish_all_ephys3.m','showCode',false,'outputDir',outputDir); close all;
+ 
+dir_name = '/Users/sofroniewn/Documents/DATA/ephys_summary_rev14';
+if exist(dir_name)~=7
+   mkdir(dir_name);
+end
+cd(dir_name);
+
+% PUBLISH ALL CLEAN CLUSTERS IN C1C2, L2/3, L4
+%keep_spikes = ~ps.c1c2 & (ps.layer_23 | ps.layer_4) & ps.clean_clusters;
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6 & (ps.layer_23 | ps.layer_4);
+sum(keep_spikes)
+order_sort = ps.total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order = order_sort(ind,:);
+outputDir = ['ACCEPT_all_tune_sup'];
+publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+
+% PUBLISH ALL CLEAN CLUSTERS IN C1C2, L2/3, L4
+%keep_spikes = ~ps.c1c2 & (ps.layer_23 | ps.layer_4) & ps.clean_clusters;
+keep_spikes = ~ps.clean_clusters & ~ps.v1 & ps.r2 > 0.6 & (ps.layer_23 | ps.layer_4);
+sum(keep_spikes)
+order_sort = ps.total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order = order_sort(ind,:);
+outputDir = ['REJECT_all_tune_sup'];
+publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+
+% PUBLISH ALL CLEAN CLUSTERS IN C1C2, L2/3, L4
+%keep_spikes = ~ps.c1c2 & (ps.layer_23 | ps.layer_4) & ps.clean_clusters;
+keep_spikes = ~ps.clean_clusters & ~ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6 & (ps.layer_23 | ps.layer_4);
+sum(keep_spikes)
+order_sort = ps.total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order = order_sort(ind,:);
+outputDir = ['REJECT_FS_all_tune_sup'];
+publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+
+% PUBLISH ALL CLEAN CLUSTERS IN C1C2, L2/3, L4
+%keep_spikes = ~ps.c1c2 & (ps.layer_23 | ps.layer_4) & ps.clean_clusters;
+keep_spikes = ps.clean_clusters & ~ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6 & (ps.layer_23 | ps.layer_4);
+sum(keep_spikes)
+order_sort = ps.total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order = order_sort(ind,:);
+outputDir = ['ACCEPT_FS_all_tune_sup'];
+publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+
+
+% PUBLISH ALL CLEAN CLUSTERS IN C1C2, L2/3, L4
+%keep_spikes = ~ps.c1c2 & (ps.layer_23 | ps.layer_4) & ps.clean_clusters;
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6 & ~(ps.layer_23 | ps.layer_4);
+sum(keep_spikes)
+order_sort = ps.total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order = order_sort(ind,:);
+outputDir = ['ACCEPT_all_tune_deep'];
+publish('publish_all_ephys.m','showCode',false,'outputDir',outputDir); close all;
+
+% PUBLISH ALL CLEAN CLUSTERS IN C1C2, L2/3, L4
+%keep_spikes = ~ps.c1c2 & (ps.layer_23 | ps.layer_4) & ps.clean_clusters;
+keep_spikes = ps.clean_clusters & ~ps.v1 & ps.opto_anm;
+sum(keep_spikes)
+order_sort = ps.total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order = order_sort(ind,:);
+outputDir = ['ACCEPT_with_fs_opto'];
+publish('publish_all_ephys3.m','showCode',false,'outputDir',outputDir); close all;
+
+% PUBLISH ALL CLEAN CLUSTERS IN C1C2, L2/3, L4
+%keep_spikes = ~ps.c1c2 & (ps.layer_23 | ps.layer_4) & ps.clean_clusters;
+keep_spikes = ~ps.clean_clusters & ~ps.v1 & ps.opto_anm;
+sum(keep_spikes)
+order_sort = ps.total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order = order_sort(ind,:);
+outputDir = ['REJECT_with_fs_opto'];
+publish('publish_all_ephys3.m','showCode',false,'outputDir',outputDir); close all;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+for ij = 11:numel(all_anm_id)
+  [base_dir anm_params] = ephys_anm_id_database(all_anm.names{ij},0)
+  trial_range =  [anm_params.trial_range_start(1):min(anm_params.trial_range_end(1),4000)];
+  [laser_data] = func_extract_laser_power(base_dir, trial_range, 'laser_data_all', 1);
+  all_anm.data{ij}.laser_data = laser_data;
+end
+
+
+clust_id = 13;
+
+spike_times = all_anm.data{12}.d.summarized_cluster{clust_id}.ephys_time;
+spike_trials = all_anm.data{12}.d.summarized_cluster{clust_id}.trial_num;
+first_only = 0;
+RASTER = get_evoked_spike_probability(spike_times,spike_trials,trial_range,laser_data,first_only)
+figure; plot_spk_psth([],RASTER)
+figure; plot_spk_raster([],RASTER)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
 
 curves.onset(curves.onset < 0) = 0;
 curves.offset(curves.offset < 0) = 0;
@@ -3129,26 +3793,15 @@ plot_tuning_curve_ephys_col([],tuning_curve)
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+anm_id = 2;
+cluster_id = 3;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+script_svd_raster;
 
 
 

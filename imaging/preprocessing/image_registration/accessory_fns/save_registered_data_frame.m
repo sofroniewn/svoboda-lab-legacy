@@ -27,7 +27,7 @@ for ij = 1:tSize
 end
 
 
- 	% write behaviour to text
+ % write behaviour data
  if ~isempty(trial_data)
     type_name = 'registered_bv';
 	new_dir = fullfile(data_dir,type_name,['behaviour' trial_str]);
@@ -43,9 +43,9 @@ end
 		frame_num = ij + prev_frame_num;
 		file_name = ['behaviour_' sprintf('%06d',frame_num)];
 		registered_file_name = fullfile(new_dir,[file_name '.bin']);	
- 			fid = fopen(registered_file_name,'w');
- 			fwrite(fid,bv_tmp,'uint16');
- 			fclose(fid);
+ 		fid = fopen(registered_file_name,'w');
+ 		fwrite(fid,bv_tmp,'uint16');
+ 		fclose(fid);
 	end
 end
  

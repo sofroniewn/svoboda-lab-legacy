@@ -149,17 +149,82 @@ keep_powers_num = 1:2;
 layer_4 = 28.7;
 ch_exclude = [20];
 
+%%
+ij = 13;
+all_anm.names{ij}
+[base_dir anm_params] = ephys_anm_id_database(all_anm.names{ij},0)
+trial_range =  [anm_params.trial_range_start(1):min(anm_params.trial_range_end(1),4000)];
+laser_data = all_anm.data{ij}.laser_data;
+keep_powers_num = [3:5];
+trial_range = [1:4000];
+ch_exclude = [12];
+time_range = [];
+layer_4 = 14.6;
 
+ij = 14;
+all_anm.names{ij}
+[base_dir anm_params] = ephys_anm_id_database(all_anm.names{ij},0)
+trial_range =  [anm_params.trial_range_start(1):min(anm_params.trial_range_end(1),4000)];
+laser_data = all_anm.data{ij}.laser_data;
+keep_powers_num = [3:5];
+trial_range = [1:4000];
+ch_exclude = [14 15 18];
+time_range = [];
+layer_4 = 5.4;
+
+ij = 15;
+all_anm.names{ij}
+[base_dir anm_params] = ephys_anm_id_database(all_anm.names{ij},0)
+trial_range =  [anm_params.trial_range_start(1):min(anm_params.trial_range_end(1),4000)];
+laser_data = all_anm.data{ij}.laser_data;
+keep_powers_num = [3:5];
+trial_range = [1:4000];
+ch_exclude = [12];
+time_range = [];
+layer_4 = 6.4;
+
+ij = 16;
+all_anm.names{ij}
+[base_dir anm_params] = ephys_anm_id_database(all_anm.names{ij},0)
+trial_range =  [anm_params.trial_range_start(1):min(anm_params.trial_range_end(1),4000)];
+laser_data = all_anm.data{ij}.laser_data;
+keep_powers_num = [3:5];
+trial_range = [1:4000];
+ch_exclude = [2 4 7 13 15 16 20];
+time_range = [];
+layer_4 = 21.4;
+
+ij = 17;
+all_anm.names{ij}
+[base_dir anm_params] = ephys_anm_id_database(all_anm.names{ij},0)
+trial_range =  [anm_params.trial_range_start(1):min(anm_params.trial_range_end(1),4000)];
+laser_data = all_anm.data{ij}.laser_data;
+keep_powers_num = [3:5];
+trial_range = [1:4000];
+ch_exclude = [12];
+time_range = [];
+layer_4 = 23.4;
+
+ij = 18;
+all_anm.names{ij}
+[base_dir anm_params] = ephys_anm_id_database(all_anm.names{ij},0)
+trial_range =  [anm_params.trial_range_start(1):min(anm_params.trial_range_end(1),4000)];
+laser_data = all_anm.data{ij}.laser_data;
+keep_powers_num = [3:5];
+trial_range = [1:4000];
+ch_exclude = [2 4 7 13 15 16 20];
+time_range = [];
+layer_4 = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% CSD
-[laser_data] = func_extract_laser_power(base_dir, trial_range, lase_data_name, 0);
+%[laser_data] = func_extract_laser_power(base_dir, trial_range, lase_data_name, 0);
 power_values = round(laser_data.max_power*10);
-power_range = unique(power_values);
+power_range = unique(power_values(~isnan(power_values)));
 keep_powers = power_range(keep_powers_num);
 
-CSD = get_CSD(laser_data,trial_range,power_values,keep_powers,ch_exclude);
+CSD = get_CSD(laser_data,trial_range,power_values,keep_powers,ch_exclude,time_range);
 figure('Position',[443   376   789   430]); plot_CSD([],CSD,'CSD')
 figure('Position',[73   361   338   186]); plot_CSD([],CSD,'LFP')
 figure('Position',[73   103   338   186]); plot_CSD([],CSD,'traces')

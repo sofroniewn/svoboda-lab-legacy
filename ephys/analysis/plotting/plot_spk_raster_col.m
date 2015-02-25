@@ -21,10 +21,10 @@ end
 if ~isempty(raster_mat_full)
 		imagesc(RASTER.time_range,RASTER.trial_range,raster_mat_full,[0 30]);
 end	
-
 num_groups = numel(RASTER.spikes);
 
 	for i_group = 1:num_groups
+%		[min(RASTER.trials{i_group}) max(RASTER.trials{i_group})]
 		if isempty(rescale_time)
 			plot(RASTER.spikes{i_group},RASTER.trials{i_group},'.','Color','k','MarkerSize',10)
 		else
@@ -35,7 +35,6 @@ num_groups = numel(RASTER.spikes);
 		end
 	end
 	
-
 ylim(RASTER.trial_range)
 xlim(RASTER.time_range)
 ylabel('Trial number')

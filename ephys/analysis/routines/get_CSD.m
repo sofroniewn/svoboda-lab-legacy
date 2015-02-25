@@ -1,9 +1,9 @@
-function CSD = get_CSD(laser_data,trial_range,power_values,keep_powers,ch_exclude)
+function CSD = get_CSD(laser_data,trial_range,power_values,keep_powers,ch_exclude,time_range)
 
 keep_inds = ismember(laser_data.trial,trial_range) & ismember(power_values,keep_powers);
 
 laser_onset = find(laser_data.time_window == 0);
-avg_vlt = squeeze(mean(laser_data.raw_vlt(keep_inds,:,:),1));
+avg_vlt = squeeze(nanmean(laser_data.raw_vlt(keep_inds,:,:),1));
 avg_vlt = bsxfun(@minus,avg_vlt,mean(avg_vlt(:,(laser_onset-50):laser_onset),2));
 
 ch_exclude(ch_exclude == 1) = [];
@@ -35,7 +35,11 @@ CSD.vlt_trace = -avg_vlt'*10^4+offset_shift';
 CSD.vlt_cmap = avg_vlt; %flipdim(avg_vlt,1);
 CSD.vals = CSD.vals; %flipdim(CSD.vals,1);
 
-CSD.profile = mean(CSD.vals(:,551:590),2);
+if isempty(time_range)
+    time_range = 551:590;
+end
+
+CSD.profile = mean(CSD.vals(:,time_range),2);
 
 % upsample CSD
 CSD.profile_chan_interp = [1:1/10:length(CSD.profile)];

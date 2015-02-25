@@ -16,8 +16,8 @@ for ij = 1:size(order,1)
     s_ind = find(strcmp(d.p_labels,'anm_id'));
     anm_id = d.p_nj(clust_num,s_ind);
     
-    figure(110+ij)
-    clf(110+ij)
+    figure(120+ij)
+    clf(120+ij)
     fig_props = [];
     set(gcf,'Color',[1 1 1])
 
@@ -122,7 +122,7 @@ for ij = 1:size(order,1)
     text(.05,.89,sprintf('Modulation %.2fx',running_modulation),'Units','Normalized','Color','r','Background','w')
     
     % Make trial Raster to running and contra touch
-    RASTER = d.summarized_cluster{clust_num}.LASER_RUNNING_RASTER;
+    RASTER = d.summarized_cluster{clust_num}.RUNNING_RASTER;
     subtightplot(num_plots_h,num_plots_w,[6 7],gap,marg_h,marg_w)
     
     [raster_mat raster_mat_full raster_mat_rescale_full raster_col_mat rescale_time] = get_raster_col_mat(d);
@@ -139,7 +139,7 @@ for ij = 1:size(order,1)
     text(.73,.73,sprintf('OFF ADAPT %.2f',ps.off_adapt(tot_ind)),'Units','Normalized','Color','r','Background','w')
  
     % Make touch tuning
-    tuning_curve = d.summarized_cluster{clust_num}.LASER_RUNNING_TOUCH_TUNING;
+    tuning_curve = d.summarized_cluster{clust_num}.TOUCH_TUNING;
     
     full_x = [];
     full_y = [];

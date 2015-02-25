@@ -10,7 +10,7 @@ badinds = isnan(y) | isnan(x);
 
 opts = optimoptions('fminunc','display','off');
 if isempty(initPrs)
-	initPrs = [mean(x) 1 mean(y) 1 (prctile(z,90)-prctile(z,10)) prctile(z,10)];
+	initPrs = [mean(x) 1 mean(y) 1 (prctile(z,90)-prctile(z,10))];
 end
 warning('off','all');
 estPrs = fminunc(@(prs) fitGS2D_errFun(prs,x,y,z),initPrs,opts);

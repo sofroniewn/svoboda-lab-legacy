@@ -59,17 +59,16 @@ end
 %c_map = jet(64);
 %c_map = c_map/2+.5;
 
-c_map = zeros(64,3);
- c_map(1:20,1) = linspace(144,(253+144)/2,20)/256;
- c_map(1:20,2) = linspace(185,(174+185)/2,20)/256;
- c_map(1:20,3) = linspace(247,(107+247)/2,20)/256;
- c_map(21:42,1) = linspace((253+144)/2,253,22)/256;
- c_map(21:42,2) = linspace((174+185)/2,174,22)/256;
- c_map(21:42,3) = linspace((107+247)/2,107,22)/256;
- c_map(43:64,1) = linspace(253,239,22)/256;
- c_map(43:64,2) = linspace(174,101,22)/256;
- c_map(43:64,3) = linspace(107,72,22)/256;
-
+ c_map = zeros(64,3);
+ c_map(1:24,1) = linspace(144,(253+144)/2,24)/256;
+ c_map(1:24,2) = linspace(185,(174+185)/2,24)/256;
+ c_map(1:24,3) = linspace(247,(107+247)/2,24)/256;
+ c_map(24:42,1) = linspace((253+144)/2,253,19)/256;
+ c_map(24:42,2) = linspace((174+185)/2,174,19)/256;
+ c_map(24:42,3) = linspace((107+247)/2,107,19)/256;
+ c_map(42:64,1) = linspace(253,239,23)/256;
+ c_map(42:64,2) = linspace(174,101,23)/256;
+ c_map(42:64,3) = linspace(107,72,23)/256;
 
 %c_map = cbrewer('div','RdYlBu',64);
 %c_map = flipdim(c_map,1)/1.5+.33;
@@ -84,7 +83,8 @@ for ij = 1:length(tuning_curve.regressor_obj.x_vals)
 	col_mat = c_map(ind,:);
 
 hb = bar(tuning_curve.regressor_obj.x_vals(ij),tuning_curve.means(ij));
-set(hb,'barwidth',1.5) %4.5
+dd = mean(diff(tuning_curve.regressor_obj.x_vals));
+set(hb,'barwidth',dd/4*3) %4.5
 set(hb,'FaceColor',col_mat)
 set(hb,'EdgeColor',col_mat)
 %set(hb,'LineWidth',2)
@@ -102,8 +102,9 @@ end
 %plot(tuning_curve.x_vals,(tuning_curve.means+tuning_curve.stds))
 %plot(tuning_curve.x_vals,(tuning_curve.means-tuning_curve.stds))
 ylim([0 max_y])
-%xlim([tuning_curve.regressor_obj.x_range])
-xlim([-2.5 32.5])
+xlim([tuning_curve.regressor_obj.x_range]+[-.5 .5])
+%xlim([-2.5 32.5])
+
 xlabel(tuning_curve.regressor_obj.x_label)
 ylabel(tuning_curve.regressor_obj.y_label)
 set(gca,'xtick',tuning_curve.regressor_obj.x_tick)

@@ -41,7 +41,7 @@ for i_trial = min(spike_trials):max(spike_trials)
 		    	offset_times_all = [offset_times_all;tmp];
 		    	offset_reps_all = [offset_reps_all;repmat(n_rep,length(tmp),1)];
 		    else
-			    for ij = 1:length(laser_data.onset_inds{n_trial})
+			    for ij = 1:min(length(laser_data.onset_inds{n_trial}),length(laser_data.offset_times{n_trial}))
 		    		tmp = spike_times_trial - laser_data.onset_times{n_trial}(ij);
 			    	tmp = tmp(tmp>min_time & tmp < max_time);
 	    			n_rep = n_rep+1;

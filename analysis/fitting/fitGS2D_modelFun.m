@@ -7,4 +7,4 @@ predic_y = 1./ (1 + exp((-(yvals-prs(3))/prs(4))));
 predic_y = predic_y/max(predic_y);
 
 predic = predic_x.*predic_y;
-predic = predic*prs(5) + prs(6);
+predic = predic*prs(5);

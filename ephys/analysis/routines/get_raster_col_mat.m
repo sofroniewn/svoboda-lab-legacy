@@ -1,9 +1,10 @@
 function [raster_mat raster_mat_full raster_mat_rescale_full raster_col_mat rescale_time] = get_raster_col_mat(d)
 
-exp_type = d.anm_params.exp_type;
+exp_type = d.anm_params.exp_type
 
 id_type = 'olR';
 [group_ids_RASTER groups_RASTER] = define_group_ids(exp_type,id_type,[]);
+    group_ids_RASTER
     
 raster_mat = zeros(length(group_ids_RASTER),size(d.s_ctk,2));
 raster_mat_rescale = zeros(length(group_ids_RASTER),size(d.s_ctk,2));
@@ -47,3 +48,5 @@ raster_col_mat = reshape(raster_col_mat,length(group_ids_RASTER),size(d.s_ctk,2)
 
 rescale_time = (max(rescale_time)-rescale_time)/max(rescale_time);
 rescale_time(rescale_time==0) = 1;
+
+whos

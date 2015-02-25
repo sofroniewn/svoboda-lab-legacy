@@ -199,8 +199,6 @@ case '256043'
             barrel_loc = 'C2';
             boundaries = [-500  -350    -95 100 270 500 750];
 
-
-
     case '252776'
         if laser_on
            % base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_237723/2014_06_17/run_04'; %laser
@@ -264,8 +262,8 @@ case '256043'
             cell_reject = [];
             run_thresh = 5; 
             exp_type = 'laser_ol_new'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
-            layer_4 = 15.7;
-            layer_4_corr = 21.5;
+            layer_4 = 11.1;
+            layer_4_corr = 11.1;
             AP = 1.97;
             ML = 3.6;
             barrel_loc = 'C2';
@@ -281,8 +279,8 @@ case '256043'
             cell_reject = [];
             run_thresh = 5; 
             exp_type = 'laser_ol_new'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
-            layer_4 = 15.7;
-            layer_4_corr = 21.5;
+            layer_4 = 5.4;
+            layer_4_corr = 5.4;
             AP = 1.97;
             ML = 3.6;
             barrel_loc = 'C2';
@@ -298,8 +296,8 @@ case '256043'
             cell_reject = [];
             run_thresh = 5; 
             exp_type = 'laser_ol_new'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
-            layer_4 = 15.7;
-            layer_4_corr = 21.5;
+            layer_4 = 6.4;
+            layer_4_corr = 6.4;
             AP = 1.97;
             ML = 3.6;
             barrel_loc = 'C2';
@@ -315,8 +313,8 @@ case '256043'
             cell_reject = [];
             run_thresh = 5; 
             exp_type = 'laser_ol_new'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
-            layer_4 = 15.7;
-            layer_4_corr = 21.5;
+            layer_4 = 21.4;
+            layer_4_corr = 21.4;
             AP = 1.97;
             ML = 3.6;
             barrel_loc = 'C2';
@@ -332,8 +330,8 @@ case '256043'
             cell_reject = [];
             run_thresh = 5; 
             exp_type = 'laser_ol_new'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
-            layer_4 = 15.7;
-            layer_4_corr = 21.5;
+            layer_4 = 23.4;
+            layer_4_corr = 23.4;
             AP = 1.97;
             ML = 3.6;
             barrel_loc = 'C2';
@@ -349,14 +347,14 @@ case '256043'
             cell_reject = [];
             run_thresh = 5; 
             exp_type = 'laser_ol_new'; % 'classic_ol_cl' or 'bilateral_ol_cl' or 'laser_ol';
-            layer_4 = 15.7;
-            layer_4_corr = 21.5;
+            layer_4 = 10.0;
+            layer_4_corr = 10.0;
             AP = 1.97;
             ML = 3.6;
             barrel_loc = 'C2';
             boundaries = [-550 -395    -130    70  220 425 670];
         end
-
+        
        otherwise
         error('Unrecognized animal id')
 end
