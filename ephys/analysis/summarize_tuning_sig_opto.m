@@ -55,7 +55,6 @@ output.trace_t = zeros(1,500);
     u_vals = unique([0;u_vals;30]);
     raster_mat_full = max(raster_mat_full(:)) - raster_mat_full;
     raster_mat_full = flipdim(raster_mat_full,1);
-    group_ids
     
 tc = zeros(length(group_ids),1);
     for ij = 1:length(group_ids)
@@ -69,7 +68,7 @@ tc = zeros(length(group_ids),1);
     exp_type = d.anm_params.exp_type;
     keep_name = 'running';
     
-    regressor_tune_type = 'Smooth'; %DoubleSigmoid
+    regressor_tune_type = 'DoubleSigmoid'; %DoubleSigmoid
     stim_name = 'laser_power';
     time_range = [0 4];
     
@@ -165,12 +164,12 @@ tc = zeros(length(group_ids),1);
     curve_G = tuning_curve.model_fit.curve;
     x_vals = tuning_curve.regressor_obj.x_fit_vals;
 
-    % y = tuning_curve.means;
-    % predic = fitDoubleSigmoid_modelFun(tuning_curve.regressor_obj.x_vals,tuning_curve.model_fit.estPrs);
-    % sst = nansum((y(:)-mean(y(:))).^2);
-    % sse = nansum((y(:)-predic(:)).^2);
-    % r2 = 1 - sse/sst;
-   r2 = 1; 
+     y = tuning_curve.means;
+     predic = fitDoubleSigmoid_modelFun(tuning_curve.regressor_obj.x_vals,tuning_curve.model_fit.estPrs);
+     sst = nansum((y(:)-mean(y(:))).^2);
+     sse = nansum((y(:)-predic(:)).^2);
+     r2 = 1 - sse/sst
+%   r2 = 1; 
 %    r2 = tuning_curve.model_fit.r2;
  
 

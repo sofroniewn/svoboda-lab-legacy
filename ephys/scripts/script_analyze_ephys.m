@@ -677,6 +677,73 @@ figure; plot_spk_psth([],RASTER)
 figure; plot_spk_raster([],RASTER,[],[],[])
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% OPTO / EPHYS
+ps.opto_anm = zeros(length(ps.anm_id),1);
+ for ij = 11:numel(all_anm_id)
+      anm_id = all_anm.names{ij}
+      anm_num = str2num(anm_id);
+      ps.opto_anm = ps.opto_anm | (ps.anm_id == anm_num);
+end
+
+keep_spikes = ps.opto_anm & ps.clean_clusters;
+      order_sort = ps.total_order(keep_spikes,:);
+      [val ind] = sort(order_sort(:,4));
+      order = order_sort(ind,:);
+pd = get_opto_tune_params(all_anm,ps,order,rasters);
+
+keep_pd = pd.opto_tc_peak > 1;
+figure; hold on; plot(pd.opto_tc_mod(keep_pd),pd.wall_tc_mod(keep_pd),'.k')
+
+
+
+
+
+
+dir_name = '/Users/sofroniewn/Documents/DATA/ephys_summary_rev15';
+if exist(dir_name)~=7
+   mkdir(dir_name);
+end
+cd(dir_name);
+
+keep_spikes = ps.opto_anm & ps.clean_clusters & ps.r2 > 0.6; %& ps.layer_4_dist_FINAL > 70;
+order_sort = ps.total_order(keep_spikes,:);
+[val ind] = sort(order_sort(:,4));
+order = order_sort(ind,:);
+outputDir = ['ALL_opto_FINAL'];
+publish('publish_all_ephys3.m','showCode',false,'outputDir',outputDir); close all;
+
+
+[ps rasters_opto] = get_opto_tune_params(all_anm,ps,ps.total_order,rasters);
+
+keep_spikes = ps.opto_anm & ps.clean_clusters & ps.opto_r2' > 0.6;
+
+keep_spikes = ps.opto_anm & ps.clean_clusters & ps.opto_r2' > 0.6;figure; hold on; plot(ps.opto_tc_mod(keep_spikes)+rand(length(ps.opto_tc_mod(keep_spikes)),1)'/10,ps.tc_mod(keep_spikes)+rand(length(ps.opto_tc_mod(keep_spikes)),1)/10,'.k')
+
+
+x = ps.tc_mod(keep_spikes);
+y = ps.opto_tc_mod(keep_spikes);
+[B,BINT,R,RINT,STATS] = regress(x',[y' ones(length(y),1)]);
+
+%pd.layer_4_dist_FINAL(pd.layer_4_dist_FINAL<=-250)=-249;
+keep_spikes = ps.opto_anm & ps.clean_clusters & ps.opto_r2' > 0.6;
+edges = [-350:100:550];
+depth = ps.layer_4_dist_FINAL(keep_spikes);
+depth(depth<-250) = -249;
+firingrate_vs_depth_new(depth,ps.opto_tc_mod(keep_spikes)',edges)
+plot(depth,ps.opto_tc_mod(keep_spikes)','.k')
+xlim([-250 450])
+
+figure
+plot(ps.opto_act(keep_spikes),ps.opto_sup(keep_spikes),'.k')
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
