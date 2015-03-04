@@ -1,4 +1,4 @@
-function plot_clusters_tuning_paper3_both(all_anm,ps,order,plot_on,rasters)
+function plot_clusters_tuning_paper3_both(all_anm,ps,order,plot_on,rasters,rasters_opto)
 
 boundary_labels = {'Pia', 'L1', 'L2/3', 'L4', 'L5A', 'L5B', 'L6'};
 barrel_inds = {'C1','C2','C3','C4','D1','D2','B1','V1'};
@@ -22,7 +22,7 @@ for ikk = 1:size(order,1)
     ih = order(ikk,3);
 
     output_real = rasters{ih};
-    output_opto = summarize_tuning_sig_opto(d,clust_num);        
+    output_opto = rasters_opto{ih}; %summarize_tuning_sig_opto(d,clust_num);        
 
 if output_opto.r2 > 0.6
         figure(110+ikk)
@@ -83,6 +83,7 @@ if output_opto.r2 > 0.6
         subtightplot(num_plots_h,num_plots_w,[3 4],gap,marg_h,marg_w)
         %plot_spk_raster(fig_props,RASTER,[],[],[])
         plot_spk_raster_col([],output.RASTER,[],[],output.raster_mat_full);
+        text(1,.11+.85,sprintf('%0.2f',output.r2),'units','normalized','Color',[0 .5 0],'Fontsize',18)
         set(gca,'xticklabel',[])
         xlabel('')
         

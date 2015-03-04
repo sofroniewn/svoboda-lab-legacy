@@ -1,4 +1,4 @@
-function [ps curves rasters all_anm] = extract_additional_ephys_vars(all_anm,names)
+function [ps curves rasters all_anm] = extract_additional_ephys_vars_paper(all_anm,names)
 
 % extract additional variables from raw data
 

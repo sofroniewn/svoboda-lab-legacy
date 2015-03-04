@@ -77,7 +77,8 @@ for ikk = 1:size(order,1)
         str = boundary_labels{ps.layer_id(ih)+1};
         text(1,.11+.73,sprintf('%s',str),'units','normalized','Color',[0 .5 0],'Fontsize',18)
         text(1,.11+.61,sprintf('%g',ih),'units','normalized','Color',[0 .5 0],'Fontsize',18)
-        
+        text(1,.11+.49,sprintf('%.0f',ps.layer_4_dist_FINAL(ih)),'units','normalized','Color',[0 .5 0],'Fontsize',18)
+
         c_map = zeros(64,3);
         c_map(1:24,1) = linspace(144,(253+144)/2,24)/256;
         c_map(1:24,2) = linspace(185,(174+185)/2,24)/256;

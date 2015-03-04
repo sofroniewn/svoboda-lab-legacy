@@ -99,8 +99,12 @@ if fit_model_on
 %scale_2 = prs(7);
             %max(full_x(:))full_
 
+           if s_ind == 8;
             baseline = nanmean(full_y(full_x<=10))
-            %baseline = nanmean(full_y(full_x>22))
+            else
+            baseline = nanmean(full_y(full_x>22))
+            end
+            
             weight = tuning_curve.means - baseline;
             [mod_depth_up ind_up] = max(weight);
             [mod_depth_down ind_down] = min(weight);

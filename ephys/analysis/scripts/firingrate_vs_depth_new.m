@@ -3,8 +3,7 @@ function firingrate_vs_depth_new(x,y,edges)
 
     [vals stds N] = weighted_hist(x,y,edges);
 
-figure
-hold on
+
 h = bar(edges+mean(diff(edges))/2,vals);
 %h = bar(edges+mean(diff(edges))/2,N);
 
