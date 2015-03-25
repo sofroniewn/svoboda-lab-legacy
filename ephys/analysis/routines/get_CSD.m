@@ -4,7 +4,7 @@ keep_inds = ismember(laser_data.trial,trial_range) & ismember(power_values,keep_
 
 laser_onset = find(laser_data.time_window == 0);
 avg_vlt = squeeze(nanmean(laser_data.raw_vlt(keep_inds,:,:),1));
-avg_vlt = bsxfun(@minus,avg_vlt,mean(avg_vlt(:,(laser_onset-50):laser_onset),2));
+avg_vlt = bsxfun(@minus,avg_vlt,nanmean(avg_vlt(:,(laser_onset-50):laser_onset),2));
 
 ch_exclude(ch_exclude == 1) = [];
 ch_exclude(ch_exclude == size(avg_vlt,1)) = [];

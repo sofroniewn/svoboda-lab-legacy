@@ -71,7 +71,7 @@ close all
 drawnow
 local_save_path = '/Users/sofroniewn/Documents/DATA/ephys_summary_rev13';
 cd(local_save_path);
-load('matlab_session_all3.mat')
+load('matlab_session_all4.mat')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -123,6 +123,56 @@ end
 
 [ps rasters_opto] = get_opto_tune_params(all_anm,ps,ps.total_order,rasters);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ps.ipsi_anm = zeros(length(ps.anm_id),1);
+ for ij = [5 6 8]
+      anm_id = all_anm.names{ij}
+      anm_num = str2num(anm_id);
+      ps.ipsi_anm = ps.ipsi_anm | (ps.anm_id == anm_num);
+end
+
+[ps rasters_ipsi] = get_ipsi_tune_params(all_anm,ps,ps.total_order,rasters);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ps.cl_anm = zeros(length(ps.anm_id),1);
+ for ih = 1:numel(all_anm_id)
+   anm_id = all_anm_id{ih}
+   [base_dir anm_params] = ephys_anm_id_database(anm_id,0);
+  if ismember(anm_params.exp_type,{'bilateral_ol_cl';'ol_cl_different_widths';'classic_ol_cl'})
+      anm_num = str2num(anm_id);
+      ps.cl_anm = ps.cl_anm | (ps.anm_id == anm_num);
+    end
+end
+
+[ps rasters_cl] = get_cl_tune_params(all_anm,ps,ps.total_order,rasters);
+
+ps.spikes_tune_ol = zeros(length(length(ps.cl_anm)),1);
+ps.spikes_tune_cl = zeros(length(length(ps.cl_anm)),1);
+for ij = 1:length(ps.cl_anm)
+  if ps.cl_anm(ij)
+    frac_pts = rasters_cl{ij}.tuning_curve.num_pts/sum(rasters_cl{ij}.tuning_curve.num_pts)*100;
+    ps.spikes_tune_cl(ij) =   mean(rasters_cl{ij}.tuning_curve.means(frac_pts>1));
+    ps.spikes_tune_ol(ij) =   mean(rasters{ij}.tuning_curve.means(frac_pts>1));
+  end
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -228,7 +278,7 @@ plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters)
 ih = 168; % tuned on
 plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters)
 
-ih = 208; % all off
+ih = 271; % all off
 plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters)
 
 ih = 32; % tuned off
@@ -301,7 +351,7 @@ hold on
 set(gcf,'Position',[   440   648   408   408])
 act = ps.act(keep_spikes);
 sup = ps.sup(keep_spikes);
-plot(act,sup,'.k','MarkerSize',25)
+plot(act,sup,'ok','MarkerSize',10,'LineWidth',2)
 xlabel('Activation (Hz)','FontSize',20)
 ylabel('Supression (Hz)','FontSize',20)
 set(gca,'box','off')
@@ -316,64 +366,32 @@ set(gca,'FontSize',20)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%% FIGURE 2 WALL DIST BY LAYER
+%%%%%%%%% FIGURE 2 hist mod ind
 
-keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6;
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6 ;
 
-figure(6); clf(6)
+mod_ind = ps.tc_mod(keep_spikes);
+edges = [-1:.25:1];
+a = hist(mod_ind,edges)
+a = a/sum(a);
+figure(347); clf(347)
 hold on
 set(gcf,'Position',[   440   648   408   408])
-edges = [-250:100:450];
-firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.tc_mod(keep_spikes),edges)
-plot(ps.layer_4_dist_FINAL(keep_spikes),ps.tc_mod(keep_spikes),'.k','MarkerSize',25)
-xlim([-250 450])
-set(gca,'FontSize',20)
-ylabel('Modulation index','FontSize',20)
-set(gca,'TickDir','out')
+h = bar(edges,a);
+xlim([-1 1])
+xlabel('Modulation index','FontSize',20)
+ylabel('Fraction of neurons','FontSize',20)
+set(h,'EdgeColor',[0 0 1])
+set(h,'FaceColor',[0 0 1])
 set(gca,'box','off')
-set(gca,'xtick',[])
-set(gca,'XColor',[1 1 1])
-
-
-
-figure(7); clf(7)
-hold on
-set(gcf,'Position',[   440   648   408   408])
-edges = [-250:100:450];
-firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.baseline(keep_spikes),edges)
-plot(ps.layer_4_dist_FINAL(keep_spikes),ps.baseline(keep_spikes),'.k','MarkerSize',25)
-xlim([-250 450])
-set(gca,'FontSize',20)
-ylabel('Baseline rate (Hz)','FontSize',20)
 set(gca,'TickDir','out')
-set(gca,'box','off')
-set(gca,'xtick',[])
-set(gca,'XColor',[1 1 1])
-
-
-figure(8); clf(8)
-hold on
-set(gcf,'Position',[   440   648   408   408])
-edges = [-250:100:450];
-firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.baseline(keep_spikes) + ps.act(keep_spikes),edges)
-plot(ps.layer_4_dist_FINAL(keep_spikes),ps.baseline(keep_spikes) + ps.act(keep_spikes),'.k','MarkerSize',25)
-xlim([-250 450])
 set(gca,'FontSize',20)
-ylabel('Peak rate (Hz)','FontSize',20)
-set(gca,'TickDir','out')
-set(gca,'box','off')
-set(gca,'xtick',[])
-set(gca,'XColor',[1 1 1])
-set(gca,'ytick',[0:10:30])
+set(gca,'ytick',[0:.2:.8])
+ylim([0 .8])
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -426,7 +444,7 @@ tc_sort = [tc(ind,:)];
 figure(23)
 clf(23)
 set(gcf,'Position',[911   366   516/2   440])
-imagesc(tc_sort(:,1:500))
+imagesc(tc_sort(:,1:500),[-2 3])
 %cmap = cbrewer('seq','Greys',64);
 cmap = cbrewer('div','RdYlBu',64);
 cmap = flipdim(cmap,1);
@@ -436,7 +454,7 @@ set(gca,'visible','off')
 figure(24)
 clf(24)
 set(gcf,'Position',[1169   366   516/2   440])
-imagesc(tc_sort(:,501:end))
+imagesc(tc_sort(:,501:end),[-2 3])
 %cmap = cbrewer('seq','Greys',64);
 cmap = cbrewer('div','RdYlBu',64);
 cmap = flipdim(cmap,1);
@@ -460,7 +478,7 @@ hold on
 set(gcf,'Position',[   440   648   408   408])
 set(gca,'position',[0.2163    0.1635    0.7    0.7])
 hold on;
-plot(ps.towards(keep_spikes),ps.away(keep_spikes),'.k','MarkerSize',15)
+plot(ps.towards(keep_spikes),ps.away(keep_spikes),'ok','MarkerSize',10,'LineWidth',2)
 %plot([0 30],[0 30],'r','LineWidth',2)
 xlabel('Towards (Hz)','FontSize',20)
 ylabel('Away (Hz)','FontSize',20)
@@ -471,6 +489,103 @@ set(gca,'FontSize',20)
 set(gca,'xtick',[0:10:30])
 set(gca,'ytick',[0:10:30])
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%% FIGURE 3 hist dir mod ind
+
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6 ;
+
+mod_ind = ps.dir_mod(keep_spikes);
+edges = [-1:.25:1];
+a = hist(mod_ind,edges)
+a = a/sum(a);
+figure(347); clf(347)
+hold on
+set(gcf,'Position',[   440   648   408   408])
+h = bar(edges,a);
+xlim([-1 1])
+xlabel('Modulation index','FontSize',20)
+ylabel('Fraction of neurons','FontSize',20)
+set(h,'EdgeColor',[0 0 1])
+set(h,'FaceColor',[0 0 1])
+set(gca,'box','off')
+set(gca,'TickDir','out')
+set(gca,'FontSize',20)
+set(gca,'ytick',[0:.2:.8])
+ylim([0 .8])
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%% FIGURE 4 IPSI/CONTRA - examples
+
+ih = 208; % towards on
+plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters)
+plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters_ipsi)
+
+ih = 140; % away on
+plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters)
+plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters_ipsi)
+
+%%%%%%%%% FIGURE 4 IPSI/CONTRA - summary
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ps.ipsi_anm;
+sum(keep_spikes)
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ps.ipsi_anm & ps.r2 > 0.6 ;
+sum(keep_spikes)
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ps.ipsi_anm & ps.ipsi_r2' > 0.6 ;
+sum(keep_spikes)
+
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ps.ipsi_anm & ps.r2 > 0.6 ;
+
+figure(46); clf(46)
+hold on
+set(gcf,'Position',[   440   648   408   408])
+set(gca,'position',[0.2163    0.1635    0.7    0.7])
+hold on;
+plot(ps.act(keep_spikes),ps.ipsi_act(keep_spikes),'ok','MarkerSize',10,'LineWidth',2)
+plot(-ps.sup(keep_spikes),-ps.ipsi_sup(keep_spikes),'ok','MarkerSize',10,'LineWidth',2)
+%plot([0 30],[0 30],'r','LineWidth',2)
+xlabel('Contralateral wall (Hz)','FontSize',20)
+ylabel('Ipsilateral wall (Hz)','FontSize',20)
+set(gca,'box','off')
+set(gca,'TickDir','out')
+xlim([-7 20]); ylim([-7 20]);
+set(gca,'FontSize',20)
+set(gca,'xtick',[-5 0:10:20])
+set(gca,'ytick',[-5 0:10:20])
+centeraxes(gca)
+
+
+
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ps.ipsi_anm & ps.r2 > 0.6 & ps.act > 1;
+a = (ps.act(keep_spikes)-ps.ipsi_act(keep_spikes)')./(ps.act(keep_spikes)+ps.ipsi_act(keep_spikes)');
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ps.ipsi_anm & ps.r2 > 0.6 & ps.sup > 1;
+b = (ps.sup(keep_spikes)-ps.ipsi_sup(keep_spikes)')./(ps.sup(keep_spikes)+ps.ipsi_sup(keep_spikes)');
+a = [a;b];
+edges = [-1:.25:1];
+a = hist(a,edges)
+a = a/sum(a);
+
+figure(347); clf(347)
+hold on
+set(gcf,'Position',[   440   648   408   408])
+h = bar(edges,a);
+xlim([-1 1])
+xlabel('Modulation index','FontSize',20)
+ylabel('Fraction of neurons','FontSize',20)
+set(h,'EdgeColor',[0 0 1])
+set(h,'FaceColor',[0 0 1])
+set(gca,'box','off')
+set(gca,'TickDir','out')
+set(gca,'FontSize',20)
+set(gca,'ytick',[0:.1:.5])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -481,26 +596,143 @@ set(gca,'ytick',[0:10:30])
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%% FIGURE 3 WALL VEL layer dist
+%%%%%%%%% FIGURE 5 open / closed example neurons
+
+plot_clusters_tuning_paper6_ol_cl(all_anm,ps,ps.total_order(155,:),1,rasters,rasters_cl)
+plot_clusters_tuning_paper6_ol_cl(all_anm,ps,ps.total_order(141,:),1,rasters,rasters_cl)
+
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.cl_anm & ps.r2 > 0.6 ;
+
+figure(46); clf(46)
+hold on
+set(gcf,'Position',[   440   648   408   408])
+set(gca,'position',[0.2163    0.1635    0.7    0.7])
+hold on;
+plot(ps.spikes_tune_ol(keep_spikes),ps.spikes_tune_cl(keep_spikes),'ok','MarkerSize',10,'LineWidth',2)
+xlabel('Open loop response (Hz)','FontSize',20)
+ylabel('Closed loop response (Hz)','FontSize',20)
+set(gca,'box','off')
+set(gca,'TickDir','out')
+xlim([0 30]); ylim([0 30]);
+set(gca,'FontSize',20)
+set(gca,'xtick',[0:10:30])
+set(gca,'ytick',[0:10:30])
+
+
+
+mod_ind = (ps.spikes_tune_ol - ps.spikes_tune_cl)./(ps.spikes_tune_ol + ps.spikes_tune_cl);
+edges = [-1:.25:1];
+a = hist(mod_ind(keep_spikes),edges)
+a = a/sum(a);
+figure(347); clf(347)
+hold on
+set(gcf,'Position',[   440   648   408   408])
+h = bar(edges,a);
+xlim([-1 1])
+xlabel('Modulation index','FontSize',20)
+ylabel('Fraction of neurons','FontSize',20)
+set(h,'EdgeColor',[0 0 1])
+set(h,'FaceColor',[0 0 1])
+set(gca,'box','off')
+set(gca,'TickDir','out')
+set(gca,'FontSize',20)
+set(gca,'ytick',[0:.2:.8])
+ylim([0 .8])
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%% FIGURE 6 WALL DIST BY LAYER
 
 keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6;
 
+figure(6); clf(6)
+hold on
+set(gcf,'Position',[440   648   408   408])
+edges = [-250:100:450];
+firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.tc_mod(keep_spikes),edges)
+plot(ps.tc_mod(keep_spikes),ps.layer_4_dist_FINAL(keep_spikes),'ok','MarkerSize',10,'LineWidth',2)
+plot([0 0],[-250 450],'LineWidth',2,'Color','k')
+ylim([-250 450])
+set(gca,'FontSize',20)
+xlabel('Modulation index','FontSize',20)
+set(gca,'TickDir','out')
+set(gca,'box','off')
+set(gca,'ytick',[])
+set(gca,'ydir','rev')
+set(gca,'yColor',[1 1 1])
+
+
+
+figure(7); clf(7)
+hold on
+set(gcf,'Position',[   440   648   408   408])
+edges = [-250:100:450];
+firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.baseline(keep_spikes),edges)
+plot(ps.baseline(keep_spikes),ps.layer_4_dist_FINAL(keep_spikes),'ok','MarkerSize',10,'LineWidth',2)
+plot([0 0],[-250 450],'LineWidth',2,'Color','k')
+ylim([-250 450])
+set(gca,'FontSize',20)
+xlabel('Baseline rate (Hz)','FontSize',20)
+set(gca,'TickDir','out')
+set(gca,'box','off')
+set(gca,'ytick',[])
+set(gca,'ydir','rev')
+set(gca,'yColor',[1 1 1])
+
+
+figure(8); clf(8)
+hold on
+set(gcf,'Position',[   440   648   408   408])
+edges = [-250:100:450];
+firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.baseline(keep_spikes) + ps.act(keep_spikes),edges)
+plot(ps.baseline(keep_spikes) + ps.act(keep_spikes),ps.layer_4_dist_FINAL(keep_spikes),'ok','MarkerSize',10,'LineWidth',2)
+plot([0 0],[-250 450],'LineWidth',2,'Color','k')
+ylim([-250 450])
+set(gca,'FontSize',20)
+xlabel('Peak rate (Hz)','FontSize',20)
+set(gca,'TickDir','out')
+set(gca,'box','off')
+set(gca,'ytick',[])
+set(gca,'ydir','rev')
+set(gca,'yColor',[1 1 1])
 
 figure(17); clf(17)
 hold on
 set(gcf,'Position',[   440   648   408   408])
 edges = [-250:100:450];
 firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.dir_mod(keep_spikes),edges)
-plot(ps.layer_4_dist_FINAL(keep_spikes),ps.dir_mod(keep_spikes),'.k','MarkerSize',25)
-xlim([-250 450])
+plot(ps.dir_mod(keep_spikes),ps.layer_4_dist_FINAL(keep_spikes),'ok','MarkerSize',10,'LineWidth',2)
+ylim([-250 450])
 set(gca,'FontSize',20)
-ylabel('Modulation index','FontSize',20)
+xlabel('Direction index','FontSize',20)
 set(gca,'TickDir','out')
 set(gca,'box','off')
-set(gca,'xtick',[])
-set(gca,'XColor',[1 1 1])
+set(gca,'ytick',[])
+set(gca,'ydir','rev')
+set(gca,'yColor',[1 1 1])
 
-
+figure(117); clf(117)
+hold on
+set(gcf,'Position',[   440   648   408   408])
+edges = [-250:100:450];
+firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.dir_mod(keep_spikes),edges)
+ylim([-250 450])
+set(gca,'FontSize',20)
+xlabel('Number of units','FontSize',20)
+set(gca,'TickDir','out')
+set(gca,'box','off')
+set(gca,'ytick',[])
+set(gca,'ydir','rev')
+set(gca,'yColor',[1 1 1])
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -543,7 +775,7 @@ hold on
 set(gcf,'Position',[   440   648   408   408])
 set(gca,'position',[0.2163    0.1635    0.7    0.7])
 hold on;
-plot(ps.opto_tc_mod(keep_spikes)+rand(length(ps.opto_tc_mod(keep_spikes)),1)'/10,ps.tc_mod(keep_spikes)+rand(length(ps.opto_tc_mod(keep_spikes)),1)/10,'.k','MarkerSize',15)
+plot(ps.opto_tc_mod(keep_spikes)+rand(length(ps.opto_tc_mod(keep_spikes)),1)'/10,ps.tc_mod(keep_spikes)+rand(length(ps.opto_tc_mod(keep_spikes)),1)/10,'ok','MarkerSize',10,'LineWidth',2)
 %plot([0 30],[0 30],'r','LineWidth',2)
 xlabel('Optogentic modulation','FontSize',20)
 ylabel('Wall modulation','FontSize',20)
@@ -582,14 +814,15 @@ depth = ps.layer_4_dist_FINAL(keep_spikes);
 depth(depth<-250) = -249;
 
 firingrate_vs_depth_new(depth,ps.opto_tc_mod(keep_spikes),edges)
-plot(depth,ps.opto_tc_mod(keep_spikes),'.k','MarkerSize',25)
-xlim([-250 450])
+plot(ps.opto_tc_mod(keep_spikes),depth,'ok','MarkerSize',10,'LineWidth',2)
+ylim([-250 450])
 set(gca,'FontSize',20)
-ylabel('Modulation index','FontSize',20)
+xlabel('Modulation index','FontSize',20)
 set(gca,'TickDir','out')
 set(gca,'box','off')
-set(gca,'xtick',[])
-set(gca,'XColor',[1 1 1])
+set(gca,'ytick',[])
+set(gca,'ydir','rev')
+set(gca,'yColor',[1 1 1])
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -620,5 +853,23 @@ cd(dir_name);
       publish('publish_all_ephys3.m','showCode',false,'outputDir',outputDir); close all;
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PUBLISH ALL OPTO UNITS
+
+keep_spikes = ps.ipsi_anm & ps.clean_clusters;
+
+
+dir_name = '/Users/sofroniewn/Documents/DATA/ephys_PAPER';
+if exist(dir_name)~=7
+   mkdir(dir_name);
+end
+cd(dir_name);
+
+
+      order_sort = ps.total_order(keep_spikes,:);
+      [val ind] = sort(order_sort(:,4));
+      order = order_sort(ind,:);
+      outputDir = ['ALL_ipsi2'];
+      publish('publish_all_ephys3.m','showCode',false,'outputDir',outputDir); close all;
 
 

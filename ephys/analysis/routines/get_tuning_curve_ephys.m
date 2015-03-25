@@ -100,9 +100,15 @@ if fit_model_on
             %max(full_x(:))full_
 
            if s_ind == 8;
-            baseline = nanmean(full_y(full_x<=10))
+            baseline = nanmean(full_y(full_x<=10));
             else
-            baseline = nanmean(full_y(full_x>22))
+            baseline = nanmean(full_y(full_x>22));
+           end
+            if isnan(baseline)
+                        baseline = nanmean(full_y(full_x>15.5))    ;
+            end
+            if isnan(baseline)
+                        baseline = nanmean(full_y(full_x>=15))    ;
             end
             
             weight = tuning_curve.means - baseline;

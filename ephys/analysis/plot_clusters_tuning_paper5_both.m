@@ -43,13 +43,11 @@ for ikk = 1:size(order,1)
         %output.tuning_curve.model_fit = [];
         %plot_tuning_curve_ephys_col(fig_props,output.tuning_curve)
         %hold on; plot(x_vals,curve_G1); plot(x_vals,curve_G2,'r'); xlim([0 30])
-        hold on; plot(output.tc_xvals,output.tc,'k','LineWidth',3); %xlim([0 30]); ylim([0 y_max])
-        text(.8,.06+.85,sprintf('b %0.2f',output.baseline),'units','normalized','Color',[1 .5 0])
-        text(.8,.06+.77,sprintf('M %0.2f',output.baseline+output.act),'units','normalized','Color',[1 .5 0])
-        text(.8,.06+.69,sprintf('m %0.2f',output.baseline-output.sup),'units','normalized','Color',[1 .5 0])
-        text(.8,.06+.55,sprintf('s %0.2f',output.sup),'units','normalized','Color',[0 .5 1])
-        text(.8,.06+.47,sprintf('a %0.2f',output.act),'units','normalized','Color',[0 .5 1])
-        text(.05,.11+.85,sprintf('c %0.2f',output.tc_mod),'units','normalized','Color',[0 .5 1],'Fontsize',16) 
+        hold on
+        plot(output.trace_t,output.trace_on,'LineWidth',2,'Color','k')
+        plot(1.2+output.trace_t,output.trace_off,'LineWidth',2,'Color','k')
+        plot([0 0],[0 4],'k')
+        xlim([0 2.2])
 
         % Make trial Raster to running and contra touch
         subtightplot(num_plots_h,num_plots_w,[1 2],gap,marg_h,marg_w)
@@ -71,15 +69,10 @@ for ikk = 1:size(order,1)
         subtightplot(num_plots_h,num_plots_w,[5],gap,marg_h,marg_w)
         %output.tuning_curve.model_fit = [];
         %plot_tuning_curve_ephys_col(fig_props,output.tuning_curve)
-        hold on; plot(output.tc_xvals,output.tc,'b','LineWidth',3); %xlim([0 30]); ylim([0 y_max])
-        text(1.2,.06+.85,sprintf('b %0.2f',output.baseline),'units','normalized','Color',[1 .5 0])
-        text(1.2,.06+.77,sprintf('M %0.2f',output.baseline+output.act),'units','normalized','Color',[1 .5 0])
-        text(1.2,.06+.69,sprintf('m %0.2f',output.baseline-output.sup),'units','normalized','Color',[1 .5 0])
-        text(1.2,.06+.55,sprintf('s %0.2f',output.sup),'units','normalized','Color',[0 .5 1])
-        text(1.2,.06+.47,sprintf('a %0.2f',output.act),'units','normalized','Color',[0 .5 1])
-        text(.45,.11+.85,sprintf('c %0.2f',output.tc_mod),'units','normalized','Color',[0 .5 1],'Fontsize',16)
-        xlim([0 30])       
-       % Make trial Raster to running and contra touch
+       plot(output.trace_t,output.trace_on,'LineWidth',2,'Color','b')
+        plot(1.2+output.trace_t,output.trace_off,'LineWidth',2,'Color','b')
+        
+           % Make trial Raster to running and contra touch
         subtightplot(num_plots_h,num_plots_w,[3 4],gap,marg_h,marg_w)
         %plot_spk_raster(fig_props,RASTER,[],[],[])
         plot_spk_raster_col([],output.RASTER,[],[],output.raster_mat_full);

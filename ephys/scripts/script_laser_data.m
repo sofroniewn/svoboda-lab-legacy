@@ -219,11 +219,12 @@ layer_4 = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% CSD
-%[laser_data] = func_extract_laser_power(base_dir, trial_range, lase_data_name, 0);
+[laser_data] = func_extract_laser_power(base_dir, trial_range, lase_data_name, 0);
 power_values = round(laser_data.max_power*10);
 power_range = unique(power_values(~isnan(power_values)));
 keep_powers = power_range(keep_powers_num);
 
+trial_range = [1:4000];
 CSD = get_CSD(laser_data,trial_range,power_values,keep_powers,ch_exclude,time_range);
 figure('Position',[443   376   789   430]); plot_CSD([],CSD,'CSD')
 figure('Position',[73   361   338   186]); plot_CSD([],CSD,'LFP')
@@ -231,6 +232,22 @@ figure('Position',[73   103   338   186]); plot_CSD([],CSD,'traces')
 figure('Position',[73   103   338   186]); plot_CSD([],CSD,'profile')
 
 
+
+base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250492/2014_08_15/run_03'; %laser
+lase_data_name = 'laser_data_short.mat';
+trial_range = 20:40;
+keep_powers_num = 1;
+layer_4 = 15.3;
+ch_exclude = [20];
+time_range = [];
+
+figure('Position',[443   376   789   430]); plot_CSD([],CSD,'CSD')
+set(gca,'ydir','normal')
+set(gca,'visible','off')
+   set(gca,'LineWidth',2)
+   set(gca,'layer','top')
+set(gca,'TickDir','out')
+xlim([-2 10])
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%

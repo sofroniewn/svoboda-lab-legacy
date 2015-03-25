@@ -4,12 +4,13 @@ function firingrate_vs_depth_new(x,y,edges)
     [vals stds N] = weighted_hist(x,y,edges);
 
 
-h = bar(edges+mean(diff(edges))/2,vals);
+h = barh(edges+mean(diff(edges))/2,vals);
 %h = bar(edges+mean(diff(edges))/2,N);
 
 %    h = bar(edges,N);
     set(h,'FaceColor','b')
     set(h,'EdgeColor','b')
+    set(h,'LineWidth',2)
 
 
 % sum(n_mat(:,1))

@@ -14,7 +14,7 @@ case 'CSD'
 	imagesc(1000*[CSD.time_window(1) CSD.time_window(end)],1+[1 size(CSD.vals,1)],CSD.vals);
 	plot([0 0],[-2 size(CSD.vlt_cmap,1)+5],'LineStyle','--','Color','k')
 	set(gca, 'ydir', 'rev')
-	text(.90,.95,'CSD','Units','Normalized','Color','k')
+	%text(.90,.95,'CSD','Units','Normalized','Color','k')
 	ylim([2 size(CSD.vlt_cmap,1)+1])
 	xlim(1000*CSD.time_range)
 	xlabel('Time (ms)')

@@ -22,12 +22,12 @@ keep_stats_array = wgnr_generate_keep_stats_array(keep_label_array,{2;1;5},laser
 %%
 
 
-figure(346)
-clf(346)
+
+figure(347)
+clf(347)
 hold on
 set(gcf,'Color',[1 1 1])
 %set(gcf, 'Position',[16 428 1407 338])
-
 prop_str_dist = 'ball_pos_y';
 traj = wgnr_align_dist(data,prop_str_dist,keep_stats_array);
 prop_str = 'final_position';
@@ -44,26 +44,24 @@ plot_params.num_indv = 20;
 plot_params.x_var = 'space'; %%% 'time'
 plot_params.animal_name = animal_name;
 plot_params.prop_str = prop_str_dist;
+traj{2}.col_mat = [.5 0 .5];
 wgnr_plot_traj(traj,plot_params); 
-% ideal_traj = wgnr_align_dist(data,'ideal_traj',keep_stats_array);
-% plot(ideal_traj{1}.x_axis,ideal_traj{1}.mean,'k','LineWidth',3)
-% plot(ideal_traj{2}.x_axis,ideal_traj{2}.mean,'k','LineWidth',3)
-% plot(ideal_traj{3}.x_axis,ideal_traj{3}.mean,'k','LineWidth',3)
+ ideal_traj = wgnr_align_dist(data,'ideal_traj',keep_stats_array);
+ plot(ideal_traj{1}.x_axis,ideal_traj{1}.mean,'k','LineWidth',3)
+ plot(ideal_traj{2}.x_axis,ideal_traj{2}.mean,'k','LineWidth',3)
+ plot(ideal_traj{3}.x_axis,ideal_traj{3}.mean,'k','LineWidth',3)
 set(gcf, 'Position',[53   566   330   240])
-ylim_val = get(gca,'ylim');
 
-offset = [0 0;.1 .1;0 0];
-figure(446)
-clf(446)
-hold on
+angle_turn{2}.col_mat = [.5 0 .5];
+offset = 160+100*[0.05 0.05;.1 .1;0 0];
+% figure(447)
+% clf(447)
+% hold on
 for ih = 1:3
-	plot(offset(ih,1),angle_turn{ih}.mean,'.','MarkerSize',25,'Color',angle_turn{ih}.col_mat)
-	plot(offset(ih,:),[angle_turn{ih}.mean-angle_turn{ih}.std;angle_turn{ih}.mean+angle_turn{ih}.std],'Color',angle_turn{ih}.col_mat,'LineWidth',2)
+    plot(offset(ih,1),angle_turn{ih}.mean,'.','MarkerSize',25,'Color',angle_turn{ih}.col_mat)
+    plot(offset(ih,:),[angle_turn{ih}.mean-angle_turn{ih}.std;angle_turn{ih}.mean+angle_turn{ih}.std],'Color',angle_turn{ih}.col_mat,'LineWidth',2)
 end
-ylim(ylim_val)
-xlim([-.1 .2])
-set(gcf, 'Position',[383   566   330   240])
-set(gca,'visible','off')
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

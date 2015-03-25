@@ -18,6 +18,8 @@ switch exp_type
 				group_ids = 13;
 			case 'clR'
 				group_ids = 13;
+			case 'cl'
+				group_ids = 13;
             otherwise
 				error('WGNR :: unrecognized groupd id')
 		end
@@ -37,6 +39,8 @@ switch exp_type
 				group_ids = [13:16];
 			case 'clR'
 				group_ids = 17;
+			case 'cl'
+				group_ids = 13:17;
 			otherwise
 				error('WGNR :: unrecognized groupd id')
 		end
@@ -58,6 +62,8 @@ switch exp_type
 				group_ids = [12:15];
 			case 'clR'
 				group_ids = 16;
+			case 'cl'
+				group_ids = 12:16;
 			otherwise
 				error('WGNR :: unrecognized groupd id')
 		end
