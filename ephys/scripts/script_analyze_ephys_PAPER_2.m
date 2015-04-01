@@ -318,7 +318,8 @@ min_loc = ps.sup_loc(mod_down);
 [ord ind] = sort(min_loc','descend');
 tc = zscore(tc')';
 %plot(ps.touch_max_loc(keep_spikes),ps.touch_peak_rate(keep_spikes),'.k')
-tc_sort = cat(1,tc_sort,tc(ind,:));
+%tc_sort = cat(1,tc_sort,tc(ind,:));
+tc_sort = cat(1,tc_sort,repmat(0,5,size(tc_sort,2)),tc(ind,:));
 tc_sort(tc_sort>3) = 3;
 tc_sort(tc_sort<-2) = -2;
 
@@ -431,15 +432,39 @@ plot_clusters_tuning_paper5(all_anm,ps,ps.total_order(ih,:),1,rasters)
 
 keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6;
 
-mod_up = keep_spikes; % & abs(ps.dir_mod) <=0.2;
+% mod_up = keep_spikes; % & abs(ps.dir_mod) <=0.2;
+% tc = [curves.trace_towards(mod_up,:) curves.trace_away(mod_up,:)];
+% [max_val ind_max] = max(tc');
+% %ind_max(ind_max>500) = 1000 - ind_max(ind_max>500);
+% [ord ind] = sort(ind_max');
+% tc = zscore(tc')';
+% %plot(ps.touch_max_loc(keep_spikes),ps.touch_peak_rate(keep_spikes),'.k')
+% tc_sort = [tc(ind,:)];
+% %tc_sort(tc_sort<-1.5) = -1.5;
+
+
+keep_spikes = ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.r2 > 0.6;
+
+mod_up = keep_spikes & abs(ps.dir_mod) <=0.2;
+tc = [curves.trace_towards(mod_up,:) curves.trace_away(mod_up,:)];
+[max_val ind_max] = max(tc(:,1:size(curves.trace_towards,2))');
+%ind_max(ind_max>500) = 1000 - ind_max(ind_max>500);
+[ord ind] = sort(ind_max');
+tc = zscore(tc')';
+%plot(ps.touch_max_loc(keep_spikes),ps.touch_peak_rate(keep_spikes),'.k')
+tc_sort = [tc(ind,:)];
+
+mod_up = keep_spikes & abs(ps.dir_mod) > 0.2;
 tc = [curves.trace_towards(mod_up,:) curves.trace_away(mod_up,:)];
 [max_val ind_max] = max(tc');
 %ind_max(ind_max>500) = 1000 - ind_max(ind_max>500);
 [ord ind] = sort(ind_max');
 tc = zscore(tc')';
 %plot(ps.touch_max_loc(keep_spikes),ps.touch_peak_rate(keep_spikes),'.k')
-tc_sort = [tc(ind,:)];
+tc_sort = cat(1,tc_sort,repmat(0,3,size(tc_sort,2)),[tc(ind,:)]);
 %tc_sort(tc_sort<-1.5) = -1.5;
+
+
 
 figure(23)
 clf(23)
@@ -535,14 +560,14 @@ plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters)
 plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters_ipsi)
 
 %%%%%%%%% FIGURE 4 IPSI/CONTRA - summary
-keep_spikes = ps.clean_clusters & ps.regular_spikes & ps.ipsi_anm;
+keep_spikes = ps.clean_clusters & ~ps.v1 & ps.regular_spikes & ps.ipsi_anm;
 sum(keep_spikes)
-keep_spikes = ps.clean_clusters & ps.regular_spikes & ps.ipsi_anm & ps.r2 > 0.6 ;
+keep_spikes = ps.clean_clusters & ~ps.v1 & ps.regular_spikes & ps.ipsi_anm & ps.r2 > 0.6 ;
 sum(keep_spikes)
-keep_spikes = ps.clean_clusters & ps.regular_spikes & ps.ipsi_anm & ps.ipsi_r2' > 0.6 ;
+keep_spikes = ps.clean_clusters & ~ps.v1 & ps.regular_spikes & ps.ipsi_anm & ps.ipsi_r2' > 0.6 ;
 sum(keep_spikes)
 
-keep_spikes = ps.clean_clusters & ps.regular_spikes & ps.ipsi_anm & ps.r2 > 0.6 ;
+keep_spikes = ps.clean_clusters & ~ps.v1 & ps.regular_spikes & ps.ipsi_anm & ps.r2 > 0.6 ;
 
 figure(46); clf(46)
 hold on
@@ -556,10 +581,11 @@ xlabel('Contralateral wall (Hz)','FontSize',20)
 ylabel('Ipsilateral wall (Hz)','FontSize',20)
 set(gca,'box','off')
 set(gca,'TickDir','out')
-xlim([-7 20]); ylim([-7 20]);
+xlim([-7 20]); ylim([-5 10]);
+plot([-10 20],[-10 20],'LineWidth',2,'Color','k','LineStyle','--')
 set(gca,'FontSize',20)
 set(gca,'xtick',[-5 0:10:20])
-set(gca,'ytick',[-5 0:10:20])
+set(gca,'ytick',[-5 0:5:10])
 centeraxes(gca)
 
 
@@ -724,7 +750,11 @@ figure(117); clf(117)
 hold on
 set(gcf,'Position',[   440   648   408   408])
 edges = [-250:100:450];
-firingrate_vs_depth_new(ps.layer_4_dist_FINAL(keep_spikes),ps.dir_mod(keep_spikes),edges)
+vals = hist(ps.layer_4_dist_FINAL(keep_spikes),edges);
+h = barh(edges+mean(diff(edges))/2,vals);
+    set(h,'FaceColor','b')
+    set(h,'EdgeColor','b')
+    set(h,'LineWidth',2)
 ylim([-250 450])
 set(gca,'FontSize',20)
 xlabel('Number of units','FontSize',20)
@@ -753,6 +783,8 @@ plot_clusters_tuning_paper4(all_anm,ps,ps.total_order(ih,:),1,rasters)
 plot_clusters_tuning_paper_opto(all_anm,ps,ps.total_order(ih,:),1,rasters_opto)
 figure(111); set(gca,'ylim',[0 9])
 
+ih = 338; % towards on
+plot_clusters_tuning_paper3(all_anm,ps,ps.total_order(ih,:),1,rasters)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -767,7 +799,11 @@ figure(111); set(gca,'ylim',[0 9])
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%% FIGURE 4 OPTO / REAL Comparison 
 
-keep_spikes = ps.opto_anm & ps.clean_clusters & ps.opto_r2' > 0.6;
+keep_spikes = ps.opto_anm & ps.clean_clusters & ps.regular_spikes & ~ps.v1
+sum(keep_spikes)
+
+keep_spikes = ps.opto_anm & ps.clean_clusters & ps.opto_r2' > 0.6 & ps.regular_spikes & ~ps.v1;
+sum(keep_spikes)
 
 %%
 figure(46); clf(46)
@@ -775,7 +811,7 @@ hold on
 set(gcf,'Position',[   440   648   408   408])
 set(gca,'position',[0.2163    0.1635    0.7    0.7])
 hold on;
-plot(ps.opto_tc_mod(keep_spikes)+rand(length(ps.opto_tc_mod(keep_spikes)),1)'/10,ps.tc_mod(keep_spikes)+rand(length(ps.opto_tc_mod(keep_spikes)),1)/10,'ok','MarkerSize',10,'LineWidth',2)
+plot(ps.opto_tc_mod(keep_spikes)+rand(length(ps.opto_tc_mod(keep_spikes)),1)'/20,ps.tc_mod(keep_spikes)+rand(length(ps.opto_tc_mod(keep_spikes)),1)/20,'ok','MarkerSize',10,'LineWidth',2)
 %plot([0 30],[0 30],'r','LineWidth',2)
 xlabel('Optogentic modulation','FontSize',20)
 ylabel('Wall modulation','FontSize',20)
@@ -803,10 +839,10 @@ length(y)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%% FIGURE 4 OPTO by layer 
 
-keep_spikes = ps.opto_anm & ps.clean_clusters & ps.opto_r2' > 0.6;
+keep_spikes = ps.opto_anm & ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.opto_r2' > 0.6;
 
 
-figure(47); clf(47)
+figure(48); clf(48)
 hold on
 set(gcf,'Position',[   440   648   408   408])
 edges = [-250:100:450];
@@ -824,6 +860,24 @@ set(gca,'ytick',[])
 set(gca,'ydir','rev')
 set(gca,'yColor',[1 1 1])
 
+
+figure(47); clf(47)
+hold on
+set(gcf,'Position',[   440   648   408   408])
+edges = [-250:100:450];
+depth = ps.layer_4_dist_FINAL(keep_spikes);
+depth(depth<-250) = -249;
+
+firingrate_vs_depth_new(depth,ps.tc_mod(keep_spikes),edges)
+plot(ps.tc_mod(keep_spikes),depth,'ok','MarkerSize',10,'LineWidth',2)
+ylim([-250 450])
+set(gca,'FontSize',20)
+xlabel('Modulation index','FontSize',20)
+set(gca,'TickDir','out')
+set(gca,'box','off')
+set(gca,'ytick',[])
+set(gca,'ydir','rev')
+set(gca,'yColor',[1 1 1])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -856,7 +910,7 @@ cd(dir_name);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PUBLISH ALL OPTO UNITS
 
-keep_spikes = ps.ipsi_anm & ps.clean_clusters;
+keep_spikes = ps.opto_anm & ps.clean_clusters & ps.regular_spikes & ~ps.v1 & ps.opto_r2' > 0.6;
 
 
 dir_name = '/Users/sofroniewn/Documents/DATA/ephys_PAPER';
@@ -869,7 +923,7 @@ cd(dir_name);
       order_sort = ps.total_order(keep_spikes,:);
       [val ind] = sort(order_sort(:,4));
       order = order_sort(ind,:);
-      outputDir = ['ALL_ipsi2'];
+      outputDir = ['ALL_opto_new'];
       publish('publish_all_ephys3.m','showCode',false,'outputDir',outputDir); close all;
 
 

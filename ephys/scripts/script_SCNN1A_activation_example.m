@@ -234,9 +234,138 @@ set(gca,'TickDir','out')
    %set(gca,'layer','top')
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+anm_info.Scnn1a = {'171977';'171980';'171981';'173351';'174752';'174754';'174755';'178838'};
+animal_names = anm_info.Scnn1a;
+
+keep_label_array = {'off';'basic';'clS1';'clV1';'clPPC'};
+laser_power_array = {[0 0];[0 0];[0 100];[0 100];[0 100]}; 
+keep_stats_array = wgnr_generate_keep_stats_array(keep_label_array,{[1 2 3 4 5 6 7]},laser_power_array,{[0]});
+
+
+%cond_array = {'ff';'single';'none'};
+%cond_col = [0 0 0;0 0 1;1 0 0];
+
+% cond_array = {'ff';'none'};
+% cond_col = [0 0 0;1 0 0];
+
+cond_array = {'ff';'cl_laser'};
+prop_str = 'test_time';
+
+test_time_all = NaN(numel(animal_names),5);
+
+for ij = 1:numel(animal_names)
+    ij
+animal_name = animal_names{ij};
+struct_name = ['ANM_0' animal_name];
+load(['/Users/sofroniewn/Documents/svoboda_lab/OLD_COMPUTER/WGNR/DATA/ANM_0',animal_name,'/COMP_v3/0_summary/' animal_name '_data_ids.mat']);
+
+cond_name = cond_array{2};
+data = wgnr_comp('/Users/sofroniewn/Desktop/WGNR',animal_name,data_ids.(struct_name).(cond_name).dates,data_ids.(struct_name).(cond_name).run_nums,'bv_rig',cond_name,0);
+keep_stats_array = wgnr_generate_keep_stats_array(keep_label_array,{2},laser_power_array,{[0]});
+tmp_2 = wgnr_align_param(data,prop_str,keep_stats_array,[-25 25],10);
+keep_stats_array = wgnr_generate_keep_stats_array(keep_label_array,{1},laser_power_array,{[0]});
+tmp_1 = wgnr_align_param(data,prop_str,keep_stats_array,[-25 25],10);
+keep_stats_array = wgnr_generate_keep_stats_array(keep_label_array,{5},laser_power_array,{[0]});
+tmp_5 = wgnr_align_param(data,prop_str,keep_stats_array,[-25 25],10);
+
+cond_name = cond_array{1};
+data = wgnr_comp('/Users/sofroniewn/Desktop/WGNR',animal_name,data_ids.(struct_name).(cond_name).dates,data_ids.(struct_name).(cond_name).run_nums,'bv_rig',cond_name,0);
+keep_stats_array = wgnr_generate_keep_stats_array(keep_label_array,{2},laser_power_array,{[0]});
+tmp_2b = wgnr_align_param(data,prop_str,keep_stats_array,[-25 25],10);
+keep_stats_array = wgnr_generate_keep_stats_array(keep_label_array,{1},laser_power_array,{[0]});
+tmp_1b = wgnr_align_param(data,prop_str,keep_stats_array,[-25 25],10);
+keep_stats_array = wgnr_generate_keep_stats_array(keep_label_array,{5},laser_power_array,{[0]});
+tmp_5b = wgnr_align_param(data,prop_str,keep_stats_array,[-25 25],10);
+
+tmp_2{1} = tmp_2b{1};
+tmp_1{1} = tmp_1b{1};
+tmp_5{1} = tmp_5b{1};
+    for ih = 1:5
+        test_time_all(ij,ih) = (tmp_1{ih}.mean + tmp_2{ih}.mean + tmp_5{ih}.mean)/3;
+    end
+end
+
+test_speed_all = 1./test_time_all*100;
+%%
+col_mat = [0 0 0;0 0 .5;0 .5 0;1 0 0];
+str_labels = {'Walls';'S1';'V1/PPC';'Off'};
+
+test_time_all_mean = cell(1,4);
+        tmp_data = [];    
+    for ij = 1:numel(animal_names)
+            tmp_data = [tmp_data;test_speed_all(ij,1)];
+    end
+    test_time_all_mean{1} = trial_error(tmp_data,[0 25],10);
+    test_time_all_mean{1}.col_mat = col_mat(1,:);
+    test_time_all_mean{1}.label = str_labels{1};
+    
+            tmp_data = [];    
+    for ij = 1:numel(animal_names)
+            tmp_data = [tmp_data;test_speed_all(ij,3)];
+    end
+    test_time_all_mean{2} = trial_error(tmp_data,[0 25],10);
+    test_time_all_mean{2}.col_mat = col_mat(2,:);
+    test_time_all_mean{2}.label = str_labels{2};
+    
+                tmp_data = [];    
+    for ij = 1:3
+            tmp_data = [tmp_data;test_speed_all(ij,5)];
+    end
+        for ij = 4:8
+            tmp_data = [tmp_data;test_speed_all(ij,4)];
+    end
+    test_time_all_mean{3} = trial_error(tmp_data,[0 25],10);
+    test_time_all_mean{3}.col_mat = col_mat(3,:);
+    test_time_all_mean{3}.label = str_labels{3};
+    
+            tmp_data = [];    
+    for ij = 1:numel(animal_names)
+            tmp_data = [tmp_data;test_speed_all(ij,2)];
+    end
+    test_time_all_mean{4} = trial_error(tmp_data,[0 25],10);
+    test_time_all_mean{4}.col_mat = col_mat(4,:);
+    test_time_all_mean{4}.label = str_labels{4};
 
 
 
+figure(846)
+clf(846)
+set(gcf,'Color',[1 1 1])
+fig_pos = [106 405 420*4/4 250];
+set(gcf, 'Position',fig_pos)
+
+hold on
+prop_str = 'run_angle';
+plot_params.window_pos = [440   102   542   674];
+plot_params.style = 'indv_only'; %%% 'mean_std' 'mean_ste'  'indv'
+plot_params.save_label = [cond_array{1} '_' cond_array{1} 'new'];
+plot_params.cor_width = 30;
+plot_params.x_var = 'space'; %%% 'time'
+plot_params.animal_name = animal_name;
+plot_params.prop_str = prop_str;
+plot_params.style_extra = 'indv';
+plot_params.xtick_label = cond_array;
+plot_params.y_lim = [0 40];
+plot_params.x_label = '';
+plot_params.x_lim = [0.5 numel(str_labels)+.5];
+plot_params.x_vect = [1:numel(str_labels)];
+plot_params.y_label = 'Speed (cm/s)';
+plot_params.error_bar_width = 1;
+
+wgnr_plot_error_no_fig(test_time_all_mean,plot_params);
+set(gca,'XtickLabel',str_labels)
+   set(gca,'LineWidth',2)
+set(gca,'TickDir','out')
+   %set(gca,'layer','top')
 
 
 % clear all

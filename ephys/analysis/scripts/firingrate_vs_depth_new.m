@@ -8,8 +8,8 @@ h = barh(edges+mean(diff(edges))/2,vals);
 %h = bar(edges+mean(diff(edges))/2,N);
 
 %    h = bar(edges,N);
-    set(h,'FaceColor','b')
-    set(h,'EdgeColor','b')
+    set(h,'FaceColor',[.5 .5 1])
+    set(h,'EdgeColor',[.5 .5 1])
     set(h,'LineWidth',2)
 
 
