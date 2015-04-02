@@ -23,8 +23,6 @@ if get(handles.checkbox_behaviour,'Value') == 1
                 % match scim behaviour trial numbers (assume one to one)
                 im_session.reg.behaviour_scim_trial_align = [1:numel(session.data)];
                 % initialize global variables for scim alignment
-                global remove_first;
-                remove_first = 0;
                 set(handles.text_num_behaviour,'String',['Behaviour trials ' num2str(numel(session.data))]);
             catch
                 im_session.reg.behaviour_scim_trial_align = [];
@@ -82,7 +80,7 @@ for trial_num = num_old_files+1:num_match
     set(handles.text_time,'String',time_elapsed_str)
     set(handles.text_status,'String','Status: registering')
     drawnow
-    register_directory_fast(trial_num,handles)
+    register_directory_fast(trial_num)
     set(handles.text_registered_trials,'String',['Registered trials ' num2str(trial_num)])
 end
 time_elapsed = toc;

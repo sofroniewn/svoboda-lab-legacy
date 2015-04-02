@@ -1,17 +1,16 @@
-function register_directory_fast(trial_num,handles)
+function register_directory_fast(trial_num)
 
 global im_session;
 data_dir = im_session.basic_info.data_dir;
-save_registered_on = get(handles.checkbox_save_aligned,'Value');
-overwrite = get(handles.checkbox_overwrite,'Value');
-behaviour_on = get(handles.checkbox_behaviour,'Value');
-save_text_on = get(handles.checkbox_save_text,'Value');
-analyze_chan = str2double(get(handles.edit_analyze_chan,'String'));
-down_sample = str2double(get(handles.edit_downsample,'String'));
+save_registered_on = im_session.basic_info.save_registered;
+register_on = im_session.basic_info.register_on;
+overwrite = im_session.basic_info.overwrite;
+behaviour_on = im_session.basic_info.behaviour_on;
+down_sample = im_session.basic_info.down_sample;
 
 num_planes = im_session.ref.im_props.numPlanes;
 num_chan = im_session.ref.im_props.nchans;
-text_dir = handles.text_path;
+output_base_path = im_session.basic_info.output_base_path;
 
 % Go through new files
 cur_file = fullfile(data_dir,'raw',im_session.basic_info.cur_files(trial_num).name);
@@ -37,13 +36,20 @@ else % Otherwise register file
     %display('Loading image')
     opt.data_type = 'uint16';
     [im_raw improps] = load_image_fast(cur_file,opt);
-    
+
     % register files
-    [im_shifted shifts] = register_file(im_raw,im_session.ref);
-    
+    if register_on
+        [im_shifted shifts] = register_file(im_raw,im_session.ref);
+    else
+        num_chan = im_session.ref.im_props.nchans;
+        num_frames = size(im_raw,3)/num_chan;
+        shifts = zeros(num_frames,2);
+        im_shifted = im_raw;
+    end
+
     % summarize images
     im_summary = sumarize_images(improps,im_raw,im_shifted,shifts,trial_num);
-    
+
     % save summary data
     save(summary_file_name,'im_summary');
 end
@@ -53,6 +59,7 @@ end
 
 % extract behaviour information if necessary
 if behaviour_on
+
     trial_num_im_session = trial_num;
     trial_num_session = im_session.reg.behaviour_scim_trial_align(trial_num);
     fprintf('(scim_align) loading file %g \n',trial_num);
@@ -65,23 +72,15 @@ if behaviour_on
     scim_frame_trig = im_summary.behaviour.align_vect;
     [trial_data data_variable_names] = parse_behaviour2im(trial_data_raw,trial_num_session,scim_frame_trig);
 
-    type_name = 'behaviour';
-    file_name = [base_name type_name trial_str];
-    behaviour_file_name = fullfile(data_dir,type_name,[file_name '.mat']);
-    if overwrite || exist(behaviour_file_name) ~= 2
-        save(behaviour_file_name,'trial_data','data_variable_names','trial_num_session');
-    end
 else
     trial_data = [];
 end
 
-
 % save registered data
 if (save_registered_on) && ~isempty(im_shifted)
     % create and save registered file data
-    %save_registered_data(data_dir,base_name,trial_str,im_shifted,num_planes,num_chan,text_dir,down_sample,trial_data,save_registered_on,save_text_on);
     prev_frame_num = (im_summary.props.firstFrame - 1)/(num_planes*num_chan);
-    save_registered_data_frame(text_dir,base_name,trial_str,prev_frame_num,im_shifted,num_planes,num_chan,trial_data);
+    save_registered_data_frame(output_base_path,base_name,trial_str,prev_frame_num,im_shifted,num_planes,num_chan,trial_data,down_sample);
 end
 end
 
