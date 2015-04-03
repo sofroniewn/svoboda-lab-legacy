@@ -59,7 +59,6 @@ end
 
 % extract behaviour information if necessary
 if behaviour_on
-
     trial_num_im_session = trial_num;
     trial_num_session = im_session.reg.behaviour_scim_trial_align(trial_num);
     fprintf('(scim_align) loading file %g \n',trial_num);
@@ -71,16 +70,21 @@ if behaviour_on
     trial_data_raw = session.data{trial_num_session};
     scim_frame_trig = im_summary.behaviour.align_vect;
     [trial_data data_variable_names] = parse_behaviour2im(trial_data_raw,trial_num_session,scim_frame_trig);
-
+    session.data{trial_num_session}.imaging_matrix = trial_data;
+    session.data{trial_num_session}.imaging_names = data_variable_names;
+    id_corridorPostion = find(strcmp(data_variable_names,'corridorPostion'));
+    id_speed = find(strcmp(data_variable_names,'ballSpeed'));
+    data_ids = [id_corridorPostion id_speed];
 else
     trial_data = [];
+    data_ids = [];
 end
 
 % save registered data
 if (save_registered_on) && ~isempty(im_shifted)
     % create and save registered file data
     prev_frame_num = (im_summary.props.firstFrame - 1)/(num_planes*num_chan);
-    save_registered_data_frame(output_base_path,base_name,trial_str,prev_frame_num,im_shifted,num_planes,num_chan,trial_data,down_sample);
+    save_registered_data_frame(output_base_path,base_name,trial_str,prev_frame_num,im_shifted,num_planes,num_chan,trial_data,data_ids,down_sample);
 end
 end
 

@@ -1,5 +1,9 @@
 function ref = load_referrence(ref_dir)
 
+if exist(fullfile(ref_dir,'ref_conf.json')) ~= 2
+    convert_ref(ref_dir);
+end
+
 s = loadjson(fullfile(ref_dir,'ref_conf.json'));
 if length(s.dims) == 2
     ref.im_props.numPlanes = 1;

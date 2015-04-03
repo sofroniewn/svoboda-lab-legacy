@@ -14,6 +14,8 @@ set(handles.edit_downsample,'enable',enable_str)
 set(handles.pushbutton_output_path,'enable',enable_str)
 set(handles.checkbox_behaviour,'enable',enable_str)
 set(handles.checkbox_register,'enable',enable_str) 
+set(handles.pushbutton_export_params,'enable',enable_str)
+set(handles.pushbutton_export_data,'enable',enable_str)
 end
 
 if any(ismember(type,5))
@@ -33,6 +35,10 @@ end
 if any(ismember(type,4))
 	set(handles.text_status,'enable',enable_str)
 	set(handles.text_time,'enable',enable_str)
+end
+
+if any(ismember(type,6))
+set(handles.pushbutton_data_dir,'enable',enable_str)
 end
 
 end

@@ -1,0 +1,13 @@
+{
+    "experiment": {
+        "lab": "Karel Svoboda",
+        "contributors": [
+            "Nicholas Sofroniew",
+        ],
+        "location": "Janelia Research Campus",
+        "model system": "Mouse",
+        "prep": "Tactile virtual reality",
+        "data": "Two-photon imaging",
+        "notes": " "
+    }
+}
