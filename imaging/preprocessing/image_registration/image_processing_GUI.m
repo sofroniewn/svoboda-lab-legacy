@@ -22,7 +22,7 @@ function varargout = image_processing_GUI(varargin)
 
 % Edit the above text to modify the response to help image_processing_GUI
 
-% Last Modified by GUIDE v2.5 02-Apr-2015 10:22:03
+% Last Modified by GUIDE v2.5 02-Apr-2015 17:07:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -107,6 +107,12 @@ if folder_name ~= 0
     
     handles.base_path = folder_name;
     handles.data_dir = fullfile(handles.base_path, 'scanimage');
+
+    % if raw folder doesnt exist, make it and copy all *_main_*.tif into it
+    if exist(fullfile(handles.data_dir,'raw')) ~= 7;
+        mkdir(fullfile(handles.data_dir,'raw'));
+        movefile(fullfile(handles.data_dir,'*_main_*.tif'),fullfile(handles.data_dir,'raw'));
+    end
     
     clear global im_session
     global im_session;
@@ -173,7 +179,9 @@ function pushbutton_output_path_Callback(hObject, eventdata, handles)
 start_path = handles.datastr;
 folder_name = uigetdir(start_path);
 if folder_name ~= 0
-    handles.output_base_path = folder_name;
+    global im_session;
+    full_target_dir = fullfile(folder_name,im_session.basic_info.anm_str,im_session.basic_info.date_str,im_session.basic_info.run_str);
+    handles.output_base_path = full_target_dir;
     new_dir = fullfile(handles.output_base_path,'registered_im');
     if exist(new_dir) ~=7
         mkdir(new_dir)
@@ -311,3 +319,54 @@ function checkbox_register_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkbox_register
+
+
+% --- Executes on button press in pushbutton_export_params.
+function pushbutton_export_params_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_export_params (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+image_processing_gui_toggle_enable(handles,'off',[1 2 3 4 5 6])
+drawnow
+
+fprintf('(params_save) start \n');
+
+global session
+s = create_behaviour_params(session);
+
+if ~isempty(s)
+    base_path = handles.data_dir;
+    new_dir = fullfile(base_path,'params');
+    if exist(new_dir) ~=7
+        mkdir(new_dir)
+    end
+    savejson('',s,fullfile(new_dir,'covariates.json'));
+    fprintf('(params_save) successful \n');
+else
+    fprintf('(params_save) no aligned trials \n');
+end
+
+image_processing_gui_toggle_enable(handles,'on',[1 2 3 4 5 6])
+drawnow
+
+
+% --- Executes on button press in pushbutton_export_data.
+function pushbutton_export_data_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_export_data (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+image_processing_gui_toggle_enable(handles,'off',[1 2 3 4 5 6])
+drawnow
+
+fprintf('(export_data) start transfer \n');
+global im_session;
+overwrite = get(handles.checkbox_overwrite,'Value');
+base_path = fileparts(im_session.basic_info.data_dir);
+target_base_path = handles.output_base_path;
+copy_old_scim(base_path,target_base_path,overwrite)
+fprintf('(export_data) transfer done \n');
+
+image_processing_gui_toggle_enable(handles,'on',[1 2 3 4 5 6])
+drawnow

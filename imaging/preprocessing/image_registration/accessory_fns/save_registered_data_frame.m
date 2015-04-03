@@ -1,4 +1,4 @@
-function save_registered_data_frame(data_dir,base_name,trial_str,prev_frame_num,im_stack,num_planes,num_chan,trial_data,down_sample)
+function save_registered_data_frame(data_dir,base_name,trial_str,prev_frame_num,im_stack,num_planes,num_chan,trial_data,data_ids,down_sample)
 
 % create new folder for images from this trial
 type_name = 'registered_im';
@@ -55,7 +55,7 @@ end
 		trial_data = trial_data(1:down_sample:npts,:);
 	 end
 
-  	trial_data = round(trial_data(:,[12 7])/80*4096); % hack for including corridor position only
+  	trial_data = round(trial_data(:,data_ids)/80*4096); % hack for including corridor position only
   	tSize = size(trial_data,1);
 	% save new behaviour 
 	for ij = 1:tSize

@@ -9,7 +9,7 @@ if numel(cur_files) > numel(im_session.basic_info.cur_files)
 end
 
 % extract behaviour information if necessary
-if get(handles.checkbox_behaviour,'Value') == 1
+if im_session.basic_info.behaviour_on
     global session;
     if isempty(session.data)
         cur_rig_file = dir(fullfile(handles.base_path,'behaviour','*_rig_config.mat'));
