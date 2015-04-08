@@ -22,7 +22,7 @@ function varargout = maze_designer(varargin)
 
 % Edit the above text to modify the response to help maze_designer
 
-% Last Modified by GUIDE v2.5 30-Mar-2015 21:57:53
+% Last Modified by GUIDE v2.5 07-Apr-2015 15:18:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -198,9 +198,12 @@ cla;
 
 dat = get(handles.uitable_branches,'Data');
 if ~isempty(dat)
-  maze = create_maze(dat);
+  start_branch = get(handles.edit_starting_branch,'String');
+  start_branch = str2double(start_branch);
+  [maze dat] = create_maze(dat,start_branch);
   params.show_branch_labels = get(handles.checkbox_show_branch_ids,'value');
   plot_maze(maze,params);
+  set(handles.uitable_branches,'Data',dat);
 end
 
 function edit_maze_name_Callback(hObject, eventdata, handles)
@@ -236,8 +239,9 @@ p = mfilename('fullpath');
 [FileName,PathName,FilterIndex] = uiputfile(fullfile(pathstr,'Mazes','*.mat'));
 if FilterIndex>0
     dat = get(handles.uitable_branches,'Data');
+    start_branch = get(handles.edit_starting_branch,'String');
     set(handles.text_maze_name,'String',FileName)
-    save([PathName FileName],'dat');
+    save([PathName FileName],'dat','start_branch');
 end
 
 % --- Executes on button press in pushbutton_load_maze.
@@ -254,6 +258,7 @@ if FilterIndex>0
     load_dat = load([PathName FileName]);
     set(handles.uitable_branches,'Data',load_dat.dat);
     set(handles.text_maze_name,'String',FileName);
+    set(handles.edit_starting_branch,'String',load_dat.start_branch);
 end
 
 pushbutton_plot_maze_Callback(hObject, eventdata, handles)
@@ -270,12 +275,14 @@ function listbox_mazes_Callback(hObject, eventdata, handles)
 value = get(handles.listbox_mazes,'Value');
 maze_names = get(handles.listbox_mazes,'String');
 dat_array = get(handles.listbox_mazes,'UserData');
+start_branch_array = get(handles.edit_starting_branch,'UserData');
 
 if value <= numel(dat_array)
         set(handles.uitable_branches,'Data',dat_array{value});
         set(handles.text_maze_name,'String',maze_names{value});
+        set(handles.edit_starting_branch,'String',start_branch_array{value});
 end
-    
+
 pushbutton_plot_maze_Callback(hObject, eventdata, handles)
 
 
@@ -306,23 +313,28 @@ if FilterIndex>0
     load_dat = load([PathName FileName]);
     set(handles.uitable_branches,'Data',load_dat.dat);
     set(handles.text_maze_name,'String',FileName);
+    set(handles.edit_starting_branch,'String',load_dat.start_branch);
+
+
+
+    dat_array = get(handles.listbox_mazes,'UserData');
+    dat_array{numel(dat_array)+1} = load_dat.dat;
+    start_branch_array = get(handles.edit_starting_branch,'UserData');
+    start_branch_array{numel(start_branch_array)+1} = load_dat.start_branch;
+
+    maze_names = get(handles.listbox_mazes,'String');
+    if isempty(maze_names)
+       maze_names = [];
+    end
+    maze_names = cat(1,maze_names,{FileName});
+    set(handles.listbox_mazes,'UserData',dat_array);
+    set(handles.listbox_mazes,'String',maze_names);
+    set(handles.listbox_mazes,'Value',numel(maze_names));
+    set(handles.edit_starting_branch,'UserData',start_branch_array);
+
+    pushbutton_plot_maze_Callback(hObject, eventdata, handles)
+
 end
-
-
-dat_array = get(handles.listbox_mazes,'UserData');
-dat_array{numel(dat_array)+1} = load_dat.dat;
-maze_names = get(handles.listbox_mazes,'String');
-if isempty(maze_names)
-    maze_names = [];
-end
-maze_names = cat(1,maze_names,{FileName});
-set(handles.listbox_mazes,'UserData',dat_array);
-set(handles.listbox_mazes,'String',maze_names);
-set(handles.listbox_mazes,'Value',numel(maze_names));
-
-pushbutton_plot_maze_Callback(hObject, eventdata, handles)
-
-
 
 % --- Executes on button press in pushbutton_remove_maze.
 function pushbutton_remove_maze_Callback(hObject, eventdata, handles)
@@ -333,24 +345,30 @@ function pushbutton_remove_maze_Callback(hObject, eventdata, handles)
 value = get(handles.listbox_mazes,'Value');
 maze_names = get(handles.listbox_mazes,'String');
 dat_array = get(handles.listbox_mazes,'UserData');
+start_branch_array = get(handles.edit_starting_branch,'UserData');
 
 if value <= numel(dat_array)
     dat_array(value) = [];
+    start_branch_array(value) = [];
     maze_names(value) = [];
+    set(handles.edit_starting_branch,'UserData',start_branch_array);
     set(handles.listbox_mazes,'UserData',dat_array);
     set(handles.listbox_mazes,'String',maze_names);
     if value-1 > 0
         set(handles.listbox_mazes,'Value',value-1);
         set(handles.uitable_branches,'Data',dat_array{value-1});
         set(handles.text_maze_name,'String',maze_names{value-1});
+        set(handles.edit_starting_branch,'String',start_branch_array{value-1});
     elseif numel(dat_array) > 0
         set(handles.listbox_mazes,'Value',1);
         set(handles.uitable_branches,'Data',dat_array{1});
         set(handles.text_maze_name,'String',maze_names{1}); 
+        set(handles.edit_starting_branch,'String',start_branch_array{1});
     else
         set(handles.listbox_mazes,'Value',1);
         set(handles.uitable_branches,'Data',[]);
         set(handles.text_maze_name,'String',[]);
+        set(handles.edit_starting_branch,'String',[]);
     end
 end
     
@@ -416,9 +434,10 @@ p = mfilename('fullpath');
 if FilterIndex>0
     maze_names = get(handles.listbox_mazes,'String');
     dat_array = get(handles.listbox_mazes,'UserData');
+    start_branch_array = get(handles.edit_starting_branch,'UserData');
     session_config = [];
     set(handles.text_config_name,'String',FileName)
-    save([PathName FileName],'maze_names','dat_array','session_config');
+    save([PathName FileName],'maze_names','dat_array','session_config','start_branch_array');
 end
 
 % --- Executes on button press in pushbutton_load_config.
@@ -436,6 +455,7 @@ if FilterIndex>0
     set(handles.listbox_mazes,'String',load_dat.maze_names);
     set(handles.listbox_mazes,'UserData',load_dat.dat_array);
     set(handles.listbox_mazes,'Value',1);
+    set(handles.edit_starting_branch,'UserData',load_dat.start_branch_array);
     listbox_mazes_Callback(hObject, eventdata, handles);
 end
 
@@ -450,18 +470,18 @@ function radiobutton_random_order_Callback(hObject, eventdata, handles)
 
 
 
-function edit_starting_location_Callback(hObject, eventdata, handles)
-% hObject    handle to edit_starting_location (see GCBO)
+function edit_starting_branch_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_starting_branch (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit_starting_location as text
-%        str2double(get(hObject,'String')) returns contents of edit_starting_location as a double
+% Hints: get(hObject,'String') returns contents of edit_starting_branch as text
+%        str2double(get(hObject,'String')) returns contents of edit_starting_branch as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit_starting_location_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit_starting_location (see GCBO)
+function edit_starting_branch_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_starting_branch (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -483,5 +503,4 @@ function uitable_branches_CellEditCallback(hObject, eventdata, handles)
 %	Error: error string when failed to convert EditData to appropriate value for Data
 % handles    structure with handles and user data (see GUIDATA)
 
-34334
-
+%34334

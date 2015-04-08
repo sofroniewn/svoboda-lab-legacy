@@ -13,55 +13,28 @@ const unsigned trial_num_sequence_length = 0; /* 0 if random, otherwise length o
 const unsigned trial_num_sequence[1] = {0}; /* 1 if random, sequence */
 const unsigned trial_num_repeats[1] = {0}; /* 1 if random, num repeats */
 
+const unsigned trial_timeout = 0; /* 1 if in random order, 0 if in sequence */
+const unsigned trial_iti = 0; /* 1 if in random order, 0 if in sequence */
+const unsigned trial_drink_time = 0; /* 1 if in random order, 0 if in sequence */
+const unsigned trial_reward_size = 0; /* 1 if in random order, 0 if in sequence */
 
 const unsigned maze_num_branches[] = {}; /* Number of branches for each maze */
-
-const double maze_branch_length[][] = {{}}; /* Change positions in corridor width */
-const double maze_branch_left_wall_angle[][] = {{}}; /* Corridor width (mm) */
-const double maze_branch_right_wall_angle[][] = {{}}; /* Corridor width (mm) */
-const double maze_branch_parent_branch[][] = {{}}; /* Corridor width (mm) */
-const double maze_branch_reward_patch[][] = {{}}; /* Corridor width (mm) */
-const double maze_branch_end_cond[][] = {{}}; /* Corridor width (mm) */
-const double maze_branch_length[][] = {{}}; /* Corridor width (mm) */
-const double maze_branch_length[][] = {{}}; /* Corridor width (mm) */
-const double maze_branch_length[][] = {{}}; /* Corridor width (mm) */
-const double maze_branch_length[][] = {{}}; /* Corridor width (mm) */
+const double maze_reward_patch[][8] = {{}}; /* If parent branch or not */
+const double maze_wall_gain[] = {}; /* If parent branch or not */
+const unsigned maze_initial_branch[] = {}; /* If parent branch or not */
+const double maze_initial_branch_frac[] = {}; /* If parent branch or not */
+const double maze_initial_left_wall[] = {}; /* If parent branch or not */
+const double maze_initial_right_wall[] = {}; /* If parent branch or not */
 
 
-
-
-
-
-
-const double trial_cor_width_positions[1][2] = {{0, 1}}; /* Change positions in corridor width */
-const double trial_cor_width[1][2] = {{30, 30}}; /* Corridor width (mm) */
-const double trial_turn_positions[1][2] = {{0, 1}}; /* Turn positions within trial */
-const double trial_turn_values[1][1] = {{0}}; /* Turn angles if closed loop, wall positions if open loop */
-const double trial_gain_positions[1][2] = {{0, 1}}; /* Gain changes within trial */
-const double trial_gain_values[1][1] = {{1}}; /* Gain values within trial */
-const double trial_test_period[1][2] = {{.25, .75}}; /* Trial test period */
-const unsigned trial_water_enabled[1] = {1}; /* Water enabled on trial */
-const double trial_water_pos[1][1] = {{.85}}; /* Trial water period */
-const double trial_water_range_min[1][1] = {{2}}; /* Trial corridor range for water */
-const double trial_water_range_max[1][1] = {{2}}; /* Trial corridor range for water */
-const unsigned trial_water_range_type[1] = {0}; /* If 0 then range of wall distance (mm), if 1 then range of fraction of corridor with, if 2 then range of lateral run position */
-const double trial_water_drop_size[1][1] = {{25}}; /* Trial corridor range for water */
-
-const unsigned trial_masking_flash[1] = {0}; /* 0 if off, 1 if blue, 2 if yellow */
-const double trial_mf_period[1][2] = {{0, .75}}; /* Trial masking flash period */
-const unsigned trial_mf_pulse_dur[1] = {0}; /* Trial masking flash pulse duration, if 0 then off ,1 = 2ms, 2 = 4ms etc */
-const unsigned trial_mf_pulse_iti[1] = {0}; /* Trial masking flash iti, if 0 then continuous pulses,1 = 2ms, 2 = 4ms etc */
-
-const unsigned trial_photostim[1] = {0}; /* 0 if off, 1 if blue, 2 if yellow */
-const double trial_ps_period[1][2] = {{.25, .75}}; /* Trial ps period */
-const unsigned trial_ps_pulse_dur[1] = {1}; /* Trial ps pulse duration, if 0 then off pulses,1 = 2ms, 2 = 4ms etc */
-const unsigned trial_ps_pulse_iti[1] = {0}; /* Trial ps iti, if 0 then continuous pulses,1 = 2ms, 2 = 4ms etc */
-const unsigned trial_ps_num_sites[1] = {1}; /* Trial ps number of siter */
-const double trial_ps_peak_power[1] = {40}; /* Peak laser power */
-const unsigned trial_ps_stop_threshold[1] = {0}; /* 1 if stop photostimulation when mouse stopped */
-const unsigned trial_ps_closed_loop[1] = {0}; /* 1 if closed loop to corridor position */
-const double trial_ps_x_pos[1][1] = {{0}}; /* Trial ps site */
-const double trial_ps_y_pos[1][1] = {{0}}; /* Trial ps site */
+const double branch_length[][] = {{}}; /* Length of branch */
+const double branch_left_angle[][] = {{}}; /* Angle of left wall */
+const double branch_right_angle[][] = {{}}; /* Angle of right wall */
+const unsigned branch_left_end[][] = {{}}; /* Left maze end condition */
+const unsigned branch_right_end[][] = {{}}; /* Right maze end condition */
+const unsigned branch_split[][] = {{}}; /* If split branch or not */
+const unsigned branch_reward[][] = {{}}; /* If reward branch or not */
+const unsigned branch_parent[][] = {{}}; /* If parent branch or not */
 
 /******************************************/
 /* DEFINE EXTERNAL AND INTERNAL FUNCTIONS */
@@ -100,26 +73,26 @@ const unsigned lick_in_chan = 0; /* Lick signal*/
 const unsigned scim_logging_chan = 0; /* Lick signal*/
 
 /* Analog output channels */
-const unsigned laser_power_ao_chan = 0; /* laser power */
+const unsigned undef_ao_chan = 0; /* undefined */
 const unsigned synch_ao_chan = 0; /* synch channel at 500 Hz */
 const unsigned iti_ao_chan = 0; /* AO intertrial trig  */
 const unsigned l_wall_lat_ao_chan = 0; /* left wall lateral position */
 const unsigned l_wall_for_ao_chan = 0; /* left wall forward position */
 const unsigned r_wall_lat_ao_chan = 0; /* right wall lateral position */
 const unsigned r_wall_for_ao_chan = 0; /* right wall lateral position */
-const unsigned x_mirror_ao_chan = 0; /* x galvo mirror */
-const unsigned y_mirror_ao_chan = 0; /* y galvo mirror */
+const unsigned for_pos_ao_chan = 0; /* forward position of mouse */
+const unsigned lat_pos_ao_chan = 0; /* lateral position of mouse */
 
 /* Analog output channel offsets */
-const double laser_power_ao_offset = 0;
+const double undef_ao_offset = 0;
 const double synch_ao_offset = 0;
 const double iti_ao_offset = 0;
 const double l_wall_lat_ao_offset = 0;
 const double l_wall_for_ao_offset = 0;
 const double r_wall_lat_ao_offset = 0;
 const double r_wall_for_ao_offset = 0;
-const double x_mirror_ao_offset = 0;
-const double y_mirror_ao_offset = 0;
+const double for_pos_ao_offset = 0;
+const double lat_pos_ao_offset = 0;
 
 /* Digital output channels */
 const unsigned water_valve_trig = 0; /* Water valve trigger */
@@ -189,8 +162,6 @@ double mean_for_vel;
 double mean_lat_vel;
 unsigned running_ind;
 
-unsigned led_pulse_on = 0;
-
 /* Define licking variables */
 double lick_in_vlt;
 unsigned lick_state;
@@ -203,6 +174,7 @@ double frac_trial = 1.1;
 double frac_trial_prev = 1.09;
 double cur_trial_dist = 0;
 double cur_trial_time = 0;
+double cur_drink_time = 0;
 double cur_trial_lat = 0;
 unsigned cur_trial_num = 0;
 unsigned test_val;
@@ -252,8 +224,6 @@ unsigned ext_valve_trig = 0;
 double water_dist = 0;
 double water_pos_val;
 
-unsigned masking_flash_on = 0;
-
 unsigned scim_logging = 0; /* Define Scan Image Frame Clock Params */
 unsigned scim_state = 1; /* Define Scan Image Frame Clock Params */
 double scim_ai_vlt; /* Define Scan Image Frame Clock Params */
@@ -268,65 +238,10 @@ double log_ball_motion;
 double log_cor_pos;
 unsigned log_photo_stim;
 
-/* Masking flash & Photostimulation variables */
-unsigned tick_period = 0;
-unsigned mf_period_counter = 0;
-unsigned ps_period_counter = 0;
-unsigned ps_spots_counter = 0;
-unsigned laser_shutter = 0;
-double x_mirror_pos = 0;
-double y_mirror_pos = 0;
-double laser_power = 0;
-double laser_power_vlt;
-double x_mirror_pos_vlt;
-double y_mirror_pos_vlt;
-unsigned cur_site_ind = 0;
 /*************************************************************************/
 /*************************************************************************/
 /*************************************************************************/
 
-/* Mirror calibration function*/
-double galvo_x_mm_to_vlt(double x) {
-    if (x > 0) {
-        return x/1.15;
-    } else {
-        return x/1.00;
-    }
-}
-
-double galvo_y_mm_to_vlt(double x) {
-    return -x/1.5;
-}
-
-/* Blue laser Calibration Function*/
-double blue_laser_mW_to_vlt(double x) {
-    double out_vlt;
-    out_vlt = x;
-    
-    if (out_vlt > 5){
-        out_vlt = 5;
-    }
-    if (out_vlt < 0){
-        out_vlt = 0;
-    }
-    
-    return out_vlt;
-}
-
-/* Yellow laser calibration Function*/
-double yellow_laser_mW_to_vlt(double x) {
-    double out_vlt;
-    out_vlt = x;
-    
-    if (out_vlt > 5){
-        out_vlt = 5;
-    }
-    if (out_vlt < 0){
-        out_vlt = 0;
-    }
-    
-    return out_vlt;
-}
 
 /***********************************/
 /* Wall Calibration Function*/
@@ -431,7 +346,7 @@ void tick_func(void) {
             }
             
             /* Check if trial has ended, and if so make a new one */
-            if (frac_trial >= 1 || cur_trial_time >= trial_timeout[cur_trial_num]) {
+            if (cur_drink_time >= trial_drink_time || cur_trial_time >= trial_timeout) {
                 /* Pick new trial number */
                 if (trial_random_order == 1) {
                     cur_trial_num = (unsigned int) (trial_num_types)*rand();
@@ -447,49 +362,23 @@ void tick_func(void) {
                     }
                 }
                 /* Determine target left and right starting wall positions */
-                if (trial_cor_reset[cur_trial_num] == 1) {
-                    cor_pos = trial_ol_values[cur_trial_num][0];
-                }
-                cor_width = trial_cor_width[cur_trial_num][0];
-                l_lat_pos_target = cor_width - cor_pos;
-                r_lat_pos_target = cor_pos;
-                
-                if (trial_left_wall[cur_trial_num] == 0){
-                    l_lat_pos_target = max_wall_pos;
-                }
-                if (trial_right_wall[cur_trial_num] == 0){
-                    r_lat_pos_target = max_wall_pos;
-                }
+                l_lat_pos_target = maze_initial_left_wall[cur_trial_num];
+                r_lat_pos_target = maze_initial_right_wall[cur_trial_num];
+                l_for_pos_target = l_for_pos_default;
+                r_for_pos_target = r_for_pos_default;
 
-                /* reset variable */                
+                /* reset variables */                
                 inter_trial_time = 0;
-                test_val = 0;
-                test_val_exit = 0;
-                mf_val = 0;
-                mf_val_exit = 0;
-                ps_val = 0;
-                ps_val_exit = 0;
-                turn_period = 0;
-                gain_period = 0;
-                ol_period = 0;
-                water_period = 0;
                 cur_trial_time = 0;
-                cur_trial_dist = 0;
-                cur_trial_lat = 0;
-                frac_trial = 0;
-                frac_trial_prev = 0;
+                cur_drink_time = 0;
+                cur_branch = maze_initial_branch[cur_trial_num];
+                cur_branch_frac = maze_initial_branch_frac[cur_trial_num];
                 wv_time = 0;
                 bv_time = 0;
-                mf_period_counter = 0;
-                ps_period_counter = 0;
-                ps_spots_counter = 0;
-
-                x_mirror_pos = trial_ps_x_pos[cur_trial_num][0];
-                y_mirror_pos = trial_ps_y_pos[cur_trial_num][0];
             }
             
             /* Check if in iti */
-            if (inter_trial_time <= trial_iti[cur_trial_num]) {
+            if (inter_trial_time <= trial_iti) {
                 inter_trial_trig = 1;
                 inter_trial_time = inter_trial_time + 1/sample_freq;
                 /* send left and right walls to target positions */
@@ -498,6 +387,12 @@ void tick_func(void) {
             } else {
                 /* During trial */
                 inter_trial_trig = 0;
+                
+                /* Determine how far along trial */
+                /* Determine how far along trial */
+                /* Determine how far along trial */
+                /* Determine how far along trial */
+                /* Determine how far along trial */
                 /* Determine how far along trial */
                 if (trial_type[cur_trial_num] == 1) {
                     frac_trial = cur_trial_dist/trial_duration[cur_trial_num];
@@ -835,7 +730,7 @@ void init_func(void) {
         cur_trial_num = trial_num_sequence_length - 1;
     }*/
     
-    cor_pos = trial_ol_values[0][0];
+    cur_trial_time = trial_timeout + 1;
             
     l_lat_pos = max_wall_pos;
     r_lat_pos = max_wall_pos;

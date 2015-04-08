@@ -1,35 +1,38 @@
-function maze = create_maze(dat)
+function [maze dat] = create_maze(dat,start_branch)
 
 maze.num_branches = size(dat,1);
 
 maze.wall_gain = 1;
 
-maze.initial.branch_id = 2;
-maze.initial.branch_fraction = .2;
+maze.initial.branch_id = start_branch;
+maze.initial.branch_fraction = .5;
 maze.initial.corridor_frac = .5;
-
-if maze.initial.branch_id > maze.num_branches
-	maze.initial.branch_id = 1;
-end
 
 maze.start_wall_right = 15;
 maze.start_wall_left = 15;
+maze.default_reward_patch = [.1 .9 .9 .1, .2 .2 .8 .8];
+
+if maze.initial.branch_id > maze.num_branches || isnan(start_branch) || maze.initial.branch_id <= 0
+	error('Starting branch must be valid branch id')
+end
 
 maze.length = NaN(maze.num_branches,1);
-maze.left_wall_angle = NaN(maze.num_branches,1);
-maze.right_wall_angle = NaN(maze.num_branches,1);
-maze.end_cond = NaN(maze.num_branches,2); % -1 implies wall, 0 implies nothing, # > 0 implies another branch, 2 numbers implies left/right branch
-maze.reward_patch = zeros(maze.num_branches,8); % [0 0] no reward, [0 1], reward spanning cor frac
+maze.left_angle = NaN(maze.num_branches,1);
+maze.right_angle = NaN(maze.num_branches,1);
+maze.left_end = NaN(maze.num_branches,1); % 0 implies wall, # > 0 implies another branch
+maze.right_end = NaN(maze.num_branches,1); % 0 implies wall, # > 0 implies another branch
+maze.split_branch = NaN(maze.num_branches,1); % 0 implies wall, # > 0 implies another branch
+maze.reward_branch = NaN(maze.num_branches,1); %%% [0 0] no reward, [0 1], reward spanning cor frac
 
 
 for ij = 1:maze.num_branches
 	maze.length(ij) = dat{ij,1};
-	maze.left_wall_angle(ij) = dat{ij,2};
-	maze.right_wall_angle(ij) = dat{ij,3};
-	maze.end_cond(ij,:) = [dat{ij,4} dat{ij,5}];
-	if dat{ij,6}
-		maze.reward_patch(ij,:) = [.5 .6 .6 .5, .1 .1 .9 .9];
-	end
+	maze.left_angle(ij) = dat{ij,2};
+	maze.right_angle(ij) = dat{ij,3};
+	maze.left_end(ij) = dat{ij,4};
+	maze.right_end(ij) = dat{ij,5};
+	maze.reward_branch(ij) = dat{ij,6};
+	maze.split_branch(ij) = maze.left_end(ij) ~= maze.right_end(ij);
 end
 
 
@@ -37,54 +40,60 @@ maze.left_wall_traj = NaN(maze.num_branches,4);
 maze.right_wall_traj = NaN(maze.num_branches,4);
 maze.parent_branch = NaN(maze.num_branches,1);
 
+
 %%% construct full maze
 for ij = 1:maze.num_branches
 	
-	% make sure each branch gets assigned correct parent node
-	parent_branch = find(maze.end_cond(:,1) == ij);
-	if isempty(parent_branch)
-		parent_branch = find(maze.end_cond(:,2) == ij);
-	end
-
-	if isempty(parent_branch);
+	% branch one is always the bottom branch, has no parent branch
+	if ij == 1
 		maze.parent_branch(ij) = 0;
 		init_left = maze.wall_gain*[-maze.start_wall_left 0];		
-		init_right = maze.wall_gain*[maze.start_wall_right 0];		
+		init_right = maze.wall_gain*[maze.start_wall_right 0];	
 	else
-		maze.parent_branch(ij) = parent_branch;
-		init_left = maze.left_wall_traj(parent_branch,3:4);
-		init_right = maze.right_wall_traj(parent_branch,3:4);
+		% make sure each branch gets assigned correct parent node
+		left_parent_branch = find(maze.left_end(:,1) == ij);
+		right_parent_branch = find(maze.right_end(:,1) == ij);
+		if isempty(left_parent_branch) && isempty(right_parent_branch)
+			error('Each branch apart from the first must have a parent')
+        elseif isempty(left_parent_branch)
+				maze.parent_branch(ij) = right_parent_branch;
+                init_left = (maze.right_wall_traj(maze.parent_branch(ij),3:4)+maze.left_wall_traj(maze.parent_branch(ij),3:4))/2;
+                init_right = maze.right_wall_traj(maze.parent_branch(ij),3:4);
+        elseif isempty(right_parent_branch)
+				maze.parent_branch(ij) = left_parent_branch;
+                init_left = maze.left_wall_traj(maze.parent_branch(ij),3:4);
+                init_right = (maze.right_wall_traj(maze.parent_branch(ij),3:4)+maze.left_wall_traj(maze.parent_branch(ij),3:4))/2;
+        elseif left_parent_branch == right_parent_branch
+				maze.parent_branch(ij) = right_parent_branch;
+                init_left = maze.left_wall_traj(maze.parent_branch(ij),3:4);
+                init_right = maze.right_wall_traj(maze.parent_branch(ij),3:4);
+        else
+			error('Cannot have two different parent branches')
+        end
+        if maze.parent_branch(ij) >= ij
+            error('Cannot have parent branch defined before branch')
+        end
 	end
+	
+	if maze.split_branch(ij)
+		cur_width = init_right(1)-init_left(1);
+        ideal_length = cur_width/(tand(maze.right_angle(ij)) - tand(maze.left_angle(ij)))/maze.wall_gain;
+        ideal_length = round(10*ideal_length)/10;
+        maze.length(ij) = ideal_length;
+        dat{ij,1} = ideal_length;
+    end
 
 	traj_add = NaN(1,2);
-    traj_add(1) = maze.wall_gain*sind(maze.left_wall_angle(ij))*maze.length(ij);
-    traj_add(2) = cosd(maze.left_wall_angle(ij))*maze.length(ij);
+    traj_add(1) = maze.wall_gain*tand(maze.left_angle(ij))*maze.length(ij);
+    traj_add(2) = maze.length(ij);
     traj_add = init_left + traj_add;
     maze.left_wall_traj(ij,:) = [init_left traj_add];
 
 	traj_add = NaN(1,2);
-    traj_add(1) = maze.wall_gain*sind(maze.right_wall_angle(ij))*maze.length(ij);
-    traj_add(2) = cosd(maze.right_wall_angle(ij))*maze.length(ij);
+    traj_add(1) = maze.wall_gain*tand(maze.right_angle(ij))*maze.length(ij);
+    traj_add(2) = maze.length(ij);
     traj_add = init_right + traj_add;
     maze.right_wall_traj(ij,:) = [init_right traj_add];
-
-  end
-
-	maze.plot_right_wall_traj = maze.right_wall_traj;
-	maze.plot_left_wall_traj = maze.left_wall_traj;
-
-%%% check left right turns
-for ij = 1:maze.num_branches
-	if maze.end_cond(ij,2)>0
-		if maze.right_wall_angle(maze.end_cond(ij,1)) > maze.left_wall_angle(maze.end_cond(ij,2))
-			maze.end_cond(ij,:) = maze.end_cond(ij,[2 1]);
-		end
-		% remove intersection point at branch
- 		[xi,yi,ii] = polyxpoly(maze.right_wall_traj(maze.end_cond(ij,1),[1 3])',maze.right_wall_traj(maze.end_cond(ij,1),[2 4])',maze.left_wall_traj(maze.end_cond(ij,2),[1 3])',maze.left_wall_traj(maze.end_cond(ij,2),[2 4])');
- 		if isempty(xi)
- 			error('Unexpected no intersection points')
- 		end
- 		maze.plot_right_wall_traj(maze.end_cond(ij,1),1:2) = [xi yi];
- 		maze.plot_left_wall_traj(maze.end_cond(ij,2),1:2) = [xi yi];
-	end
 end
+
+
