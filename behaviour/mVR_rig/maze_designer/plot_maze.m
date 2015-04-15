@@ -44,16 +44,12 @@ for ij = 1:maze.num_branches
 	end
 end
 
-branch_id = maze.initial.branch_id;
-branch_fraction = maze.initial.branch_fraction;
-corridor_fraction = maze.initial.corridor_frac;
-    
-[init_x init_y] = maze_coordinate_transform(maze,branch_id,branch_fraction,corridor_fraction);
-
-
 
 x_lim = [5*floor(1/5*min([maze.left_wall_traj(:,1);maze.left_wall_traj(:,3)]))-5,5*ceil(1/5*max([maze.right_wall_traj(:,1);maze.right_wall_traj(:,3)]))+5];
 y_lim = 5*ceil(1/5*max([maze.right_wall_traj(:,4);maze.left_wall_traj(:,4)]));
+
+init_x = maze.initial.x_cord;
+init_y = maze.initial.y_cord;
 
 % plot mouse
 plot([init_x init_x],[init_y init_y-(y_lim+40)/25],'Color',[0.2 0.2 0.2],'LineWidth',4);

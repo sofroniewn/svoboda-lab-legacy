@@ -9,6 +9,8 @@ classdef maze_class
     maze.initial.branch_id = start_branch;
     maze.initial.branch_fraction = .5;
     maze.initial.corridor_frac = .5;
+    maze.initial.x_cord = 0;
+    maze.initial.y_cord = 0;
 
     maze.start_wall_right = 15;
     maze.start_wall_left = 15;
