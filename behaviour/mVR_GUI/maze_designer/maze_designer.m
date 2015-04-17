@@ -435,9 +435,14 @@ if FilterIndex>0
     maze_names = get(handles.listbox_mazes,'String');
     dat_array = get(handles.listbox_mazes,'UserData');
     start_branch_array = get(handles.edit_starting_branch,'UserData');
-    session_config = [];
     set(handles.text_config_name,'String',FileName)
-    save([PathName FileName],'maze_names','dat_array','session_config','start_branch_array');
+    trial_vars.random = get(handles.radiobutton_random_order,'value');
+    trial_vars.maze_ids = get(handles.edit_maze_id,'string');
+    trial_vars.maze_repeats = get(handles.edit_maze_repeats,'string');
+    trial_vars.session_timeout = 9999;
+    trial_vars.session_iti = 1;
+    trial_vars.session_drink_time = 1;
+    save([PathName FileName],'maze_names','dat_array','start_branch_array','trial_vars');
 end
 
 % --- Executes on button press in pushbutton_load_config.
@@ -457,6 +462,10 @@ if FilterIndex>0
     set(handles.listbox_mazes,'Value',1);
     set(handles.edit_starting_branch,'UserData',load_dat.start_branch_array);
     listbox_mazes_Callback(hObject, eventdata, handles);
+    set(handles.radiobutton_random_order,'value',load_dat.trial_vars.random)
+    set(handles.edit_maze_repeats,'string',load_dat.trial_vars.maze_repeats)
+    set(handles.edit_maze_id,'string',load_dat.trial_vars.maze_ids)
+    radiobutton_random_order_Callback(handles.radiobutton_random_order, eventdata, handles);
 end
 
 
@@ -468,6 +477,18 @@ function radiobutton_random_order_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of radiobutton_random_order
 
+value = get(hObject,'Value');
+if value
+      set(handles.text_maze_repeats,'enable','off');
+      set(handles.edit_maze_repeats,'enable','off');
+      set(handles.text_maze_id,'enable','off');
+      set(handles.edit_maze_id,'enable','off');
+else
+      set(handles.text_maze_repeats,'enable','on');
+      set(handles.edit_maze_repeats,'enable','on');
+      set(handles.text_maze_id,'enable','on');
+      set(handles.edit_maze_id,'enable','on');  
+end
 
 
 function edit_starting_branch_Callback(hObject, eventdata, handles)

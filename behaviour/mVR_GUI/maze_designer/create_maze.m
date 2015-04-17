@@ -6,11 +6,15 @@ maze.wall_gain = 1;
 
 maze.initial.branch_id = start_branch;
 maze.initial.branch_fraction = .5;
-maze.initial.corridor_frac = .5;
 
 maze.start_wall_right = 15;
 maze.start_wall_left = 15;
-maze.default_reward_patch = [.1 .9 .9 .1, .2 .2 .8 .8];
+maze.default_reward_patch = [.1 .9, .2 .8]; %left right, back forward
+maze.reward_size = 1;
+maze.wall_gain = 1;
+
+
+maze.initial.corridor_frac = (maze.start_wall_left)/(maze.start_wall_left + maze.start_wall_right);
 
 if maze.initial.branch_id > maze.num_branches || isnan(start_branch) || maze.initial.branch_id <= 0
     error('Starting branch must be valid branch id')

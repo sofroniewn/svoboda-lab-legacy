@@ -22,12 +22,12 @@ end
 
 stripes = 0;
 for ij = 1:maze.num_branches
-
 	% plot reward patches
 	if maze.reward_branch(ij)
-			end_vals = NaN(4,2);
+			reward_patch = [maze.default_reward_patch(1:2) maze.default_reward_patch(2) maze.default_reward_patch(1) maze.default_reward_patch(3) maze.default_reward_patch(3) maze.default_reward_patch(4) maze.default_reward_patch(4)];
+            end_vals = NaN(4,2);
             for ik = 1:4
-				[init_x init_y] = maze_coordinate_transform(maze,ij,maze.default_reward_patch(ik),maze.default_reward_patch(4+ik));
+				[init_x init_y] = maze_coordinate_transform(maze,ij,reward_patch(ik),reward_patch(4+ik));
 				end_vals(ik,1) = init_x; end_vals(ik,2) = init_y;
             end
 			h = patch(end_vals(:,1),end_vals(:,2),'b');
