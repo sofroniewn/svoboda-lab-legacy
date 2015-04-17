@@ -168,11 +168,20 @@ replace    = ['double dist_thresh =  ', num2str(rig_config.dist_thresh) ,';'];  
 % replace maze field names
 names = fieldnames(maze_config);
 for ij = 1:length(names)
-    if ij <= 9
+    if ismember(ij,[1:4,7:9])
         old_size_str = '';
         new_size_str = '';
         old_val_str = '0';
         new_val_str = num2str(maze_config.(names{ij}));
+    elseif ismember(ij,[5,6])
+        old_size_str = '\[\]';
+        if maze_config.trial_num_sequence_length == 0
+            new_size_str = ['[' num2str(1) ']'];
+        else
+            new_size_str = ['[' num2str(maze_config.trial_num_sequence_length) ']'];    
+        end
+        old_val_str = '{}';
+        new_val_str = mat2strC(maze_config.(names{ij}),1);
     elseif ismember(ij,[10,12:20])
         old_size_str = '\[\]';
         new_size_str = ['[' num2str(maze_config.num_mazes) ']'];

@@ -184,11 +184,12 @@ unsigned parent_branch;
 unsigned child_branch;
 double gain_val;
 double left_angle;
-double left_angle;
+double right_angle;
 unsigned wv_time;
 unsigned bv_time;
 unsigned cur_trial_block = 0;
 unsigned cur_trial_repeat = 0;
+unsigned led_pulse_on = 0;
 
 /* Define Wall Motion Variables and maze cords*/
 double l_lat_pos_target;
@@ -369,7 +370,7 @@ void tick_func(void) {
             if ((cur_drink_time-1)/sample_freq >= session_drink_time || cur_trial_time >= session_timeout) {
                 /* Pick new trial number */
                 if (trial_random_order == 1) {
-                    cur_trial_num = (unsigned int) (trial_num_types)*rand();
+                    cur_trial_num = (unsigned int) (num_mazes)*rand();
                 } else {
                     cur_trial_num = trial_num_sequence[cur_trial_block]-1;
                     cur_trial_repeat++;
@@ -404,7 +405,7 @@ void tick_func(void) {
                 }
                 /* if starting branches are dead ends, put forward position of the wall appropriately*/
                 if (branch_left_end[cur_trial_num][cur_branch] == 0) {
-                    l_for_pos_target = abs(10*wall_ball_gain*(branch_length[cur_trial_num][cur_branch] - cur_branch_dist));
+                    l_for_pos_target = 10*wall_ball_gain*(branch_length[cur_trial_num][cur_branch] - cur_branch_dist);
                     left_dead_end = 1;
                     if (l_for_pos_target > max_wall_for_pos) {
                         l_for_pos_target = max_wall_for_pos;
@@ -415,7 +416,7 @@ void tick_func(void) {
                     left_dead_end = 0;                    
                 }
                 if (branch_right_end[cur_trial_num][cur_branch] == 0) {
-                    r_for_pos_target = abs(10*wall_ball_gain*(branch_length[cur_trial_num][cur_branch] - cur_branch_dist));
+                    r_for_pos_target = 10*wall_ball_gain*(branch_length[cur_trial_num][cur_branch] - cur_branch_dist);
                     right_dead_end = 1;
                     if (r_for_pos_target > max_wall_for_pos) {
                         r_for_pos_target = max_wall_for_pos;
@@ -532,14 +533,14 @@ void tick_func(void) {
                 cur_branch_frac  = l_lat_pos/(l_lat_pos + r_lat_pos);
                 
                 /* update forward wall positions if in dead end and close to end (with gain .2, 10 cm corresponds to 20 mm)*/
-                if (branch_left_end[cur_trial_num][cur_branch] == 0 & abs((branch_length[cur_trial_num][cur_branch] - cur_branch_dist)*10*wall_ball_gain) < max_wall_for_pos) {
+                if (branch_left_end[cur_trial_num][cur_branch] == 0 && (branch_length[cur_trial_num][cur_branch] - cur_branch_dist)*10*wall_ball_gain < max_wall_for_pos) {
                     l_for_pos = l_for_pos + 10*wall_ball_gain/sample_freq*gain_val*for_ball_motion;
                     left_dead_end = 1;
                 } else {
                     left_dead_end = 0;  
                     l_for_pos = max_wall_for_pos;                  
                 }
-                if (branch_right_end[cur_trial_num][cur_branch] == 0 & abs((branch_length[cur_trial_num][cur_branch] - cur_branch_dist)*10*wall_ball_gain) < max_wall_for_pos) {
+                if (branch_right_end[cur_trial_num][cur_branch] == 0 && (branch_length[cur_trial_num][cur_branch] - cur_branch_dist)*10*wall_ball_gain < max_wall_for_pos) {
                     r_for_pos = r_for_pos + 10*wall_ball_gain/sample_freq*gain_val*for_ball_motion;
                     right_dead_end = 1;
                 } else {
@@ -559,8 +560,8 @@ void tick_func(void) {
                 
                 /* determine if in reward patch and deliver water / update drinking timer*/
                 /* Decide if delivering water */
-                if (water_on == 0 & branch_reward[cur_trial_num][cur_branch] == 1){
-                    if (cur_branch_frac >= maze_reward_patch[cur_trial_num][1] & cur_branch_frac <= maze_reward_patch[cur_trial_num][1] & cur_branch_dist/branch_length[cur_trial_num][cur_branch] >= maze_reward_patch[cur_trial_num][2] & cur_branch_dist/branch_length[cur_trial_num][cur_branch] <= maze_reward_patch[cur_trial_num][3]) {
+                if (water_on == 0 && branch_reward[cur_trial_num][cur_branch] == 1){
+                    if (cur_branch_frac >= maze_reward_patch[cur_trial_num][1] && cur_branch_frac <= maze_reward_patch[cur_trial_num][1] && cur_branch_dist/branch_length[cur_trial_num][cur_branch] >= maze_reward_patch[cur_trial_num][2] && cur_branch_dist/branch_length[cur_trial_num][cur_branch] <= maze_reward_patch[cur_trial_num][3]) {
                         water_on = 1;
                         valve_open_time = round(valve_open_time*maze_reward_size[cur_trial_num]);
                         cur_drink_time = 1;
@@ -620,7 +621,7 @@ void tick_func(void) {
             writeAO(maze_num_ao_chan, maze_num_ao_offset  + maze_num_to_vlt(cur_trial_num));
             
             /* Check water */
-            if (ext_valve_trig == 1 || water_dist > dist_thresh & dist_thresh < 200){
+            if (ext_valve_trig == 1 || water_dist > dist_thresh && dist_thresh < 200){
                 water_on_ext = 1;
             }
             water_dist = water_dist +  for_ball_motion/sample_freq;
@@ -656,10 +657,7 @@ void tick_func(void) {
             } else {
                 writeDIO(water_valve_trig, 0);
             }
-            
-            tick_period = 0;
-            
-            
+                        
             /* Send triggers for behaviour cameras*/
             if (bv_time == 0 && inter_trial_trig == 0) {
                 writeDIO(bv_trig, 1);
@@ -675,7 +673,7 @@ void tick_func(void) {
             if (wv_time == 0 && inter_trial_trig == 0) {
                 writeDIO(wv_trig, 1);
                 led_pulse_on = 0;
-            } else {
+                } else {
                 writeDIO(wv_trig, 0);
             }
             wv_time++;
@@ -684,10 +682,9 @@ void tick_func(void) {
             }
             
             /* Trial DO Triggers */
-            writeDIO(screen_on_trig, screen_on)
+            writeDIO(screen_on_trig, screen_on);
             writeDIO(trial_iti_trig, inter_trial_trig);
             writeDIO(trial_on_trig, 1-inter_trial_trig);
-            writeDIO(trial_test_trig, test_val);
             writeDIO(trial_ephys_trig, 1-inter_trial_trig);
             writeAO(iti_ao_chan, iti_ao_offset + 5*(inter_trial_trig));
             
@@ -778,22 +775,18 @@ void tick_func(void) {
         writeAO(l_wall_for_ao_chan, l_wall_for_ao_offset  + wall_mm_to_vlt(l_for_pos));
         writeAO(l_wall_lat_ao_chan, l_wall_lat_ao_offset + wall_mm_to_vlt(l_lat_pos));
 
-        writeAO(maze_num_ao_chan , maze_num_ao_offset);
-        writeAO(maze_for_ao_chan , maze_for_ao_offset);
-        writeAO(maze_lat_ao_chan , maze_lat_ao_offset);
+        writeAO(maze_num_ao_chan, maze_num_ao_offset);
+        writeAO(maze_for_ao_chan, maze_for_ao_offset);
+        writeAO(maze_lat_ao_chan, maze_lat_ao_offset);
 
         writeAO(iti_ao_chan, iti_ao_offset);
         writeAO(synch_ao_chan, synch_ao_offset);
 
         writeDIO(water_valve_trig, 0);
-        writeDIO(trial_test_trig, 0);
         writeDIO(wv_trig, 0);
         writeDIO(bv_trig, 0);
-        writeDIO(sound_trig, 0);
-        writeDIO(mf_dio_blue, 0);
-        writeDIO(mf_dio_yellow, 0);
-        writeDIO(sound_trig_2, 0);
         writeDIO(trial_on_trig, 0);
+        writeDIO(screen_on_trig, 0);
         writeDIO(trial_iti_trig, 0);
         writeDIO(synch_pulse, 0);
         writeDIO(trial_ephys_trig, 0);
@@ -812,7 +805,7 @@ void init_func(void) {
         cur_trial_num = trial_num_sequence_length - 1;
     }*/
     
-    cur_trial_time = trial_timeout + 1;
+    cur_trial_time = session_timeout + 1;
     
     
     writeAO(r_wall_for_ao_chan, r_wall_for_ao_offset  + wall_mm_to_vlt(r_for_pos));
@@ -820,22 +813,21 @@ void init_func(void) {
     writeAO(l_wall_for_ao_chan, l_wall_for_ao_offset  + wall_mm_to_vlt(l_for_pos));
     writeAO(l_wall_lat_ao_chan, l_wall_lat_ao_offset + wall_mm_to_vlt(l_lat_pos));
     
-    writeAO(maze_num_ao_chan , maze_num_ao_offset);
-    writeAO(maze_for_ao_chan , maze_for_ao_offset);
-    writeAO(maze_lat_ao_chan , maze_lat_ao_offset);
+    writeAO(maze_num_ao_chan, maze_num_ao_offset);
+    writeAO(maze_for_ao_chan, maze_for_ao_offset);
+    writeAO(maze_lat_ao_chan, maze_lat_ao_offset);
 
     writeAO(iti_ao_chan, iti_ao_offset);
     writeAO(synch_ao_chan, synch_ao_offset);
 
     writeDIO(water_valve_trig, 0);
-    writeDIO(trial_test_trig, 0);
     writeDIO(wv_trig, 0);
     writeDIO(bv_trig, 0);
     writeDIO(trial_iti_trig, 0);
     writeDIO(trial_on_trig, 0);
     writeDIO(synch_pulse, 0);
     writeDIO(trial_ephys_trig, 0);
-    writeDIO(screen_on_trig, screen_on)
+    writeDIO(screen_on_trig, 0);
 }
 
 void cleanupfunc(void) {
