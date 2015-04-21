@@ -6,12 +6,12 @@
 rig_config.rig_name = 'Imaging_rig'; % BASE DIRECTORY
 rig_config.rig_room = 'JFRC_2W.333'; % BASE DIRECTORY
 rig_config.base_dir = 'E:\Documents and Settings\user\My Documents\MATLAB\code\wgnr\behaviour\mVR_GUI'; % BASE DIRECTORY
-rig_config.comp_ip_address = '10.102.22.40'; % COMPUTER IP ADDRESS
+rig_config.comp_ip_address = '10.102.22.52'; % COMPUTER IP ADDRESS
 rig_config.globals_name = 'globals_mVR.c'; % base globals file
 rig_config.treadmill_str = 'treadmill4';
 rig_config.data_dir = 'E:\Documents and Settings\user\My Documents\mVR_DATA'; % DATA DIRECTORY
 rig_config.TCP_IP_address = '10.102.22.49';
-rig_config.accesory_path = 'X:\Nick\WGNR_DATA';
+rig_config.accesory_path = 'X:\Nick\mVR_DATA';
 
 
 % Parameters for globals file
@@ -58,10 +58,9 @@ rig_config.sample_freq = 500;
 rig_config.ai_threshold = 3;
 rig_config.run_speed_thresh = 5;
 rig_config.speed_time_length = 250;
-rig_config.wall_ball_gain = -.2;
 
 rig_config.max_wall_pos = 40;
-rig_config.max_wall_for_pos = 20;
+rig_config.max_wall_for_pos = 25;
 
 % Video frame rates
 rig_config.bv_period = 5; % behavioural video frame period / 2 in ms

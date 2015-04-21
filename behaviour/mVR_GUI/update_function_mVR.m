@@ -21,11 +21,12 @@ num_log_items = 4;
 %%% CHECK IF RTFSM STOPPED
 if isempty(varLog) == 0 && update_display_on == 1
 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % EXTRACT DATA FROM VARLOG
     num_samples = length(varLog)/num_log_items;
     trial_mat_names = handles.trial_mat_names;
     trial_mat = zeros(numel(trial_mat_names),num_samples);
     
-    % EXTRACT DATA FROM VARLOG
     ball_motion = varLog(2:num_log_items:end);
     cam_vel_step = zeros(num_samples,4);
     zz = ball_motion;
@@ -39,33 +40,38 @@ if isempty(varLog) == 0 && update_display_on == 1
     zz = zz - cam_vel_step(:,2)*36^1;
     cam_vel_step(:,1) = round(zz);
     % Convert to ball roation
-    
     d_ball_pos = cam_vel_step*handles.A_inv';
+    
+    %handles.trial_mat_names = {'xSpeed','ySpeed','corPos','corWidth','forMazeCord','latMazeCord', ...
+    %'screenOn','rEnd','lEnd','lickState','trialWater','extWater', ...
+    %'trialID','itiPeriod','scim_state','scim_logging'};
+
     trial_mat(1,:) = d_ball_pos(:,1);
     trial_mat(2,:) = d_ball_pos(:,2);
     
-    trial_mat(3,:) = mod(varLog(3:num_log_items:end),1000)/10;
-    trial_mat(4,:) = floor(varLog(3:num_log_items:end)/1000)/10;
-    trial_mat(5,:) = floor(varLog(1:num_log_items:end)/10000)/10;
-    trial_mat(6,:) = floor(mod(varLog(1:num_log_items:end),10000)/100)/10 - 5;
-    trial_mat(7,:) = floor(mod(varLog(1:num_log_items:end),100))/10 - 5;
+    trial_mat(3,:) = mod(varLog(3:num_log_items:end),1000)/10; % left wall lat position
+    trial_mat(4,:) = floor(varLog(3:num_log_items:end)/1000)/10; % right wall lat position
 
+    trial_mat(5,:) = mod(varLog(1:num_log_items:end),1000); % forMaze coordinate
+    trial_mat(6,:) = floor(varLog(1:num_log_items:end)/1000)-500; % latMaze coordinate
+       
     log_cur_state = varLog(4:num_log_items:end);
-    trial_mat(8,:) = 1 + mod(log_cur_state,100);
+    trial_mat(13,:) = 1 + mod(log_cur_state,100); % trialID
     log_state_a = mod(floor(log_cur_state/100),10);
     log_state_b = mod(floor(log_cur_state/1000),10);
     log_state_c = mod(floor(log_cur_state/10000),10);
     
-    trial_mat(9,:) = mod(floor(log_state_a/4),2);
-    trial_mat(10,:) = mod(floor(log_state_a/2),2);
-    trial_mat(11,:) = mod(log_state_a,2);
-    trial_mat(12,:) = mod(floor(log_state_b/4),2);
-    trial_mat(13,:) = mod(floor(log_state_b/2),2);
-    trial_mat(14,:) = mod(log_state_b,2);
-    trial_mat(15,:) = mod(floor(log_state_c/4),2);
-    trial_mat(16,:) = mod(floor(log_state_c/2),2);
-    trial_mat(17,:) = mod(log_state_c,2);
+    trial_mat(14,:) = mod(floor(log_state_a/4),2); % ITI
+    trial_mat(10,:) = mod(floor(log_state_a/2),2); % lick state
+    trial_mat(11,:) = mod(log_state_a,2); % trial water
+    trial_mat(7,:) = mod(floor(log_state_b/4),2); % screen on
+    trial_mat(9,:) = mod(floor(log_state_b/2),2); % left dead end
+    trial_mat(15,:) = mod(log_state_b,2); % scim state
+    trial_mat(12,:) = mod(floor(log_state_c/4),2); % ext water
+    trial_mat(16,:) = mod(floor(log_state_c/2),2); % scim logging
+    trial_mat(8,:) = mod(log_state_c,2); % right dead end
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Check if new trial - if so chunck and save data
     trial_info = get(handles.text_num_trials,'UserData');
     iti_vect = [trial_info.iti_end trial_mat(handles.iti_ind,:)];
@@ -83,13 +89,12 @@ if isempty(varLog) == 0 && update_display_on == 1
         if get(handles.checkbox_stream_behaviour,'Value');
            save([handles.stream_fname_base sprintf('trial_%04d.mat',trial_num)],'trial_matrix','trial_mat_names','trial_num');
         end
-        if get(handles.togglebutton_TCP,'Value')
-            try 
-                jtcp('write',handles.jTcpObj,{'trial_data', trial_num, trial_matrix});
-            catch
-            end
-        end
         trial_num = trial_num+1;
+
+        % clear plot
+        to_delete = get(handles.axes_maze,'userdata');
+        delete(to_delete)
+        set(handles.axes_maze,'userdata',[]);
     end
     trial_info.trial_num = trial_num;
     trial_info.iti_end = trial_mat(handles.iti_ind,end);
@@ -97,6 +102,9 @@ if isempty(varLog) == 0 && update_display_on == 1
 
     speed_vect =  sqrt(trial_mat(1,:).^2 +  trial_mat(2,:).^2)*500;
     
+%[trial_mat(3:4,:);trial_mat(3,:) + trial_mat(4,:)]
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Update plots
     speed = get(handles.speed_plot,'Ydata')';
     speed = [speed(num_samples+1:end);speed_vect'];
@@ -105,8 +113,13 @@ if isempty(varLog) == 0 && update_display_on == 1
     cor_width = get(handles.cor_width_plot,'Ydata')';
     cor_width = [cor_width(num_samples+1:end);trial_mat(4,:)'];
 
-    laser_power = get(handles.laser_power_plot,'Ydata')';
-    laser_power = [laser_power(num_samples+1:end);10*trial_mat(5,:)'];
+    rEnd = get(handles.rEnd_plot,'Ydata')';
+    rEnd = [rEnd(num_samples+1:end);72*trial_mat(9,:)'];
+    lEnd = get(handles.lEnd_plot,'Ydata')';
+    lEnd = [lEnd(num_samples+1:end);72*trial_mat(8,:)'];
+
+    screen_on = get(handles.screen_on_plot,'Ydata')';
+    screen_on = [screen_on(num_samples+1:end);76*trial_mat(7,:)'];
 
     water = get(handles.water_plot,'Ydata')';
     trans = diff([round((water(end))/20);trial_mat(11,:)']);
@@ -116,11 +129,10 @@ if isempty(varLog) == 0 && update_display_on == 1
     water = [water(num_samples+1:end);20*trial_mat(11,:)'];
     
     water_ext = get(handles.water_ext_plot,'Ydata')';
-    trans = diff([round((water_ext(end))/21);trial_mat(11,:)']);
+    trans = diff([round((water_ext(end))/22);trial_mat(12,:)']);
     trans = sum(trans==1);
-    water_ext = [water_ext(num_samples+1:end);21*trial_mat(15,:)'];
-
-    
+    water_ext = [water_ext(num_samples+1:end);22*trial_mat(12,:)'];
+  
     licks = get(handles.lick_plot,'Ydata')';
     trans = diff([round((licks(end))/35);trial_mat(10,:)']);
     trans = sum(trans==1);
@@ -131,7 +143,7 @@ if isempty(varLog) == 0 && update_display_on == 1
     set(handles.text_num_trials,'String',num2str(trial_num));
 
     trial_period = get(handles.trial_period_plot,'Ydata')';
-    trial_period = [trial_period(num_samples+1:end);50*trial_mat(9,:)'];
+    trial_period = [trial_period(num_samples+1:end);74*trial_mat(14,:)'];
     
     % Update strings
     set(handles.speed_plot,'Ydata',speed);
@@ -140,36 +152,29 @@ if isempty(varLog) == 0 && update_display_on == 1
     set(handles.water_plot,'Ydata',water);
     set(handles.water_ext_plot,'Ydata',water_ext);
     set(handles.cor_width_plot,'Ydata',cor_width);
-    set(handles.laser_power_plot,'Ydata',laser_power);
+    set(handles.lEnd_plot,'Ydata',lEnd);
+    set(handles.rEnd_plot,'Ydata',rEnd);
+    set(handles.screen_on_plot,'Ydata',screen_on);
     set(handles.lick_plot,'Ydata',licks);
     set(handles.trial_period_plot,'Ydata',trial_period);
 
-    set(handles.text_cur_trial_num,'String',num2str(trial_mat(8,end)));
-    set(handles.text_cur_cor_pos,'String',num2str(mean(trial_mat(3,:))));
-    set(handles.text_cur_cor_width,'String',num2str(mean(trial_mat(4,:))));
+    set(handles.text_cur_trial_num,'String',num2str(trial_mat(13,end)));
+    set(handles.text_cur_cor_pos,'String',num2str(mean(trial_mat(4,:))));
+    set(handles.text_cur_cor_width,'String',num2str(mean(trial_mat(4,:) + trial_mat(3,:))));
     
-    set(handles.text_cur_mf,'String',num2str(trial_mat(13,end)));
-    set(handles.text_cur_ps_power,'String',num2str(trial_mat(5,end)));
-    set(handles.text_cur_y_mirr_pos,'String',num2str(trial_mat(7,end)));
-    set(handles.text_cur_x_mirr_pos,'String',num2str(trial_mat(6,end)));
+    % set(handles.text_cur_mf,'String',num2str(trial_mat(13,end)));
+    % set(handles.text_cur_ps_power,'String',num2str(trial_mat(5,end)));
+    % set(handles.text_cur_y_mirr_pos,'String',num2str(trial_mat(7,end)));
+    % set(handles.text_cur_x_mirr_pos,'String',num2str(trial_mat(6,end)));
     
-    
-    d_ball_pos = trial_mat(1:2,:)';
-    x_pos = get(handles.pos_plot,'Xdata')';
-    y_pos = get(handles.pos_plot,'Ydata')';
-    xy_vel_cum = repmat([x_pos(end) y_pos(end)],length(d_ball_pos(:,1)),1) + cumsum(d_ball_pos(:,1:2)/100);
-    xy_vel_cum_ds = xy_vel_cum(1:10:end,:);
-    x_pos = [x_pos(length(xy_vel_cum_ds(:,1))+1:end);xy_vel_cum_ds(:,1)];
-    y_pos = [y_pos(length(xy_vel_cum_ds(:,2))+1:end);xy_vel_cum_ds(:,2)];
-    
-    corridor_width = 1;
     % wall pos hist
+    corridor_width = 1;
     edges = [0:.01:corridor_width]';
     cur_totavg = get(handles.wall_pos_hist,'YData');
     cur_totavg = cur_totavg';
     cur_count = get(handles.wall_pos_hist,'UserData');
     cur_totsum = cur_totavg; %.*cur_count;
-    ind_ss = speed_vect > 5 & trial_mat(9,:) == 0;
+    ind_ss = speed_vect > 5 & ~trial_mat(14,:);
     x = trial_mat(3,ind_ss)./trial_mat(4,ind_ss);
     val = speed_vect(ind_ss);
     [count bin] = histc(x,edges);
@@ -207,10 +212,47 @@ if isempty(varLog) == 0 && update_display_on == 1
     tot_num_samples = num_samples + prev_samples;
     set(handles.text_run_time,'UserData',tot_num_samples);
     set(handles.text_run_time,'String',sprintf('%.2f s',tot_num_samples/500));
-    set(handles.pos_plot,'Xdata',x_pos);
-    set(handles.pos_plot,'Ydata',y_pos);
-    set(handles.axes_position,'Xlim',[3*round(x_pos(end)/3)-3 3*round(x_pos(end)/3)+3])
-    set(handles.axes_position,'Ylim',[.5*round(y_pos(end)/.5)-.5 .5*round(y_pos(end)/.5)+.5])
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if isempty(get(handles.axes_maze,'userdata')) && ~trial_mat(14,end)
+        %axes(handles.axes_maze)
+        %hold on
+        %hm = plot(handles.axes_maze,[0 200*rand],[0 100*rand],'r','linewidth',5);
+        %hd = plot(handles.axes_maze,[0 200*rand],[0 -100*rand],'g','linewidth',5);
+        %drawnow
+        maze_all = get(handles.maze_config_str,'UserData');
+        maze_config = maze_all{1};
+        maze_array = maze_all{2};
+        maze = maze_array{trial_mat(13,end)};
+        h_all = plot_maze(handles.axes_maze,maze,0,0,0);
+        set(handles.axes_maze,'UserData',h_all);
+    end
+
+    if ~trial_mat(14,end)
+        init_x = trial_mat(6,end);
+        init_y = trial_mat(5,end);
+
+        x_pos = get(handles.pos_plot,'Xdata')';
+        y_pos = get(handles.pos_plot,'Ydata')';
+         ds_x_pos = trial_mat(6,1:10:end);
+         ds_y_pos = trial_mat(5,1:10:end);
+         x_pos = [x_pos(length(ds_x_pos)+1:end);ds_x_pos'];
+         y_pos = [y_pos(length(ds_y_pos)+1:end);ds_y_pos'];
+     else
+         init_x = 0;
+         init_y = -100;
+         x_pos = zeros(2501,1);
+         y_pos = zeros(2501,1) - 100;
+     end
+
+     set(handles.plot_tail,'Xdata',[init_x init_x]);
+     set(handles.plot_tail,'Ydata',[init_y init_y-handles.tail_length]);
+     set(handles.plot_body,'Xdata',init_x);
+     set(handles.plot_body,'Ydata',init_y);
+     set(handles.pos_plot,'Xdata',x_pos);
+     set(handles.pos_plot,'Ydata',y_pos);
+    
 end
 
 

@@ -136,8 +136,6 @@ const double max_galvo_pos = 0;
 
 const unsigned ao_trial_trig_on = 0;
 
-const double update_scale = 2;
-
 double dist_thresh = 0;
 
 /***************************************/
@@ -207,7 +205,6 @@ double cor_width;
 double maze_for_cord;
 double maze_lat_cord;
 double update_dist = 0;
-double time_frac = 0;
 
 /* vars for water delivery*/
 unsigned water_on = 0;
@@ -402,18 +399,35 @@ void tick_func(void) {
                 
                 left_angle = branch_left_angle[cur_trial_num][cur_branch];
                 right_angle = branch_right_angle[cur_trial_num][cur_branch];
-                
+
                 cor_width = (branch_r_lat_start[cur_trial_num][cur_branch] + cur_branch_dist*gain_val*tan(right_angle*3.141/180))-(branch_l_lat_start[cur_trial_num][cur_branch] + cur_branch_dist*gain_val*tan(left_angle*3.141/180));
                 cor_pos = cur_branch_lat_frac*cor_width;
-                
+
                 /* Determine target left and right starting wall positions */
                 r_lat_pos_target = cor_pos;
                 l_lat_pos_target = cor_width - cor_pos;
-                
-                
+               
+                /* if split branch deterimine if on left or right side */
+                if (branch_split[cur_trial_num][cur_branch] == 1) {
+                    /* if split branch - check which side to go */
+                    if (cur_branch_lat_frac > 0.5){
+                        left_side = 1;
+                    } else {
+                        left_side = 0;
+                    }
+                    if (maze_initial_branch_for_fraction[cur_trial_num] > 0.5) {
+                        if (left_side) {
+                            update_dist = 0; /* NEED TO ADD !!!!!!!!!!!!!!!!!!!!! */
+                            r_lat_pos_target = r_lat_pos_target - update_dist;
+                        } else {
+                            update_dist = 0; /* NEED TO ADD !!!!!!!!!!!!!!!!!!!!! */
+                            l_lat_pos_target = l_lat_pos_target - update_dist;
+                        }
+                    }
+                }
                 /* if starting branches are dead ends, put forward position of the wall appropriately*/
                 if (branch_left_end[cur_trial_num][cur_branch] == -1) {
-                    l_for_pos_target = gain_val*(branch_length[cur_trial_num][cur_branch] - cur_branch_dist);
+                    l_for_pos_target = -(branch_length[cur_trial_num][cur_branch] - cur_branch_dist);
                     left_dead_end = 1;
                     if (l_for_pos_target > max_wall_for_pos) {
                         l_for_pos_target = max_wall_for_pos;
@@ -424,7 +438,7 @@ void tick_func(void) {
                     left_dead_end = 0;
                 }
                 if (branch_right_end[cur_trial_num][cur_branch] == -1) {
-                    r_for_pos_target = gain_val*(branch_length[cur_trial_num][cur_branch] - cur_branch_dist);
+                    r_for_pos_target = -(branch_length[cur_trial_num][cur_branch] - cur_branch_dist);
                     right_dead_end = 1;
                     if (r_for_pos_target > max_wall_for_pos) {
                         r_for_pos_target = max_wall_for_pos;
@@ -441,7 +455,6 @@ void tick_func(void) {
                 wv_time = 0;
                 bv_time = 0;
                 water_on = 0;
-                update_dist = 0;
             }
             
             /* Check if in iti */
@@ -449,10 +462,10 @@ void tick_func(void) {
                 inter_trial_trig = 1;
                 inter_trial_time = inter_trial_time + 1/sample_freq;
                 /* send left and right walls to target positions */
-                l_lat_pos = l_lat_pos + .01*(l_lat_pos_target - l_lat_pos);
-                r_lat_pos = r_lat_pos + .01*(r_lat_pos_target - r_lat_pos);
-                l_for_pos = l_for_pos + .01*(l_for_pos_target - l_for_pos);
-                r_for_pos = r_for_pos + .01*(r_for_pos_target - r_for_pos);
+                l_lat_pos = l_lat_pos + .03*(l_lat_pos_target - l_lat_pos);
+                r_lat_pos = r_lat_pos + .03*(r_lat_pos_target - r_lat_pos);
+                l_for_pos = l_for_pos + .03*(l_for_pos_target - l_for_pos);
+                r_for_pos = r_for_pos + .03*(r_for_pos_target - r_for_pos);
                 screen_on = 0;
             } else {
                 /* During trial set inter trial trig to 0 */
@@ -463,80 +476,60 @@ void tick_func(void) {
                 
                 /* update forward position along branch */
                 /*for_ball_motion = 10;
-                 * lat_ball_motion = -1;*/
+                lat_ball_motion = -1;*/
                 cur_branch_dist = cur_branch_dist + for_ball_motion/sample_freq;
                 
-                if (update_dist == 0) {
-                    /* Check limits and make branch transitions */
-                    if (cur_branch_dist < 0){
-                        /* Transition to parent branch */
-                        if (branch_parent[cur_trial_num][cur_branch] == -1) {
-                            /* if no partent stay */
-                            cur_branch_dist = 0;
-                        } else {
-                            /* update branch id */
-                            parent_branch = branch_parent[cur_trial_num][cur_branch];
-                            if (branch_split[cur_trial_num][parent_branch] == 1) {
-                                /* if split branch - check which side to go */
-                                time_frac = 0;
-                                if (branch_left_end[cur_trial_num][parent_branch] == cur_branch){
-                                    left_side = 1;
-                                    update_dist = (branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch]);
-                                    cor_pos = cor_pos + update_dist;
-                                    /************************/
-                                } else {
-                                    left_side = 0;
-                                    update_dist = (branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch]);
-                                    /************************/
-                                }
-                            }
-                            cur_branch_dist = cur_branch_dist + branch_length[cur_trial_num][parent_branch];
-                            cur_branch = parent_branch;
-                        }
-                    } else if (cur_branch_dist > branch_length[cur_trial_num][cur_branch]){
-                        /* Transition to child branch */
-                        if (branch_split[cur_trial_num][cur_branch] == 1) {
-                            time_frac = 0;
-                            if (cur_branch_lat_frac > 0.5) {
-                                child_branch = branch_left_end[cur_trial_num][cur_branch];
-                                update_dist = -(branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch]);
-                                cor_pos = cor_pos + update_dist;
+                /* Check limits and make branch transitions */
+                if (cur_branch_dist < 0){
+                    /* Transition to parent branch */
+                    if (branch_parent[cur_trial_num][cur_branch] == -1) {
+                        /* if no partent stay */
+                        cur_branch_dist = 0;
+                    } else {
+                        /* update branch id */
+                        parent_branch = branch_parent[cur_trial_num][cur_branch];
+                        if (branch_split[cur_trial_num][parent_branch] == 1) {
+                            /* if split branch - check which side to go */
+                            if (branch_left_end[cur_trial_num][parent_branch] == cur_branch){
                                 left_side = 1;
-                                /************************/
+                                cor_pos = cor_pos + (branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch]);
                             } else {
                                 left_side = 0;
-                                child_branch = branch_right_end[cur_trial_num][cur_branch];
-                                update_dist = -(branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch]);
-                                /************************/
                             }
-                        } else {
+                        }
+                        cur_branch_dist = cur_branch_dist + branch_length[cur_trial_num][parent_branch];
+                        cur_branch = parent_branch;
+                    }
+                } else if (cur_branch_dist > branch_length[cur_trial_num][cur_branch]){
+                    /* Transition to child branch */
+                    if (branch_split[cur_trial_num][cur_branch] == 1) {
+                        /* if split branch - check which side to go */
+                        if (left_side) {
                             child_branch = branch_left_end[cur_trial_num][cur_branch];
-                        }
-                        if (child_branch == -1) {
-                            /* if no child stay */
-                            cur_branch_dist = branch_length[cur_trial_num][cur_branch];
+                            cor_pos = cor_pos - (branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch]);
                         } else {
-                            /* update branch id */
-                            cur_branch_dist = cur_branch_dist - branch_length[cur_trial_num][cur_branch];
-                            cur_branch = child_branch;
+                            child_branch = branch_right_end[cur_trial_num][cur_branch];
                         }
+                    } else {
+                        child_branch = branch_left_end[cur_trial_num][cur_branch];
                     }
-                } else {
-                    /* do not transition while in update */
-                    if (cur_branch_dist < 0){
-                        cur_branch_dist = 0;
-                    }
-                    if (cur_branch_dist > branch_length[cur_trial_num][cur_branch]) {
+                    if (child_branch == -1) {
+                        /* if no child stay */
                         cur_branch_dist = branch_length[cur_trial_num][cur_branch];
+                    } else {
+                        /* update branch id */
+                        cur_branch_dist = cur_branch_dist - branch_length[cur_trial_num][cur_branch];
+                        cur_branch = child_branch;
                     }
                 }
+                
                 /* set angles */
                 left_angle = branch_left_angle[cur_trial_num][cur_branch];
                 right_angle = branch_right_angle[cur_trial_num][cur_branch];
-                
+
                 /* update corridor width */
                 cor_width = (branch_r_lat_start[cur_trial_num][cur_branch] + cur_branch_dist*gain_val*tan(right_angle*3.141/180))-(branch_l_lat_start[cur_trial_num][cur_branch] + cur_branch_dist*gain_val*tan(left_angle*3.141/180));
-                
+
                 /* update corridor position */
                 cor_pos = cor_pos + gain_val/sample_freq*(for_ball_motion*tan(right_angle*3.141/180) + lat_ball_motion);
                 if (cor_pos < 0) {
@@ -545,44 +538,48 @@ void tick_func(void) {
                 if (cor_pos > cor_width) {
                     cor_pos = cor_width;
                 }
-                
-                cur_branch_lat_frac = cor_pos/cor_width;
-                
+
                 r_lat_pos = cor_pos;
                 l_lat_pos = cor_width - cor_pos;
-                
-                /* if transitioning to or from split branch update lat wall pos */
-                if (update_dist > 0 || update_dist < 0) {
-                    if(left_side){
-                        r_lat_pos = r_lat_pos - (1-time_frac)*update_dist;
+                cur_branch_lat_frac = cor_pos/cor_width;
+
+                /* check if split branch and if first half or second half */
+                if (branch_split[cur_trial_num][cur_branch] == 1){
+                    if (cur_branch_dist/branch_length[cur_trial_num][cur_branch] > 0.5) {
+                        /* if in second half determine which side, use a second half enter trig */
+                        if (left_side) {
+                            update_dist = 0; /* NEED TO ADD !!!!!!!!!!!!!!!!!!!!! */
+                            r_lat_pos_target = r_lat_pos_target - update_dist;
+                        } else {
+                            update_dist = 0; /* NEED TO ADD !!!!!!!!!!!!!!!!!!!!! */
+                            l_lat_pos_target = l_lat_pos_target - update_dist;
+                        }
                     } else {
-                        l_lat_pos = l_lat_pos - (1-time_frac)*update_dist;                    
+                        /* if in first half, set left_side trig */
+                        if (cur_branch_lat_frac > 0.5) {
+                            left_side = 1;
+                        } else {
+                            left_side = 0;
+                        }
                     }
                 }
                 
-                time_frac = time_frac + update_scale/sample_freq;
-                if (time_frac > 1) {
-                    time_frac = 0;
-                    update_dist = 0;
-                }
-                
-                
                 /* update forward wall positions if in dead end and close to end (with gain .2, 10 cm corresponds to 20 mm)*/
-                if (branch_left_end[cur_trial_num][cur_branch] == -1 && gain_val*(branch_length[cur_trial_num][cur_branch] - cur_branch_dist) < max_wall_for_pos) {
+                if (branch_left_end[cur_trial_num][cur_branch] == -1 && (branch_length[cur_trial_num][cur_branch] - cur_branch_dist) < max_wall_for_pos) {
                     l_for_pos = l_for_pos - gain_val*for_ball_motion/sample_freq;
                     left_dead_end = 1;
                 } else {
                     left_dead_end = 0;
                     l_for_pos = max_wall_for_pos;
                 }
-                if (branch_right_end[cur_trial_num][cur_branch] == -1 && gain_val*(branch_length[cur_trial_num][cur_branch] - cur_branch_dist) < max_wall_for_pos) {
+                if (branch_right_end[cur_trial_num][cur_branch] == -1 && (branch_length[cur_trial_num][cur_branch] - cur_branch_dist) < max_wall_for_pos) {
                     r_for_pos = r_for_pos - gain_val*for_ball_motion/sample_freq;
                     right_dead_end = 1;
                 } else {
                     right_dead_end = 0;
                     r_for_pos = max_wall_for_pos;
                 }
-                
+
                 /* maze forward and lateral cordinates for display */
                 maze_for_cord = branch_for_start[cur_trial_num][cur_branch] + cur_branch_dist;
                 maze_lat_cord = (branch_r_lat_start[cur_trial_num][cur_branch] + cur_branch_dist*gain_val*tan(right_angle*3.141/180)) - cor_pos;
@@ -844,16 +841,12 @@ void init_func(void) {
     
     cur_trial_time = session_timeout + 1;
     
-    l_lat_pos = max_wall_pos;
-    r_lat_pos = max_wall_pos;
-    l_for_pos = max_wall_for_pos;
-    r_for_pos = max_wall_for_pos;
-                
+    
     writeAO(r_wall_for_ao_chan, r_wall_for_ao_offset  + wall_mm_to_vlt(r_for_pos));
     writeAO(r_wall_lat_ao_chan, r_wall_lat_ao_offset + wall_mm_to_vlt(r_lat_pos));
     writeAO(l_wall_for_ao_chan, l_wall_for_ao_offset  + wall_mm_to_vlt(l_for_pos));
     writeAO(l_wall_lat_ao_chan, l_wall_lat_ao_offset + wall_mm_to_vlt(l_lat_pos));
-        
+    
     writeAO(maze_num_ao_chan, maze_num_ao_offset);
     writeAO(maze_for_ao_chan, maze_for_ao_offset);
     writeAO(maze_lat_ao_chan, maze_lat_ao_offset);

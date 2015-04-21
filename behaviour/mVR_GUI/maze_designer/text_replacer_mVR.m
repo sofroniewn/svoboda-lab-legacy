@@ -140,9 +140,6 @@ replace    = ['const double run_speed_thresh =  ', num2str(rig_config.run_speed_
 expression =  'const unsigned speed_time_length = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['const unsigned speed_time_length =  ', num2str(rig_config.speed_time_length) ,';'];     text = regexprep(text,expression,replace);
 
-expression =  'const double wall_ball_gain = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
-replace    = ['const double wall_ball_gain =  ', num2str(rig_config.wall_ball_gain) ,';'];     text = regexprep(text,expression,replace);
-
 expression =  'const double max_wall_pos = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['const double max_wall_pos =  ', num2str(rig_config.max_wall_pos) ,';'];     text = regexprep(text,expression,replace);
 
@@ -164,10 +161,10 @@ replace    = ['const unsigned ao_trial_trig_on =  ', num2str(rig_config.ao_trial
 expression =  'double dist_thresh = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['double dist_thresh =  ', num2str(rig_config.dist_thresh) ,';'];     text = regexprep(text,expression,replace);
 
-
 % replace maze field names
 names = fieldnames(maze_config);
 for ij = 1:length(names)
+    opt = 0;
     if ismember(ij,[1:4,7:9])
         old_size_str = '';
         new_size_str = '';
@@ -175,23 +172,32 @@ for ij = 1:length(names)
         new_val_str = num2str(maze_config.(names{ij}));
     elseif ismember(ij,[5,6])
         old_size_str = '\[\]';
+        if ij == 5
+            opt = 1;
+        end
         if maze_config.trial_num_sequence_length == 0
             new_size_str = ['[' num2str(1) ']'];
         else
             new_size_str = ['[' num2str(maze_config.trial_num_sequence_length) ']'];    
         end
         old_val_str = '{}';
-        new_val_str = mat2strC(maze_config.(names{ij}),1);
-    elseif ismember(ij,[10,12:20])
+        new_val_str = mat2strC(maze_config.(names{ij})-opt,1);
+    elseif ismember(ij,[10,12:19])
         old_size_str = '\[\]';
         new_size_str = ['[' num2str(maze_config.num_mazes) ']'];
         old_val_str = '{}';
-        new_val_str = mat2strC(maze_config.(names{ij}),1);
+        if ij == 15
+            opt = 1;
+        end
+        new_val_str = mat2strC(maze_config.(names{ij})-opt,1);
     else
         old_size_str = '\[\]\[\]';
         new_size_str = ['[' num2str(maze_config.num_mazes) '][' num2str(size(maze_config.(names{ij}),2)) ']'];
         old_val_str = '{{}}';
-        new_val_str = mat2strC(maze_config.(names{ij}),0);
+        if ismember(ij,[26,27,30])
+            opt = 1;
+        end
+        new_val_str = mat2strC(maze_config.(names{ij})-opt,0);
     end
     expression =  ['X' names{ij} old_size_str ' = ' old_val_str ';'];
     replace    = [names{ij} new_size_str ' = ' new_val_str ';'];

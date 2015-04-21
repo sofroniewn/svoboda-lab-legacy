@@ -136,7 +136,7 @@ const double max_galvo_pos = 0;
 
 const unsigned ao_trial_trig_on = 0;
 
-const double update_scale = 2;
+const double update_scale = .5;
 
 double dist_thresh = 0;
 
@@ -449,10 +449,10 @@ void tick_func(void) {
                 inter_trial_trig = 1;
                 inter_trial_time = inter_trial_time + 1/sample_freq;
                 /* send left and right walls to target positions */
-                l_lat_pos = l_lat_pos + .01*(l_lat_pos_target - l_lat_pos);
-                r_lat_pos = r_lat_pos + .01*(r_lat_pos_target - r_lat_pos);
-                l_for_pos = l_for_pos + .01*(l_for_pos_target - l_for_pos);
-                r_for_pos = r_for_pos + .01*(r_for_pos_target - r_for_pos);
+                l_lat_pos = l_lat_pos + .03*(l_lat_pos_target - l_lat_pos);
+                r_lat_pos = r_lat_pos + .03*(r_lat_pos_target - r_lat_pos);
+                l_for_pos = l_for_pos + .03*(l_for_pos_target - l_for_pos);
+                r_for_pos = r_for_pos + .03*(r_for_pos_target - r_for_pos);
                 screen_on = 0;
             } else {
                 /* During trial set inter trial trig to 0 */
@@ -552,12 +552,9 @@ void tick_func(void) {
                 l_lat_pos = cor_width - cor_pos;
                 
                 /* if transitioning to or from split branch update lat wall pos */
-                if (update_dist > 0 || update_dist < 0) {
-                    if(left_side){
-                        r_lat_pos = r_lat_pos - (1-time_frac)*update_dist;
-                    } else {
-                        l_lat_pos = l_lat_pos - (1-time_frac)*update_dist;                    
-                    }
+                if (update_dist > 0) {
+                    r_lat_pos = r_lat_pos - left_side*(1-time_frac)*update_dist;
+                    l_lat_pos = l_lat_pos - (1-left_side)*(1-time_frac)*update_dist;
                 }
                 
                 time_frac = time_frac + update_scale/sample_freq;
@@ -744,7 +741,7 @@ void tick_func(void) {
             log_state_c = right_dead_end + 2*scim_logging + 4*water_on_ext;
             log_cur_state = 10000*log_state_c+1000*log_state_b+100*log_state_a + cur_trial_num;
             log_ball_motion = cam_vel_steps[0] + 36*cam_vel_steps[1] + 36*36*cam_vel_steps[2]+ 36*36*36*cam_vel_steps[3]; /* convert to cam_motion_vect for logging */
-            log_wall_pos = floor(10*cor_pos) + 1000*floor(10*(cor_width));
+            log_wall_pos = floor(10*r_lat_pos) + 1000*floor(10*(l_lat_pos));
             log_maze_cord = floor(maze_for_cord) + 1000*floor(maze_lat_cord+500);
             
             /* log_cor_pos = cam_vel_ai_vlt[0]*1000;*/
@@ -844,16 +841,12 @@ void init_func(void) {
     
     cur_trial_time = session_timeout + 1;
     
-    l_lat_pos = max_wall_pos;
-    r_lat_pos = max_wall_pos;
-    l_for_pos = max_wall_for_pos;
-    r_for_pos = max_wall_for_pos;
-                
+    
     writeAO(r_wall_for_ao_chan, r_wall_for_ao_offset  + wall_mm_to_vlt(r_for_pos));
     writeAO(r_wall_lat_ao_chan, r_wall_lat_ao_offset + wall_mm_to_vlt(r_lat_pos));
     writeAO(l_wall_for_ao_chan, l_wall_for_ao_offset  + wall_mm_to_vlt(l_for_pos));
     writeAO(l_wall_lat_ao_chan, l_wall_lat_ao_offset + wall_mm_to_vlt(l_lat_pos));
-        
+    
     writeAO(maze_num_ao_chan, maze_num_ao_offset);
     writeAO(maze_for_ao_chan, maze_for_ao_offset);
     writeAO(maze_lat_ao_chan, maze_lat_ao_offset);

@@ -75,14 +75,17 @@ cd(rig_config.base_dir)
 % addpath(fullfile('.','accessory_fns','plot_functions','histogram_plots'));
 
 handles.A_inv = rig_config.A_inv;
-handles.trial_mat_names = {'x_vel','y_vel','cor_pos','cor_width','laser_power','x_mirror_pos','y_mirror_pos', ...
-    'trial_num','inter_trial_trig','lick_state','water_earned','running_ind', ...
-    'masking_flash_on','scim_state','external_water','scim_logging','test_val'};
-handles.iti_ind = find(strcmp(handles.trial_mat_names,'inter_trial_trig'));
+handles.trial_mat_names = {'xSpeed','ySpeed','corPos','corWidth','xMazeCord','yMazeCord', ...
+    'screenOn','rEnd','lEnd','lickState','trialWater','extWater', ...
+    'trialID','itiPeriod','scim_state','scim_logging'};
+handles.iti_ind = find(strcmp(handles.trial_mat_names,'itiPeriod'));
 
 % Load trial configuration file
 load_maze_config_Callback(handles.load_maze_config, eventdata, handles);
-maze_config = get(handles.maze_config_str,'UserData');
+maze_all = get(handles.maze_config_str,'UserData');
+maze_config = maze_all{1};
+maze_array = maze_all{2};
+
 
 
 % Configure Ball Tracker
@@ -134,38 +137,55 @@ zero_init = zeros(2501,1);
 x_axis = -5+[0:.002:5];
 
 handles.cor_width_plot = plot(x_axis,zero_init,'Color',[.4 .4 .4],'LineWidth',3);
-handles.laser_power_plot = plot(x_axis,zero_init,'Color',[1 .5 0],'LineWidth',3);
-handles.speed_plot =  plot(x_axis,zero_init,'r','LineWidth',3);
-handles.speed_dot =   plot(x_axis(end),0,'Marker','.','MarkerSize',18,'LineStyle','none','MarkerEdgeColor','b');
+handles.screen_on_plot = plot(x_axis,zero_init,'Marker','.','MarkerSize',10,'LineStyle','none','MarkerEdgeColor',[1 .5 0]);
+handles.speed_plot = plot(x_axis,zero_init,'r','LineWidth',3);
+handles.speed_dot = plot(x_axis(end),0,'Marker','.','MarkerSize',18,'LineStyle','none','MarkerEdgeColor','b');
 handles.trial_period_plot = plot(x_axis,zero_init,'Marker','.','MarkerSize',10,'LineStyle','none','MarkerEdgeColor','m');
-handles.water_plot = plot(x_axis,zero_init,'Marker','.','MarkerSize',10,'LineStyle','none','MarkerEdgeColor','c');
-handles.water_ext_plot = plot(x_axis,zero_init,'Marker','.','MarkerSize',10,'LineStyle','none','MarkerEdgeColor',[.3 .3 .6]);
+handles.water_plot = plot(x_axis,zero_init,'Marker','.','MarkerSize',12,'LineStyle','none','MarkerEdgeColor',[0 .8 .8]);
+handles.water_ext_plot = plot(x_axis,zero_init,'Marker','.','MarkerSize',12,'LineStyle','none','MarkerEdgeColor',[.3 .3 .6]);
 handles.lick_plot = plot(x_axis,zero_init,'Marker','.','MarkerSize',10,'LineStyle','none','MarkerEdgeColor','b');
 handles.cor_pos_plot = plot(x_axis,zero_init,'g','LineWidth',3);
+handles.lEnd_plot = plot(x_axis,zero_init,'Marker','.','MarkerSize',10,'LineStyle','none','MarkerEdgeColor',[0 0 0]);
+handles.rEnd_plot = plot(x_axis,zero_init,'Marker','.','MarkerSize',10,'LineStyle','none','MarkerEdgeColor',[0 0 0]);
 
 xlim([-5 0])
 ylim([0 80])
 
 
 % Setup Pos Figure
-axes(handles.axes_position)
-str = sprintf('x and y position');
-title(str,'FontSize',14)
-set(gca,'FontSize',12)
-xlabel('x pos (m)','FontSize',12)
-ylabel('y pos (m)','FontSize',12)
+axes(handles.axes_maze)
 hold on
+set(handles.axes_maze,'color',[0 0 0])
+set(handles.axes_maze,'xtick',[])
+set(handles.axes_maze,'ytick',[])
+set(handles.axes_maze,'userdata',[]);
+
+
+maze_x_lim = NaN(maze_config.num_mazes,1);
+maze_y_lim = NaN(maze_config.num_mazes,1);
+for ij = 1:maze_config.num_mazes
+    maze_x_lim(ij) = maze_array{ij}.x_lim(2);
+    maze_y_lim(ij) = maze_array{ij}.y_lim(2);
+end
+ylim([-20 max(maze_y_lim)])
+xlim([-max(maze_x_lim) max(maze_x_lim)])
+
 x_pos = zeros(2501,1);
-y_pos = zeros(2501,1);
-handles.pos_plot =  plot(x_pos, y_pos,'Marker','.','MarkerSize',25,'LineStyle','none','MarkerEdgeColor','b');
-grid('on')
-xlim([-200 200]/100)
-ylim([-50 50]/100)
+y_pos = zeros(2501,1)-100;
+handles.pos_plot =  plot(x_pos, y_pos,'Marker','.','MarkerSize',15,'LineStyle','none','MarkerEdgeColor',[.7 .7 .7]);
+
+init_x = 0;
+init_y = -100;
+handles.tail_length = (max(maze_y_lim)+20)/35;
+handles.plot_tail = plot([init_x init_x],[init_y init_y-handles.tail_length],'Color',[0.2 0.2 0.2],'LineWidth',4);
+handles.plot_body = plot(init_x,init_y,'^','MarkerSize',15,'MarkerEdgeColor',[0.2 0.2 0.2],'MarkerFaceColor',[.6 .6 .6],'LineWidth',2);
+
 
 
 % Setup Wall Pos Figure
 corridor_width = 1;
 axes(handles.axes_wall_hist)
+hold on
 str = sprintf('Wall position histogram');
 title(str,'FontSize',14)
 set(gca,'FontSize',12)
@@ -176,7 +196,7 @@ count = zeros(size(edges));
 handles.wall_pos_hist = plot(edges,totavg,'Color','b','LineWidth',4);
 set(handles.wall_pos_hist,'UserData',count);
 xlim([0 corridor_width])
-set(gca,'xtick',[0:.1:corridor_width])
+set(gca,'xtick',[0:.2:corridor_width])
 xlim([0 corridor_width])
 ylim([0 .25])
 
@@ -185,13 +205,7 @@ set(handles.pushbutton_water,'Enable','off')
 set(handles.speed_thresh_up,'Enable','off')
 set(handles.speed_thresh_down,'Enable','off')
 
-handles.TCP_IP_address = rig_config.TCP_IP_address;
-handles.jTcpObj = [];
-% Check whether to disable TCP
-if isempty(handles.TCP_IP_address) == 1
-    set(handles.togglebutton_TCP,'Enable','off')
-end
-        
+       
 % Update handles structure
 guidata(hObject, handles);
 
@@ -225,14 +239,6 @@ switch get(hObject,'value')
         set(handles.text_run_time,'backgroundcolor','r');
         set(handles.togglebutton_start_RTLSM,'Enable','on')
 
-        if get(handles.togglebutton_TCP,'Value') == 1
-            jtcp('write',handles.jTcpObj,{'Stop run'});
-        end
-
-        % Enable TCP/IP
-        if isempty(handles.TCP_IP_address) ~= 1
-            set(handles.togglebutton_TCP,'Enable','on')
-        end
 
         % Enable log buttons
         set(handles.checkbox_log,'Enable','on')
@@ -248,7 +254,9 @@ switch get(hObject,'value')
         set(handles.speed_thresh_down,'Enable','off')
 
     case 1 %Start RTLSM
-        maze_config = get(handles.maze_config_str,'UserData');
+        maze_all = get(handles.maze_config_str,'UserData');
+        maze_config = maze_all{1};
+        maze_array = maze_all{2};
         rig_config = get(handles.figure1,'UserData');
         checkbox_log_value = get(handles.checkbox_log,'Value');
         str_animal_number = get(handles.edit_animal_number,'String');
@@ -286,15 +294,38 @@ switch get(hObject,'value')
         set(handles.trial_period_plot,'Ydata',zero_init);
         set(handles.water_plot,'Ydata',zero_init);
         set(handles.water_ext_plot,'Ydata',zero_init);
+        set(handles.rEnd_plot,'Ydata',zero_init);
+        set(handles.lEnd_plot,'Ydata',zero_init);
         set(handles.lick_plot,'Ydata',zero_init);
-        set(handles.laser_power_plot,'Ydata',zero_init);
+        set(handles.screen_on_plot,'Ydata',zero_init);
         set(handles.cor_width_plot,'Ydata',zero_init);
         
         x_pos = zeros(2501,1);
-        y_pos = zeros(2501,1);
+        y_pos = zeros(2501,1) - 10;
         set(handles.pos_plot,'Xdata',x_pos);
         set(handles.pos_plot,'Ydata',y_pos);
         
+        maze_x_lim = NaN(maze_config.num_mazes,1);
+        maze_y_lim = NaN(maze_config.num_mazes,1);
+        for ij = 1:maze_config.num_mazes
+            maze_x_lim(ij) = maze_array{ij}.x_lim(2);
+            maze_y_lim(ij) = maze_array{ij}.y_lim(2);
+        end
+        ylim([-20 max(maze_y_lim)])
+        xlim([-max(maze_x_lim) max(maze_x_lim)])
+        
+        init_x = 0;
+        init_y = -100;
+        set(handles.plot_tail,'Xdata',[init_x init_x]);
+        set(handles.plot_tail,'Ydata',[init_y init_y-handles.tail_length]);
+        set(handles.plot_body,'Xdata',init_x);
+        set(handles.plot_body,'Ydata',init_y);
+        to_delete = get(handles.axes_maze,'userdata');
+        if ~isempty(to_delete)
+            delete(to_delete)
+        end
+        set(handles.axes_maze,'userdata',[]);
+
         corridor_width = 1;
         edges = [0:.01:corridor_width]';
         totavg = zeros(size(edges));
@@ -326,23 +357,7 @@ switch get(hObject,'value')
         fname_log = [fname_base 'log.txt'];
         fname_globals = [fname_base rig_config.globals_name];
         handles.fname_base = fname_base;
-           
-        % Disable TCP/IP
-        set(handles.togglebutton_TCP,'Enable','off')
-
-        % Start TCP/IP communication
-        if get(handles.togglebutton_TCP,'Value') == 1
-            jtcp('write',handles.jTcpObj,{'Prepare run'});
-            jtcp('write',handles.jTcpObj,{'file_id_name',file_id_name});
-            mssg = tcp_struct_parser(rig_config,'rig_config',1);
-            jtcp('write',handles.jTcpObj,mssg);
-            mssg = tcp_struct_parser(maze_config,'maze_config',1);
-            jtcp('write',handles.jTcpObj,mssg);
-            jtcp('write',handles.jTcpObj,{'trial_mat_names',handles.trial_mat_names});
-            jtcp('write',handles.jTcpObj,{'Start run'});
-        end
-
-        
+                   
         % Get globals file name
         fileIn = fullfile('.','globals',rig_config.globals_name);
         fileOut = fullfile('.','globals',[rig_config.globals_name(1:end-2) '_used.c']);
@@ -490,8 +505,15 @@ function load_maze_config_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 [FileName,PathName,FilterIndex] = uigetfile(fullfile(handles.pathstr,'maze_configs','*.mat'));
 set(handles.maze_config_str,'String',FileName);
-maze_config = maze_dat_parser([PathName,FileName]);
-set(handles.maze_config_str,'UserData',maze_config);
+load_dat = load([PathName,FileName]);
+maze_config = maze_dat_parser(load_dat);
+
+maze_array = cell(size(load_dat.maze_names,1),1);
+for ij = 1:size(load_dat.maze_names,1)
+    [maze dat] = create_maze(load_dat.dat_array{ij},str2double(load_dat.start_branch_array{ij}));
+    maze_array{ij} = maze;
+end
+set(handles.maze_config_str,'UserData',{maze_config, maze_array});
 %full_name = [PathName,FileName];
 %WGNR_trial_viewer_gui({full_name});
 

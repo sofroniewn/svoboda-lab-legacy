@@ -5,41 +5,41 @@
 
 /******************************************/
 /* TRIAL PARAMETERS SET FROM MATLAB */
-const unsigned num_mazes = 16; /* Number of mazes */
-const unsigned max_num_branches = 7; /* Max number of branches */
+const unsigned num_mazes = 2; /* Number of mazes */
+const unsigned max_num_branches = 4; /* Max number of branches */
 
 const unsigned trial_random_order = 1; /* 1 if in random order, 0 if in sequence */
 const unsigned trial_num_sequence_length = 0; /* 0 if random, otherwise length of sequence */
-const unsigned Xtrial_num_sequence[] = {}; /* 1 if random, sequence */
-const unsigned Xtrial_num_repeats[] = {}; /* 1 if random, num repeats */
+const unsigned trial_num_sequence[1] = {-1}; /* 1 if random, sequence */
+const unsigned trial_num_repeats[1] = {0}; /* 1 if random, num repeats */
 
 /* params - one per session */
-const double session_timeout = 9999; /* time for trial to time out */
+const double session_timeout = 24; /* time for trial to time out */
 const double session_iti = 1; /* inter trial interal time */
 const double session_drink_time = 1; /* time to drink water before trial ends */
 
 /* params - one per maze */
-const unsigned maze_num_branches[16] = {7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7}; /* Number of branches for each maze */
-const double maze_reward_patch[16][4] = {{0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}}; /* Size of reward patches in this maze, l_frac, r_frac, back_dist_frac for_dist_frac */
-const double maze_reward_size[16] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}; /* Multiplier on reward size */
-const double maze_wall_gain[16] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}; /* wall gain multiplier */
-const unsigned maze_initial_branch[16] = {1, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 4, 4}; /* Starting branch num */
-const double maze_screen_on_time[16] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}; /* Duration screen on - if 0 then never on */
-const double maze_initial_branch_for_fraction[16] = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}; /* Starting branch forward position */
-const double maze_initial_left_wall[16] = {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15}; /* Starting left wall pos */
-const double maze_initial_right_wall[16] = {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15}; /* Starting right wall pos */
-const double maze_initial_for_cord[16] = {50, 50, 50, 50, 50, 50, 50, 50, 282.4, 282.4, 282.4, 282.4, 282.4, 282.4, 282.4, 282.4}; /* Initial forward maze cordinate */
-const double maze_initial_lat_cord[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0.0022132, 0.0022132, 0.0022132, 0.0022132, -0.0022132, -0.0022132, -0.0022132, -0.0022132}; /* Initial lateral maze cordinate */
+const unsigned maze_num_branches[2] = {4, 4}; /* Number of branches for each maze */
+const double maze_reward_patch[2][4] = {{0.1, 0.9, 0.2, 0.8}, {0.1, 0.9, 0.2, 0.8}}; /* Size of reward patches in this maze, l_frac, r_frac, back_dist_frac for_dist_frac */
+const double maze_reward_size[2] = {1, 1}; /* Multiplier on reward size */
+const double maze_wall_gain[2] = {3, 3}; /* ball wall gain */
+const double maze_screen_on_time[2] = {9999, 9999}; /* Duration screen on - if 0 then never on */
+const unsigned maze_initial_branch[2] = {0, 0}; /* Starting branch num */
+const double maze_initial_branch_for_fraction[2] = {0.5, 0.5}; /* Starting branch forward fraction */
+const double maze_initial_branch_lat_fraction[2] = {0.5, 0.5}; /* Starting lateral fraction */
 
 /* params - one per branch */
-const double branch_length[16][7] = {{100, 82.4, 100, 200, 82.4, 200, 100}, {100, 82.4, 100, 200, 82.4, 200, 100}, {100, 82.4, 100, 200, 82.4, 200, 100}, {100, 82.4, 100, 200, 82.4, 200, 100}, {100, 82.4, 100, 200, 82.4, 200, 100}, {100, 82.4, 100, 200, 82.4, 200, 100}, {100, 82.4, 100, 200, 82.4, 200, 100}, {100, 82.4, 100, 200, 82.4, 200, 100}, {100, 82.4, 100, 200, 82.4, 200, 100}, {100, 82.4, 100, 200, 82.4, 200, 100}, {100, 82.4, 100, 200, 82.4, 200, 100}, {100, 82.4, 100, 200, 82.4, 200, 100}, {100, 82.4, 100, 200, 82.4, 200, 100}, {100, 82.4, 100, 200, 82.4, 200, 100}, {100, 82.4, 100, 200, 82.4, 200, 100}, {100, 82.4, 100, 200, 82.4, 200, 100}}; /* Length of branch */
-const double branch_left_angle[16][7] = {{0, -20, -20, 0, -20, 0, -20}, {0, -20, -20, 0, 0, 0, 20}, {0, -20, -20, 0, -20, 0, -20}, {0, -20, -20, 0, 0, 0, 20}, {0, 0, 20, 0, -20, 0, -20}, {0, 0, 20, 0, 0, 0, 20}, {0, 0, 20, 0, -20, 0, -20}, {0, 0, 20, 0, 0, 0, 20}, {0, -20, -20, 0, -20, 0, -20}, {0, -20, -20, 0, 0, 0, 20}, {0, -20, -20, 0, -20, 0, -20}, {0, -20, -20, 0, 0, 0, 20}, {0, 0, 20, 0, -20, 0, -20}, {0, 0, 20, 0, 0, 0, 20}, {0, 0, 20, 0, -20, 0, -20}, {0, 0, 20, 0, 0, 0, 20}}; /* Angle of left wall */
-const double branch_right_angle[16][7] = {{0, 0, -20, 0, 0, 0, -20}, {0, 0, -20, 0, 20, 0, 20}, {0, 0, -20, 0, 0, 0, -20}, {0, 0, -20, 0, 20, 0, 20}, {0, 20, 20, 0, 0, 0, -20}, {0, 20, 20, 0, 20, 0, 20}, {0, 20, 20, 0, 0, 0, -20}, {0, 20, 20, 0, 20, 0, 20}, {0, 0, -20, 0, 0, 0, -20}, {0, 0, -20, 0, 20, 0, 20}, {0, 0, -20, 0, 0, 0, -20}, {0, 0, -20, 0, 20, 0, 20}, {0, 20, 20, 0, 0, 0, -20}, {0, 20, 20, 0, 20, 0, 20}, {0, 20, 20, 0, 0, 0, -20}, {0, 20, 20, 0, 20, 0, 20}}; /* Angle of right wall */
-const unsigned branch_left_end[16][7] = {{2, 3, 0, 5, 7, 0, 0}, {2, 3, 0, 5, 6, 0, 0}, {2, 3, 0, 5, 7, 0, 0}, {2, 3, 0, 5, 6, 0, 0}, {2, 4, 0, 5, 7, 0, 0}, {2, 4, 0, 5, 6, 0, 0}, {2, 4, 0, 5, 7, 0, 0}, {2, 4, 0, 5, 6, 0, 0}, {2, 3, 0, 5, 7, 0, 0}, {2, 3, 0, 5, 6, 0, 0}, {2, 3, 0, 5, 7, 0, 0}, {2, 3, 0, 5, 6, 0, 0}, {2, 4, 0, 5, 7, 0, 0}, {2, 4, 0, 5, 6, 0, 0}, {2, 4, 0, 5, 7, 0, 0}, {2, 4, 0, 5, 6, 0, 0}}; /* Left maze end condition */
-const unsigned branch_right_end[16][7] = {{2, 4, 0, 5, 6, 0, 0}, {2, 4, 0, 5, 7, 0, 0}, {2, 4, 0, 5, 6, 0, 0}, {2, 4, 0, 5, 7, 0, 0}, {2, 3, 0, 5, 6, 0, 0}, {2, 3, 0, 5, 7, 0, 0}, {2, 3, 0, 5, 6, 0, 0}, {2, 3, 0, 5, 7, 0, 0}, {2, 4, 0, 5, 6, 0, 0}, {2, 4, 0, 5, 7, 0, 0}, {2, 4, 0, 5, 6, 0, 0}, {2, 4, 0, 5, 7, 0, 0}, {2, 3, 0, 5, 6, 0, 0}, {2, 3, 0, 5, 7, 0, 0}, {2, 3, 0, 5, 6, 0, 0}, {2, 3, 0, 5, 7, 0, 0}}; /* Right maze end condition */
-const unsigned branch_split[16][7] = {{0, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0}}; /* If split branch or not */
-const unsigned branch_reward[16][7] = {{0, 0, 0, 0, 0, 0, 1}, {0, 0, 0, 0, 0, 0, 1}, {0, 0, 1, 0, 0, 0, 0}, {0, 0, 1, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 1}, {0, 0, 0, 0, 0, 0, 1}, {0, 0, 1, 0, 0, 0, 0}, {0, 0, 1, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 1}, {0, 0, 0, 0, 0, 0, 1}, {0, 0, 1, 0, 0, 0, 0}, {0, 0, 1, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 1}, {0, 0, 0, 0, 0, 0, 1}, {0, 0, 1, 0, 0, 0, 0}, {0, 0, 1, 0, 0, 0, 0}}; /* If reward branch or not */
-const unsigned branch_parent[16][7] = {{0, 1, 2, 2, 4, 5, 5}, {0, 1, 2, 2, 4, 5, 5}, {0, 1, 2, 2, 4, 5, 5}, {0, 1, 2, 2, 4, 5, 5}, {0, 1, 2, 2, 4, 5, 5}, {0, 1, 2, 2, 4, 5, 5}, {0, 1, 2, 2, 4, 5, 5}, {0, 1, 2, 2, 4, 5, 5}, {0, 1, 2, 2, 4, 5, 5}, {0, 1, 2, 2, 4, 5, 5}, {0, 1, 2, 2, 4, 5, 5}, {0, 1, 2, 2, 4, 5, 5}, {0, 1, 2, 2, 4, 5, 5}, {0, 1, 2, 2, 4, 5, 5}, {0, 1, 2, 2, 4, 5, 5}, {0, 1, 2, 2, 4, 5, 5}}; /* Parent branch id */
+const double branch_length[2][4] = {{20, 13.7, 14, 7}, {20, 13.7, 7, 14}}; /* Length of branch */
+const double branch_left_angle[2][4] = {{0, -20, -20, 20}, {0, -20, -20, 20}}; /* Angle of left wall */
+const double branch_right_angle[2][4] = {{0, 20, -20, 20}, {0, 20, -20, 20}}; /* Angle of right wall */
+const double branch_for_start[2][4] = {{0, 20, 33.7, 33.7}, {0, 20, 33.7, 33.7}}; /* forward start position branch, cm */
+const double branch_l_lat_start[2][4] = {{-15, -15, -30, 0}, {-15, -15, -30, 0}}; /* lateral left wall start mm */
+const double branch_r_lat_start[2][4] = {{15, 15, 0, 30}, {15, 15, 0, 30}}; /* lateral right wall start mm */
+const unsigned branch_left_end[2][4] = {{1, 2, -1, -1}, {1, 2, -1, -1}}; /* Left maze end condition */
+const unsigned branch_right_end[2][4] = {{1, 3, -1, -1}, {1, 3, -1, -1}}; /* Right maze end condition */
+const unsigned branch_split[2][4] = {{0, 1, 0, 0}, {0, 1, 0, 0}}; /* If split branch or not */
+const unsigned branch_reward[2][4] = {{0, 0, 1, 0}, {0, 0, 0, 1}}; /* If reward branch or not */
+const unsigned branch_parent[2][4] = {{-1, 0, 1, 1}, {-1, 0, 1, 1}}; /* Parent branch id */
 
 /******************************************/
 /* DEFINE EXTERNAL AND INTERNAL FUNCTIONS */
@@ -51,6 +51,7 @@ extern double round(double);
 extern double floor(double);
 extern double rand(void);
 extern double log(double);
+extern double tan(double);
 extern double sin(double);
 extern double cos(double);
 extern double powi(double d, int i);
@@ -122,10 +123,9 @@ const double sample_freq =  500;
 const unsigned ai_threshold =  3; /* Threshold ai signal needs to pass to be considered high */
 const double run_speed_thresh =  5;
 const unsigned speed_time_length =  250;
-const double wall_ball_gain =  -0.2;
 
 const double max_wall_pos =  40;
-const double max_wall_for_pos =  20; /* forward default position 20 mm from face */
+const double max_wall_for_pos =  25; /* forward default position 20 mm from face */
 
 const unsigned bv_period =  5; /* behavioural video frame period / 2 in ms */
 const unsigned wv_period =  1; /* whisker video frame period / 2 in ms */
@@ -135,6 +135,8 @@ const double valve_open_time_default =  50; /* Time water valve open for at 500 
 const double max_galvo_pos = 0;
 
 const unsigned ao_trial_trig_on =  1;
+
+const double update_scale = 2;
 
 double dist_thresh =  200;
 
@@ -173,7 +175,7 @@ unsigned cur_branch = 0;
 double cur_trial_time = 0;
 double cur_branch_dist = 0;
 double cur_drink_time = 0;
-double cur_branch_frac = 0;
+double cur_branch_lat_frac = 0;
 double cur_trial_lat = 0;
 unsigned cur_trial_num = 0;
 unsigned left_side;
@@ -184,11 +186,12 @@ unsigned parent_branch;
 unsigned child_branch;
 double gain_val;
 double left_angle;
-double left_angle;
+double right_angle;
 unsigned wv_time;
 unsigned bv_time;
 unsigned cur_trial_block = 0;
 unsigned cur_trial_repeat = 0;
+unsigned led_pulse_on = 0;
 
 /* Define Wall Motion Variables and maze cords*/
 double l_lat_pos_target;
@@ -199,8 +202,12 @@ double r_for_pos;
 double l_for_pos;
 double r_lat_pos;
 double l_lat_pos;
+double cor_pos;
+double cor_width;
 double maze_for_cord;
 double maze_lat_cord;
+double update_dist = 0;
+double time_frac = 0;
 
 /* vars for water delivery*/
 unsigned water_on = 0;
@@ -209,6 +216,7 @@ unsigned valve_time = 0;
 unsigned valve_time_ext = 0;
 unsigned ext_valve_trig = 0;
 double water_dist = 0;
+unsigned water_trig_on = 0;
 
 /* vars for scim sync*/
 unsigned scim_logging = 0; /* Define Scan Image Frame Clock Params */
@@ -369,7 +377,7 @@ void tick_func(void) {
             if ((cur_drink_time-1)/sample_freq >= session_drink_time || cur_trial_time >= session_timeout) {
                 /* Pick new trial number */
                 if (trial_random_order == 1) {
-                    cur_trial_num = (unsigned int) (trial_num_types)*rand();
+                    cur_trial_num = (unsigned int) (num_mazes)*rand();
                 } else {
                     cur_trial_num = trial_num_sequence[cur_trial_block]-1;
                     cur_trial_repeat++;
@@ -381,30 +389,31 @@ void tick_func(void) {
                         cur_trial_block = 0;
                     }
                 }
-                /* Determine target left and right starting wall positions */
-                l_lat_pos_target = maze_initial_left_wall[cur_trial_num];
-                r_lat_pos_target = maze_initial_right_wall[cur_trial_num];
                 
                 /* reset variables */
                 inter_trial_time = 0;
                 cur_trial_time = 0;
                 cur_drink_time = 0;
+                water_trig_on = 0;
                 gain_val = maze_wall_gain[cur_trial_num];
                 cur_branch = maze_initial_branch[cur_trial_num];
-                cur_branch_frac = l_lat_pos_target/(l_lat_pos_target + r_lat_pos_target);
+                cur_branch_lat_frac = maze_initial_branch_lat_fraction[cur_trial_num];
                 cur_branch_dist = maze_initial_branch_for_fraction[cur_trial_num]*branch_length[cur_trial_num][cur_branch];
-                /* if split branch deterimine if on left or right side */
-                if (branch_split[cur_trial_num][cur_branch] == 1) {
-                    /* if split branch - check which side to go */
-                    if (cur_branch_frac <= 0.5){
-                        left_side = 1;
-                    } else {
-                        left_side = 0;
-                    }
-                }
+                
+                left_angle = branch_left_angle[cur_trial_num][cur_branch];
+                right_angle = branch_right_angle[cur_trial_num][cur_branch];
+                
+                cor_width = (branch_r_lat_start[cur_trial_num][cur_branch] + cur_branch_dist*gain_val*tan(right_angle*3.141/180))-(branch_l_lat_start[cur_trial_num][cur_branch] + cur_branch_dist*gain_val*tan(left_angle*3.141/180));
+                cor_pos = cur_branch_lat_frac*cor_width;
+                
+                /* Determine target left and right starting wall positions */
+                r_lat_pos_target = cor_pos;
+                l_lat_pos_target = cor_width - cor_pos;
+                
+                
                 /* if starting branches are dead ends, put forward position of the wall appropriately*/
-                if (branch_left_end[cur_trial_num][cur_branch] == 0) {
-                    l_for_pos_target = abs(10*wall_ball_gain*(branch_length[cur_trial_num][cur_branch] - cur_branch_dist));
+                if (branch_left_end[cur_trial_num][cur_branch] == -1) {
+                    l_for_pos_target = gain_val*(branch_length[cur_trial_num][cur_branch] - cur_branch_dist);
                     left_dead_end = 1;
                     if (l_for_pos_target > max_wall_for_pos) {
                         l_for_pos_target = max_wall_for_pos;
@@ -412,27 +421,27 @@ void tick_func(void) {
                     }
                 } else {
                     l_for_pos_target = max_wall_for_pos;
-                    left_dead_end = 0;                    
+                    left_dead_end = 0;
                 }
-                if (branch_right_end[cur_trial_num][cur_branch] == 0) {
-                    r_for_pos_target = abs(10*wall_ball_gain*(branch_length[cur_trial_num][cur_branch] - cur_branch_dist));
+                if (branch_right_end[cur_trial_num][cur_branch] == -1) {
+                    r_for_pos_target = gain_val*(branch_length[cur_trial_num][cur_branch] - cur_branch_dist);
                     right_dead_end = 1;
                     if (r_for_pos_target > max_wall_for_pos) {
                         r_for_pos_target = max_wall_for_pos;
                         right_dead_end = 0;
                     }
                 } else {
-                    r_for_pos_target = max_wall_for_pos;                    
+                    r_for_pos_target = max_wall_for_pos;
                     right_dead_end = 0;
-                }                
-
+                }
+                
                 /* initialize maze coords */
-                maze_for_cord = maze_initial_for_cord[cur_trial_num];
-                maze_lat_cord = maze_initial_lat_cord[cur_trial_num];
+                maze_for_cord = branch_for_start[cur_trial_num][cur_branch] + cur_branch_dist;
+                maze_lat_cord = (branch_r_lat_start[cur_trial_num][cur_branch] + cur_branch_dist*gain_val*tan(right_angle*3.141/180)) - cor_pos;
                 wv_time = 0;
                 bv_time = 0;
                 water_on = 0;
-                screen_on = 0; 
+                update_dist = 0;
             }
             
             /* Check if in iti */
@@ -440,10 +449,11 @@ void tick_func(void) {
                 inter_trial_trig = 1;
                 inter_trial_time = inter_trial_time + 1/sample_freq;
                 /* send left and right walls to target positions */
-                l_lat_pos = l_lat_pos + .03*(l_lat_pos_target - l_lat_pos);
-                r_lat_pos = r_lat_pos + .03*(r_lat_pos_target - r_lat_pos);
-                l_for_pos = l_for_pos + .03*(l_for_pos_target - l_for_pos);
-                r_for_pos = r_for_pos + .03*(r_for_pos_target - r_for_pos);
+                l_lat_pos = l_lat_pos + .01*(l_lat_pos_target - l_lat_pos);
+                r_lat_pos = r_lat_pos + .01*(r_lat_pos_target - r_lat_pos);
+                l_for_pos = l_for_pos + .01*(l_for_pos_target - l_for_pos);
+                r_for_pos = r_for_pos + .01*(r_for_pos_target - r_for_pos);
+                screen_on = 0;
             } else {
                 /* During trial set inter trial trig to 0 */
                 inter_trial_trig = 0;
@@ -452,118 +462,146 @@ void tick_func(void) {
                 cur_trial_time = cur_trial_time + 1/sample_freq;
                 
                 /* update forward position along branch */
+                /*for_ball_motion = 10;
+                 * lat_ball_motion = -1;*/
                 cur_branch_dist = cur_branch_dist + for_ball_motion/sample_freq;
                 
-                /* Check limits and make branch transitions */
-                if (cur_branch_dist < 0){
-                    /* Transition to parent branch */
-                    if (branch_parent[cur_trial_num][cur_branch] == 0) {
-                        /* if no partent stay */
-                        cur_branch_dist = 0;
-                    } else {
-                        /* update branch id */
-                        parent_branch = branch_parent[cur_trial_num][cur_branch];
-                        if (branch_split[cur_trial_num][parent_branch] == 1) {
-                            /* if split branch - check which side to go */
-                            if (branch_left_end[cur_trial_num][parent_branch] == cur_branch){
+                if (update_dist == 0) {
+                    /* Check limits and make branch transitions */
+                    if (cur_branch_dist < 0){
+                        /* Transition to parent branch */
+                        if (branch_parent[cur_trial_num][cur_branch] == -1) {
+                            /* if no partent stay */
+                            cur_branch_dist = 0;
+                        } else {
+                            /* update branch id */
+                            parent_branch = branch_parent[cur_trial_num][cur_branch];
+                            if (branch_split[cur_trial_num][parent_branch] == 1) {
+                                /* if split branch - check which side to go */
+                                time_frac = 0;
+                                if (branch_left_end[cur_trial_num][parent_branch] == cur_branch){
+                                    left_side = 1;
+                                    update_dist = (branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch]);
+                                    cor_pos = cor_pos + update_dist;
+                                    /************************/
+                                } else {
+                                    left_side = 0;
+                                    update_dist = (branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch]);
+                                    /************************/
+                                }
+                            }
+                            cur_branch_dist = cur_branch_dist + branch_length[cur_trial_num][parent_branch];
+                            cur_branch = parent_branch;
+                        }
+                    } else if (cur_branch_dist > branch_length[cur_trial_num][cur_branch]){
+                        /* Transition to child branch */
+                        if (branch_split[cur_trial_num][cur_branch] == 1) {
+                            time_frac = 0;
+                            if (cur_branch_lat_frac > 0.5) {
+                                child_branch = branch_left_end[cur_trial_num][cur_branch];
+                                update_dist = -(branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch]);
+                                cor_pos = cor_pos + update_dist;
                                 left_side = 1;
+                                /************************/
                             } else {
                                 left_side = 0;
+                                child_branch = branch_right_end[cur_trial_num][cur_branch];
+                                update_dist = -(branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch]);
+                                /************************/
                             }
-                        }
-                        cur_branch_dist = cur_branch_dist + branch_length[cur_trial_num][parent_branch];
-                        cur_branch = parent_branch;
-                    }
-                } else if (cur_branch_dist > branch_length[cur_trial_num][cur_branch]){
-                    /* Transition to child branch */
-                    if (branch_split[cur_trial_num][cur_branch] == 1) {
-                        /* if split branch - check which side to go */
-                        if (cur_branch_frac > .5) {
-                            child_branch = branch_right_end[cur_trial_num][cur_branch];
                         } else {
-                            child_branch = branch_left_end[cur_trial_num][cur_branch];                            
+                            child_branch = branch_left_end[cur_trial_num][cur_branch];
                         }
-                    } else {
-                        child_branch = branch_left_end[cur_trial_num][cur_branch];                            
-                        if (child_branch == 0) {
+                        if (child_branch == -1) {
                             /* if no child stay */
                             cur_branch_dist = branch_length[cur_trial_num][cur_branch];
                         } else {
                             /* update branch id */
                             cur_branch_dist = cur_branch_dist - branch_length[cur_trial_num][cur_branch];
                             cur_branch = child_branch;
-                        }    
-                    }                
+                        }
+                    }
+                } else {
+                    /* do not transition while in update */
+                    if (cur_branch_dist < 0){
+                        cur_branch_dist = 0;
+                    }
+                    if (cur_branch_dist > branch_length[cur_trial_num][cur_branch]) {
+                        cur_branch_dist = branch_length[cur_trial_num][cur_branch];
+                    }
                 }
-                
                 /* set angles */
                 left_angle = branch_left_angle[cur_trial_num][cur_branch];
                 right_angle = branch_right_angle[cur_trial_num][cur_branch];
-
-                /* check if split branch and if first half or second half */
-                if (branch_split[cur_trial_num][cur_branch] == 1){
-                    if (cur_branch_dist/branch_length[cur_trial_num][cur_branch] > 0.5) {
-                        /* if in second half determine which side, use a second half enter trig */
-                        if (left_side == 1) {
-                            r_lat_pos = r_lat_pos - 10*wall_ball_gain/sample_freq*gain_val*(for_ball_motion*(sin(left_angle*3.141/180) -  sin(right_angle*3.141/180)) + lat_ball_motion*(cos(left_angle*3.141/180) - cos(right_angle*3.141/180)));
-                            l_lat_pos = l_lat_pos + 10*wall_ball_gain/sample_freq*gain_val*(for_ball_motion*sin(left_angle*3.141/180) + lat_ball_motion*cos(left_angle*3.141/180));
-                        } else {
-                            r_lat_pos = r_lat_pos - 10*wall_ball_gain/sample_freq*gain_val*(for_ball_motion*sin(right_angle*3.141/180) + lat_ball_motion*cos(right_angle*3.141/180));
-                            l_lat_pos = l_lat_pos + 10*wall_ball_gain/sample_freq*gain_val*(for_ball_motion*(sin(right_angle*3.141/180) - sin(left_angle*3.141/180)) + lat_ball_motion*(cos(right_angle*3.141/180) - cos(left_angle*3.141/180)));
-                        }
-                    } else {
-                        /* if in first half, set left_side trig */
-                        if (cur_branch_frac <= 0.5) {
-                            left_side = 1;
-                        } else {
-                            left_side = 0;                            
-                        }
-                        /* update left and right wall position */
-                        r_lat_pos = r_lat_pos - 10*wall_ball_gain/sample_freq*gain_val*(for_ball_motion*sin(right_angle*3.141/180) + lat_ball_motion*cos(right_angle*3.141/180));
-                        l_lat_pos = l_lat_pos + 10*wall_ball_gain/sample_freq*gain_val*(for_ball_motion*sin(left_angle*3.141/180) + lat_ball_motion*cos(left_angle*3.141/180));
-                    }
-                } else {
-                    /* update left and right wall position */
-                    r_lat_pos = r_lat_pos - 10*wall_ball_gain/sample_freq*gain_val*(for_ball_motion*sin(right_angle*3.141/180) + lat_ball_motion*cos(right_angle*3.141/180));
-                    l_lat_pos = l_lat_pos + 10*wall_ball_gain/sample_freq*gain_val*(for_ball_motion*sin(left_angle*3.141/180) + lat_ball_motion*cos(left_angle*3.141/180));
-                }       
                 
-                /* update corridor width fraction */
-                cur_branch_frac  = l_lat_pos/(l_lat_pos + r_lat_pos);
+                /* update corridor width */
+                cor_width = (branch_r_lat_start[cur_trial_num][cur_branch] + cur_branch_dist*gain_val*tan(right_angle*3.141/180))-(branch_l_lat_start[cur_trial_num][cur_branch] + cur_branch_dist*gain_val*tan(left_angle*3.141/180));
+                
+                /* update corridor position */
+                cor_pos = cor_pos + gain_val/sample_freq*(for_ball_motion*tan(right_angle*3.141/180) + lat_ball_motion);
+                if (cor_pos < 0) {
+                    cor_pos = 0;
+                }
+                if (cor_pos > cor_width) {
+                    cor_pos = cor_width;
+                }
+                
+                cur_branch_lat_frac = cor_pos/cor_width;
+                
+                r_lat_pos = cor_pos;
+                l_lat_pos = cor_width - cor_pos;
+                
+                /* if transitioning to or from split branch update lat wall pos */
+                if (update_dist > 0 || update_dist < 0) {
+                    if(left_side){
+                        r_lat_pos = r_lat_pos - (1-time_frac)*update_dist;
+                    } else {
+                        l_lat_pos = l_lat_pos - (1-time_frac)*update_dist;                    
+                    }
+                }
+                
+                time_frac = time_frac + update_scale/sample_freq;
+                if (time_frac > 1) {
+                    time_frac = 0;
+                    update_dist = 0;
+                }
+                
                 
                 /* update forward wall positions if in dead end and close to end (with gain .2, 10 cm corresponds to 20 mm)*/
-                if (branch_left_end[cur_trial_num][cur_branch] == 0 & abs((branch_length[cur_trial_num][cur_branch] - cur_branch_dist)*10*wall_ball_gain) < max_wall_for_pos) {
-                    l_for_pos = l_for_pos + 10*wall_ball_gain/sample_freq*gain_val*for_ball_motion;
+                if (branch_left_end[cur_trial_num][cur_branch] == -1 && gain_val*(branch_length[cur_trial_num][cur_branch] - cur_branch_dist) < max_wall_for_pos) {
+                    l_for_pos = l_for_pos - gain_val*for_ball_motion/sample_freq;
                     left_dead_end = 1;
                 } else {
-                    left_dead_end = 0;  
-                    l_for_pos = max_wall_for_pos;                  
+                    left_dead_end = 0;
+                    l_for_pos = max_wall_for_pos;
                 }
-                if (branch_right_end[cur_trial_num][cur_branch] == 0 & abs((branch_length[cur_trial_num][cur_branch] - cur_branch_dist)*10*wall_ball_gain) < max_wall_for_pos) {
-                    r_for_pos = r_for_pos + 10*wall_ball_gain/sample_freq*gain_val*for_ball_motion;
+                if (branch_right_end[cur_trial_num][cur_branch] == -1 && gain_val*(branch_length[cur_trial_num][cur_branch] - cur_branch_dist) < max_wall_for_pos) {
+                    r_for_pos = r_for_pos - gain_val*for_ball_motion/sample_freq;
                     right_dead_end = 1;
                 } else {
-                    right_dead_end = 0;                    
-                    r_for_pos = max_wall_for_pos;                  
-                }                
+                    right_dead_end = 0;
+                    r_for_pos = max_wall_for_pos;
+                }
+                
                 /* maze forward and lateral cordinates for display */
-                maze_for_cord = maze_for_cord + for_ball_motion/sample_freq;
-                maze_lat_cord = maze_lat_cord + lat_ball_motion/sample_freq;
+                maze_for_cord = branch_for_start[cur_trial_num][cur_branch] + cur_branch_dist;
+                maze_lat_cord = (branch_r_lat_start[cur_trial_num][cur_branch] + cur_branch_dist*gain_val*tan(right_angle*3.141/180)) - cor_pos;
                 
                 if (cur_trial_time <= maze_screen_on_time[cur_trial_num]) {
                     screen_on = 1;
                 } else{
-                    screen_on = 0; 
+                    screen_on = 0;
                 }
-
+                
                 
                 /* determine if in reward patch and deliver water / update drinking timer*/
                 /* Decide if delivering water */
-                if (water_on == 0 & branch_reward[cur_trial_num][cur_branch] == 1){
-                    if (cur_branch_frac >= maze_reward_patch[cur_trial_num][1] & cur_branch_frac <= maze_reward_patch[cur_trial_num][1] & cur_branch_dist/branch_length[cur_trial_num][cur_branch] >= maze_reward_patch[cur_trial_num][2] & cur_branch_dist/branch_length[cur_trial_num][cur_branch] <= maze_reward_patch[cur_trial_num][3]) {
+                if (water_trig_on == 0 && branch_reward[cur_trial_num][cur_branch] == 1){
+                    if ((cur_branch_lat_frac >= maze_reward_patch[cur_trial_num][0]) && (cur_branch_lat_frac <= maze_reward_patch[cur_trial_num][1]) && (cur_branch_dist/branch_length[cur_trial_num][cur_branch] >= maze_reward_patch[cur_trial_num][2]) && (cur_branch_dist/branch_length[cur_trial_num][cur_branch] <= maze_reward_patch[cur_trial_num][3])) {
                         water_on = 1;
-                        valve_open_time = round(valve_open_time*maze_reward_size[cur_trial_num]);
+                        valve_open_time = round(valve_open_time_default*maze_reward_size[cur_trial_num]);
                         cur_drink_time = 1;
+                        water_trig_on = 1;
                     }
                 }
             }
@@ -620,7 +658,7 @@ void tick_func(void) {
             writeAO(maze_num_ao_chan, maze_num_ao_offset  + maze_num_to_vlt(cur_trial_num));
             
             /* Check water */
-            if (ext_valve_trig == 1 || water_dist > dist_thresh & dist_thresh < 200){
+            if (ext_valve_trig == 1 || ((water_dist > dist_thresh) && (dist_thresh < 200))){
                 water_on_ext = 1;
             }
             water_dist = water_dist +  for_ball_motion/sample_freq;
@@ -650,15 +688,12 @@ void tick_func(void) {
             if (cur_drink_time > 0){
                 cur_drink_time++;
             }
-
+            
             if (water_on == 1 || water_on_ext == 1) {
                 writeDIO(water_valve_trig, 1);
             } else {
                 writeDIO(water_valve_trig, 0);
             }
-            
-            tick_period = 0;
-            
             
             /* Send triggers for behaviour cameras*/
             if (bv_time == 0 && inter_trial_trig == 0) {
@@ -684,10 +719,9 @@ void tick_func(void) {
             }
             
             /* Trial DO Triggers */
-            writeDIO(screen_on_trig, screen_on)
+            writeDIO(screen_on_trig, screen_on);
             writeDIO(trial_iti_trig, inter_trial_trig);
             writeDIO(trial_on_trig, 1-inter_trial_trig);
-            writeDIO(trial_test_trig, test_val);
             writeDIO(trial_ephys_trig, 1-inter_trial_trig);
             writeAO(iti_ao_chan, iti_ao_offset + 5*(inter_trial_trig));
             
@@ -710,14 +744,14 @@ void tick_func(void) {
             log_state_c = right_dead_end + 2*scim_logging + 4*water_on_ext;
             log_cur_state = 10000*log_state_c+1000*log_state_b+100*log_state_a + cur_trial_num;
             log_ball_motion = cam_vel_steps[0] + 36*cam_vel_steps[1] + 36*36*cam_vel_steps[2]+ 36*36*36*cam_vel_steps[3]; /* convert to cam_motion_vect for logging */
-            log_wall_pos = floor(10*l_lat_pos) + 1000*floor(10*(r_lat_pos));
+            log_wall_pos = floor(10*cor_pos) + 1000*floor(10*(cor_width));
             log_maze_cord = floor(maze_for_cord) + 1000*floor(maze_lat_cord+500);
             
             /* log_cor_pos = cam_vel_ai_vlt[0]*1000;*/
-            logValue("ps", log_maze_cord);    /* stim code */
-            logValue("bm", log_ball_motion); /* ball_motion_vector code */
-            logValue("wm", log_wall_pos);       /* wall pos */
-            logValue("st", log_cur_state);     /* state_vector code */
+            logValue("m", log_maze_cord);    /* stim code */
+            logValue("b", log_ball_motion); /* ball_motion_vector code */
+            logValue("w", log_wall_pos);       /* wall pos */
+            logValue("s", log_cur_state);     /* state_vector code */
             scim_state = 1;
         } else {
             if (ball_tracker_clock_ai_vlt >= ai_threshold && ball_tracker_clock_low_flag == 1) {
@@ -745,7 +779,7 @@ void tick_func(void) {
         /* If run is stopping */
         /* send left and right walls to target positions */
         l_lat_pos = l_lat_pos + .0005*(max_wall_pos - l_lat_pos);
-        r_lat_pos = r_lat_pos + .0005*(max_wall_pos - r_lat_pos); 
+        r_lat_pos = r_lat_pos + .0005*(max_wall_pos - r_lat_pos);
         l_for_pos = l_for_pos + .0005*(max_wall_for_pos - l_for_pos);
         r_for_pos = r_for_pos + .0005*(max_wall_for_pos - r_for_pos);
         
@@ -772,28 +806,24 @@ void tick_func(void) {
         }
         if (l_for_pos < 0) {
             l_for_pos = 0;
-        }        
+        }
         writeAO(r_wall_for_ao_chan, r_wall_for_ao_offset  + wall_mm_to_vlt(r_for_pos));
         writeAO(r_wall_lat_ao_chan, r_wall_lat_ao_offset + wall_mm_to_vlt(r_lat_pos));
         writeAO(l_wall_for_ao_chan, l_wall_for_ao_offset  + wall_mm_to_vlt(l_for_pos));
         writeAO(l_wall_lat_ao_chan, l_wall_lat_ao_offset + wall_mm_to_vlt(l_lat_pos));
-
-        writeAO(maze_num_ao_chan , maze_num_ao_offset);
-        writeAO(maze_for_ao_chan , maze_for_ao_offset);
-        writeAO(maze_lat_ao_chan , maze_lat_ao_offset);
-
+        
+        writeAO(maze_num_ao_chan, maze_num_ao_offset);
+        writeAO(maze_for_ao_chan, maze_for_ao_offset);
+        writeAO(maze_lat_ao_chan, maze_lat_ao_offset);
+        
         writeAO(iti_ao_chan, iti_ao_offset);
         writeAO(synch_ao_chan, synch_ao_offset);
-
+        
         writeDIO(water_valve_trig, 0);
-        writeDIO(trial_test_trig, 0);
         writeDIO(wv_trig, 0);
         writeDIO(bv_trig, 0);
-        writeDIO(sound_trig, 0);
-        writeDIO(mf_dio_blue, 0);
-        writeDIO(mf_dio_yellow, 0);
-        writeDIO(sound_trig_2, 0);
         writeDIO(trial_on_trig, 0);
+        writeDIO(screen_on_trig, 0);
         writeDIO(trial_iti_trig, 0);
         writeDIO(synch_pulse, 0);
         writeDIO(trial_ephys_trig, 0);
@@ -807,35 +837,38 @@ void init_func(void) {
         lat_vel_history[jj] = 0;
     }
     /*    if (trial_random_order == 1) {
-        cur_trial_num = 0;
-    } else {
-        cur_trial_num = trial_num_sequence_length - 1;
-    }*/
+     * cur_trial_num = 0;
+     * } else {
+     * cur_trial_num = trial_num_sequence_length - 1;
+     * }*/
     
-    cur_trial_time = trial_timeout + 1;
+    cur_trial_time = session_timeout + 1;
     
-    
+    l_lat_pos = max_wall_pos;
+    r_lat_pos = max_wall_pos;
+    l_for_pos = max_wall_for_pos;
+    r_for_pos = max_wall_for_pos;
+                
     writeAO(r_wall_for_ao_chan, r_wall_for_ao_offset  + wall_mm_to_vlt(r_for_pos));
     writeAO(r_wall_lat_ao_chan, r_wall_lat_ao_offset + wall_mm_to_vlt(r_lat_pos));
     writeAO(l_wall_for_ao_chan, l_wall_for_ao_offset  + wall_mm_to_vlt(l_for_pos));
     writeAO(l_wall_lat_ao_chan, l_wall_lat_ao_offset + wall_mm_to_vlt(l_lat_pos));
+        
+    writeAO(maze_num_ao_chan, maze_num_ao_offset);
+    writeAO(maze_for_ao_chan, maze_for_ao_offset);
+    writeAO(maze_lat_ao_chan, maze_lat_ao_offset);
     
-    writeAO(maze_num_ao_chan , maze_num_ao_offset);
-    writeAO(maze_for_ao_chan , maze_for_ao_offset);
-    writeAO(maze_lat_ao_chan , maze_lat_ao_offset);
-
     writeAO(iti_ao_chan, iti_ao_offset);
     writeAO(synch_ao_chan, synch_ao_offset);
-
+    
     writeDIO(water_valve_trig, 0);
-    writeDIO(trial_test_trig, 0);
     writeDIO(wv_trig, 0);
     writeDIO(bv_trig, 0);
     writeDIO(trial_iti_trig, 0);
     writeDIO(trial_on_trig, 0);
     writeDIO(synch_pulse, 0);
     writeDIO(trial_ephys_trig, 0);
-    writeDIO(screen_on_trig, screen_on)
+    writeDIO(screen_on_trig, 0);
 }
 
 void cleanupfunc(void) {

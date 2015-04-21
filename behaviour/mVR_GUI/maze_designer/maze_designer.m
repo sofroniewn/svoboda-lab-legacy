@@ -201,8 +201,8 @@ if ~isempty(dat)
   start_branch = get(handles.edit_starting_branch,'String');
   start_branch = str2double(start_branch);
   [maze dat] = create_maze(dat,start_branch);
-  params.show_branch_labels = get(handles.checkbox_show_branch_ids,'value');
-  plot_maze(maze,params);
+  show_branch_labels = get(handles.checkbox_show_branch_ids,'value');
+  plot_maze(gca,maze,show_branch_labels,1,1);
   set(handles.uitable_branches,'Data',dat);
 end
 

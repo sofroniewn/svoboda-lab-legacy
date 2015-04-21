@@ -1,6 +1,4 @@
-function maze_config = maze_dat_parser(maze_name)
-
-load_dat = load(maze_name);
+function maze_config = maze_dat_parser(load_dat)
 
 num_mazes = size(load_dat.maze_names,1);
 maze_array = cell(num_mazes,1);
@@ -31,7 +29,7 @@ else
     maze_config.trial_num_sequence = 0;
     maze_config.trial_num_repeats = 0;
 end
-maze_config.session_timeout = load_dat.trial_vars.session_timeout;
+maze_config.session_timeout = 2*12; %load_dat.trial_vars.session_timeout;
 maze_config.session_iti = load_dat.trial_vars.session_iti;
 maze_config.session_drink_time = load_dat.trial_vars.session_drink_time;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -49,25 +47,21 @@ maze_config.maze_wall_gain = NaN(num_mazes,1);
 for ij = 1:num_mazes
     maze_config.maze_wall_gain(ij) = maze_array{ij}.wall_gain;
 end
+maze_config.maze_screen_on_time = NaN(num_mazes,1);
+for ij = 1:num_mazes
+    maze_config.maze_screen_on_time(ij) = maze_array{ij}.screen_on;
+end
 maze_config.maze_initial_branch = NaN(num_mazes,1);
 for ij = 1:num_mazes
     maze_config.maze_initial_branch(ij) = maze_array{ij}.initial.branch_id;
-end
-maze_config.maze_screen_on_time = NaN(num_mazes,1);
-for ij = 1:num_mazes
-    maze_config.maze_screen_on_time(ij) = maze_array{ij}.wall_gain;
 end
 maze_config.maze_initial_branch_for_fraction = NaN(num_mazes,1);
 for ij = 1:num_mazes
     maze_config.maze_initial_branch_for_fraction(ij) = maze_array{ij}.initial.branch_fraction;
 end
-maze_config.maze_initial_left_wall = NaN(num_mazes,1);
+maze_config.maze_initial_branch_lat_fraction = NaN(num_mazes,1);
 for ij = 1:num_mazes
-    maze_config.maze_initial_left_wall(ij) = maze_array{ij}.start_wall_left;
-end
-maze_config.maze_initial_right_wall = NaN(num_mazes,1);
-for ij = 1:num_mazes
-    maze_config.maze_initial_right_wall(ij) = maze_array{ij}.start_wall_right;
+    maze_config.maze_initial_branch_lat_fraction(ij) = maze_array{ij}.initial.corridor_frac;
 end
 maze_config.maze_initial_for_cord = NaN(num_mazes,1);
 for ij = 1:num_mazes
@@ -95,6 +89,24 @@ maze_config.branch_right_angle = zeros(num_mazes,max_num_branches);
 for ij = 1:num_mazes
     for ik = 1:num_branches(ij)
         maze_config.branch_right_angle(ij,ik) = maze_array{ij}.right_angle(ik);
+    end
+end
+maze_config.branch_for_start = zeros(num_mazes,max_num_branches);
+for ij = 1:num_mazes
+    for ik = 1:num_branches(ij)
+        maze_config.branch_for_start(ij,ik) = maze_array{ij}.for_maze_cord(ik);
+    end
+end
+maze_config.branch_l_lat_start = zeros(num_mazes,max_num_branches);
+for ij = 1:num_mazes
+    for ik = 1:num_branches(ij)
+        maze_config.branch_l_lat_start(ij,ik) = maze_array{ij}.l_wall_lat(ik);
+    end
+end
+maze_config.branch_r_lat_start = zeros(num_mazes,max_num_branches);
+for ij = 1:num_mazes
+    for ik = 1:num_branches(ij)
+        maze_config.branch_r_lat_start(ij,ik) = maze_array{ij}.r_wall_lat(ik);
     end
 end
 maze_config.branch_left_end = zeros(num_mazes,max_num_branches);
