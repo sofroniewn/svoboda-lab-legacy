@@ -126,8 +126,6 @@ set(handles.text_cur_x_mirr_pos,'String',num2str(0));
 
 % Setup Speed Figure
 axes(handles.axes_speed)
-str = sprintf('Ball Speed');
-title(str,'FontSize',14)
 set(gca,'FontSize',12)
 xlabel('Time (s)','FontSize',12)
 ylabel('Speed (cm/s) and Cor Pos (mm)','FontSize',12)
@@ -186,8 +184,6 @@ handles.plot_body = plot(init_x,init_y,'^','MarkerSize',15,'MarkerEdgeColor',[0.
 corridor_width = 1;
 axes(handles.axes_wall_hist)
 hold on
-str = sprintf('Wall position histogram');
-title(str,'FontSize',14)
 set(gca,'FontSize',12)
 xlabel('Corridor position (frac)','FontSize',12)
 edges = [0:.01:corridor_width]';
@@ -204,7 +200,41 @@ ylim([0 .25])
 set(handles.pushbutton_water,'Enable','off')
 set(handles.speed_thresh_up,'Enable','off')
 set(handles.speed_thresh_down,'Enable','off')
+set(gca,'FontSize',12)
 
+% Setup Performance Figure
+axes(handles.axes_performance)
+hold on
+set(gca,'FontSize',12)
+frac_rewarded = zeros(maze_config.num_mazes,1);
+frac_dead_end = zeros(maze_config.num_mazes,1);
+handles.plot_frac_rewarded = bar([1:2:2*maze_config.num_mazes]/2,frac_rewarded,0.4);
+set(handles.plot_frac_rewarded,'EdgeColor','b')
+set(handles.plot_frac_rewarded,'FaceColor','b')
+handles.plot_frac_dead_end = bar(([1:2:2*maze_config.num_mazes]+1)/2,frac_dead_end,0.4);
+set(handles.plot_frac_dead_end,'EdgeColor','k')
+set(handles.plot_frac_dead_end,'FaceColor','k')
+ylim([0 1])
+xlim([0 maze_config.num_mazes+1])
+ylabel('Maze performance','FontSize',12)
+
+% Setup Performance Figure
+axes(handles.axes_all_perf)
+hold on
+set(gca,'FontSize',12)
+handles.plot_all_frac_rewarded = bar(.5,0,0.4);
+set(handles.plot_all_frac_rewarded,'EdgeColor','b')
+set(handles.plot_all_frac_rewarded,'FaceColor','b')
+handles.plot_all_frac_rewarded_SE = plot([.5 .5],[0 0],'LineWidth',2,'Color',[0.5 0.5 0.5]);
+handles.plot_all_frac_dead_end = bar(1,0,0.4);
+set(handles.plot_all_frac_dead_end,'EdgeColor','k')
+set(handles.plot_all_frac_dead_end,'FaceColor','k')
+handles.plot_all_frac_dead_end_SE = plot([.5 .5],[0 0],'LineWidth',2,'Color',[0.5 0.5 0.5]);
+ylim([0 1])
+xlim([0 1.5])
+ylabel('Maze performance','FontSize',12)
+set(gca,'xticklabel',[])
+%set(gca,'visible','off')
        
 % Update handles structure
 guidata(hObject, handles);
@@ -311,6 +341,7 @@ switch get(hObject,'value')
             maze_x_lim(ij) = maze_array{ij}.x_lim(2);
             maze_y_lim(ij) = maze_array{ij}.y_lim(2);
         end
+        axes(handles.axes_maze)
         ylim([-20 max(maze_y_lim)])
         xlim([-max(maze_x_lim) max(maze_x_lim)])
         
@@ -326,6 +357,27 @@ switch get(hObject,'value')
         end
         set(handles.axes_maze,'userdata',[]);
 
+        % pefromance axis setup
+        axes(handles.axes_performance)
+        frac_rewarded = zeros(maze_config.num_mazes,1);
+        frac_dead_end = zeros(maze_config.num_mazes,1);
+        set(handles.plot_frac_rewarded,'xdata',[1:2:2*maze_config.num_mazes]/2)
+        set(handles.plot_frac_rewarded,'ydata',frac_rewarded)
+        set(handles.plot_frac_dead_end,'xdata',([1:2:2*maze_config.num_mazes]+1)/2)
+        set(handles.plot_frac_dead_end,'ydata',frac_dead_end)
+        xlim([0 maze_config.num_mazes+1])
+
+        
+        perf_data.num_trials = zeros(maze_config.num_mazes,1);
+        perf_data.dead_end = zeros(maze_config.num_mazes,1);
+        perf_data.rewarded = zeros(maze_config.num_mazes,1);
+        set(handles.axes_performance,'UserData',perf_data);
+
+        set(handles.plot_all_frac_rewarded,'ydata',0)
+        set(handles.plot_all_frac_dead_end,'ydata',0)
+        set(handles.plot_all_frac_rewarded_SE,'ydata',[0 0]);
+        set(handles.plot_all_frac_dead_end_SE,'ydata',[0 0]);
+  
         corridor_width = 1;
         edges = [0:.01:corridor_width]';
         totavg = zeros(size(edges));

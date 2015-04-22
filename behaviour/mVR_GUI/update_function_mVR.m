@@ -89,12 +89,36 @@ if isempty(varLog) == 0 && update_display_on == 1
         if get(handles.checkbox_stream_behaviour,'Value');
            save([handles.stream_fname_base sprintf('trial_%04d.mat',trial_num)],'trial_matrix','trial_mat_names','trial_num');
         end
+        
         trial_num = trial_num+1;
-
         % clear plot
         to_delete = get(handles.axes_maze,'userdata');
         delete(to_delete)
         set(handles.axes_maze,'userdata',[]);
+
+        rewarded = any(trial_matrix(11,:));
+        dead_end = any(trial_matrix(8,:)) || any(trial_matrix(9,:));
+        cur_trial = trial_matrix(13,1);
+        perf_data = get(handles.axes_performance,'UserData');
+
+        perf_data.num_trials(cur_trial) = perf_data.num_trials(cur_trial) + 1;
+        perf_data.dead_end(cur_trial) = perf_data.dead_end(cur_trial) + dead_end;
+        perf_data.rewarded(cur_trial) = perf_data.rewarded(cur_trial) + rewarded;
+        set(handles.axes_performance,'UserData',perf_data);
+
+        set(handles.plot_frac_rewarded,'ydata',perf_data.rewarded./perf_data.num_trials);
+        set(handles.plot_frac_dead_end,'ydata',perf_data.dead_end./perf_data.num_trials);
+        
+        p_r = sum(perf_data.rewarded)/sum(perf_data.num_trials);
+        p_de = sum(perf_data.rewarded)/sum(perf_data.num_trials);
+        se_r = p_r*(1-p_r)/sqrt(sum(perf_data.num_trials));
+        se_de = p_de*(1-p_de)/sqrt(sum(perf_data.num_trials));
+        
+        set(handles.plot_all_frac_rewarded,'ydata',p_r);
+        set(handles.plot_all_frac_dead_end,'ydata',p_de);
+
+        set(handles.plot_all_frac_rewarded_SE,'ydata',p_r + [-se_r se_r]);
+        set(handles.plot_all_frac_dead_end_SE,'ydata',p_de + [-se_de se_de]);
     end
     trial_info.trial_num = trial_num;
     trial_info.iti_end = trial_mat(handles.iti_ind,end);
