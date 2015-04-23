@@ -110,7 +110,7 @@ if isempty(varLog) == 0 && update_display_on == 1
         set(handles.plot_frac_dead_end,'ydata',perf_data.dead_end./perf_data.num_trials);
         
         p_r = sum(perf_data.rewarded)/sum(perf_data.num_trials);
-        p_de = sum(perf_data.rewarded)/sum(perf_data.num_trials);
+        p_de = sum(perf_data.dead_end)/sum(perf_data.num_trials);
         se_r = p_r*(1-p_r)/sqrt(sum(perf_data.num_trials));
         se_de = p_de*(1-p_de)/sqrt(sum(perf_data.num_trials));
         
@@ -259,15 +259,15 @@ if isempty(varLog) == 0 && update_display_on == 1
 
         x_pos = get(handles.pos_plot,'Xdata')';
         y_pos = get(handles.pos_plot,'Ydata')';
-         ds_x_pos = trial_mat(6,1:10:end);
-         ds_y_pos = trial_mat(5,1:10:end);
+         ds_x_pos = trial_mat(6,1:5:end);
+         ds_y_pos = trial_mat(5,1:5:end);
          x_pos = [x_pos(length(ds_x_pos)+1:end);ds_x_pos'];
          y_pos = [y_pos(length(ds_y_pos)+1:end);ds_y_pos'];
      else
          init_x = 0;
          init_y = -100;
-         x_pos = zeros(2501,1);
-         y_pos = zeros(2501,1) - 100;
+         x_pos = zeros(5001,1);
+         y_pos = zeros(5001,1) - 100;
      end
 
      set(handles.plot_tail,'Xdata',[init_x init_x]);
@@ -275,8 +275,7 @@ if isempty(varLog) == 0 && update_display_on == 1
      set(handles.plot_body,'Xdata',init_x);
      set(handles.plot_body,'Ydata',init_y);
      set(handles.pos_plot,'Xdata',x_pos);
-     set(handles.pos_plot,'Ydata',y_pos);
-    
+     set(handles.pos_plot,'Ydata',y_pos);    
 end
 
 

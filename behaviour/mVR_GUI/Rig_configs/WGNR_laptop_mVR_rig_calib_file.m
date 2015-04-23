@@ -12,6 +12,7 @@ rig_config.treadmill_str = 'treadmill';
 rig_config.data_dir = '/Users/sofroniewn/Documents/DATA/mVR_DATA'; % DATA DIRECTORY
 rig_config.TCP_IP_address = '127.0.0.1';
 rig_config.accesory_path = '.';
+rig_config.screenComPort = '/dev/tty.usbmodem1411';
 
 
 % Parameters for globals file

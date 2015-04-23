@@ -12,6 +12,7 @@ rig_config.treadmill_str = 'treadmill4';
 rig_config.data_dir = 'E:\Documents and Settings\user\My Documents\mVR_DATA'; % DATA DIRECTORY
 rig_config.TCP_IP_address = '10.102.22.49';
 rig_config.accesory_path = 'X:\Nick\mVR_DATA';
+rig_config.screenComPort = '/dev/tty.usbmodem1411';
 
 
 % Parameters for globals file

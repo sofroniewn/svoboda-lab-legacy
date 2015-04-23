@@ -167,9 +167,10 @@ for ij = 1:maze_config.num_mazes
 end
 ylim([-20 max(maze_y_lim)])
 xlim([-max(maze_x_lim) max(maze_x_lim)])
+handles.tail_length = (max(maze_y_lim)+20)/35;
 
-x_pos = zeros(2501,1);
-y_pos = zeros(2501,1)-100;
+x_pos = zeros(5001,1);
+y_pos = zeros(5001,1)-100;
 handles.pos_plot =  plot(x_pos, y_pos,'Marker','.','MarkerSize',15,'LineStyle','none','MarkerEdgeColor',[.7 .7 .7]);
 
 init_x = 0;
@@ -215,7 +216,7 @@ handles.plot_frac_dead_end = bar(([1:2:2*maze_config.num_mazes]+1)/2,frac_dead_e
 set(handles.plot_frac_dead_end,'EdgeColor','k')
 set(handles.plot_frac_dead_end,'FaceColor','k')
 ylim([0 1])
-xlim([0 maze_config.num_mazes+1])
+xlim([0 maze_config.num_mazes+.5])
 ylabel('Maze performance','FontSize',12)
 
 % Setup Performance Figure
@@ -229,7 +230,7 @@ handles.plot_all_frac_rewarded_SE = plot([.5 .5],[0 0],'LineWidth',2,'Color',[0.
 handles.plot_all_frac_dead_end = bar(1,0,0.4);
 set(handles.plot_all_frac_dead_end,'EdgeColor','k')
 set(handles.plot_all_frac_dead_end,'FaceColor','k')
-handles.plot_all_frac_dead_end_SE = plot([.5 .5],[0 0],'LineWidth',2,'Color',[0.5 0.5 0.5]);
+handles.plot_all_frac_dead_end_SE = plot([1 1],[0 0],'LineWidth',2,'Color',[0.5 0.5 0.5]);
 ylim([0 1])
 xlim([0 1.5])
 ylabel('Maze performance','FontSize',12)
@@ -330,8 +331,8 @@ switch get(hObject,'value')
         set(handles.screen_on_plot,'Ydata',zero_init);
         set(handles.cor_width_plot,'Ydata',zero_init);
         
-        x_pos = zeros(2501,1);
-        y_pos = zeros(2501,1) - 10;
+        x_pos = zeros(5001,1);
+        y_pos = zeros(5001,1) - 100;
         set(handles.pos_plot,'Xdata',x_pos);
         set(handles.pos_plot,'Ydata',y_pos);
         
@@ -492,7 +493,7 @@ switch get(hObject,'value')
         % Setup timer
         handles.obj_t = timer('TimerFcn',{@update_function_mVR,handles});
         set(handles.obj_t,'ExecutionMode','fixedRate');
-        set(handles.obj_t,'Period', .25);
+        set(handles.obj_t,'Period', .15);
         set(handles.obj_t,'BusyMode','queue');
         set(handles.obj_t,'ErrorFcn',@(obj,event)disp('Timing Error'));
         set(handles.obj_t,'UserData',numVarLog);
