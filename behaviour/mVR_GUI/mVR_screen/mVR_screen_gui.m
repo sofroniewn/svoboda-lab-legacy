@@ -93,6 +93,11 @@ set(handles.text_run_time,'String',sprintf('%.2f s',0));
         
 
 % Setup Pos Figure
+handles.figure_maze = figure(287);
+set(gcf,'Position',[440   142   416   656])
+set(gcf, 'MenuBar', 'None')
+handles.axes_maze = gca;
+set(handles.axes_maze,'Position',[0   0   1   1])
 axes(handles.axes_maze)
 hold on
 set(handles.axes_maze,'color',[0 0 0])
