@@ -208,6 +208,9 @@ switch get(hObject,'value')
         end
         set(handles.axes_maze,'userdata',{[],[],0});
 
+        cur_pos = get(gcf,'Position');
+        set(handles.plot_body,'MarkerSize',cur_pos(3)/6);
+        
 
         % Disable logging options
         set(handles.checkbox_path,'Enable','off')

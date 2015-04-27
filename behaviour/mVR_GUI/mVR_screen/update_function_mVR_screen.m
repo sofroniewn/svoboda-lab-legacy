@@ -1,5 +1,4 @@
 function update_function_mVR_screen(obj,event,handles)
-
 try
 	% read data
 	data = fscanf(handles.s,'%s');
@@ -7,12 +6,16 @@ try
 if length(data) ~= 4
 	warning('Data wrong length')
 else
+profile on
     
 	screenOn = data(1);
 %	curTrialNum = 1+floor(100*data(2)/1024);
     curTrialNum = 1+round(data(2)/50);
     init_y = data(3)/1024*100 - 2 - 0.0117;
 	init_x = data(4)/1024*100 - 50 + 0.0977;
+    
+    init_x = round(init_x*5)/5;
+    init_y = round(init_y*5)/5;
         
     if ~screenOn && ~isempty(get(handles.axes_maze,'userdata'))
         dat = get(handles.axes_maze,'userdata');
@@ -47,12 +50,14 @@ else
 
         if ~isempty(dat{2}.h)
             for ij = 1:length(dat{2}.h)
-                phase = rand*2;
-                phase = phase + 1/100*2*pi;
+                phase = dat{3};
+                phase = phase - 5/100*2*pi;
                 phase = mod(phase,2*pi);
+                dat{3} = phase;
                 tform = dat{2}.tform{ij};
                 [gclipped xdata ydata] = make_reward_patch(squeeze(dat{2}.end_vals(:,1,ij)),squeeze(dat{2}.end_vals(:,2,ij)),dat{2}.scale(ij),phase,tform);
                 set(dat{2}.h(ij),'CData',gclipped);
+                set(handles.axes_maze,'UserData',dat);
             end
         end
     else
@@ -64,10 +69,10 @@ else
 
      %set(handles.plot_tail,'Xdata',[init_x init_x]);
      %set(handles.plot_tail,'Ydata',[init_y init_y-handles.tail_length]);
-     [init_x init_y]
      set(handles.plot_body,'Xdata',init_x);
      set(handles.plot_body,'Ydata',init_y);          
 end
+profile off
 
 catch
     	warning('Data could not evaluate')
@@ -76,7 +81,6 @@ elapsed_time = toc;
 set(handles.text_run_time,'String',sprintf('%.2f s',elapsed_time));
 
 drawnow
-
 
 
 
