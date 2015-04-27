@@ -248,7 +248,7 @@ if isempty(varLog) == 0 && update_display_on == 1
         maze_all = get(handles.maze_config_str,'UserData');
         maze_config = maze_all{1};
         maze_array = maze_all{2};
-        maze = maze_array{trial_mat(13,end)};
+        maze = maze_array{trial_mat(13,end),1};
         h_all = plot_maze(handles.axes_maze,maze,0,0,0);
         set(handles.axes_maze,'UserData',h_all);
     end

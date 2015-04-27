@@ -162,8 +162,8 @@ set(handles.axes_maze,'userdata',[]);
 maze_x_lim = NaN(maze_config.num_mazes,1);
 maze_y_lim = NaN(maze_config.num_mazes,1);
 for ij = 1:maze_config.num_mazes
-    maze_x_lim(ij) = maze_array{ij}.x_lim(2);
-    maze_y_lim(ij) = maze_array{ij}.y_lim(2);
+    maze_x_lim(ij) = maze_array{ij,1}.x_lim(2);
+    maze_y_lim(ij) = maze_array{ij,1}.y_lim(2);
 end
 ylim([-20 max(maze_y_lim)])
 xlim([-max(maze_x_lim) max(maze_x_lim)])
@@ -288,6 +288,8 @@ switch get(hObject,'value')
         maze_all = get(handles.maze_config_str,'UserData');
         maze_config = maze_all{1};
         maze_array = maze_all{2};
+        trial_vars = maze_all{3};
+
         rig_config = get(handles.figure1,'UserData');
         checkbox_log_value = get(handles.checkbox_log,'Value');
         str_animal_number = get(handles.edit_animal_number,'String');
@@ -339,8 +341,8 @@ switch get(hObject,'value')
         maze_x_lim = NaN(maze_config.num_mazes,1);
         maze_y_lim = NaN(maze_config.num_mazes,1);
         for ij = 1:maze_config.num_mazes
-            maze_x_lim(ij) = maze_array{ij}.x_lim(2);
-            maze_y_lim(ij) = maze_array{ij}.y_lim(2);
+            maze_x_lim(ij) = maze_array{ij,1}.x_lim(2);
+            maze_y_lim(ij) = maze_array{ij,1}.y_lim(2);
         end
         axes(handles.axes_maze)
         ylim([-20 max(maze_y_lim)])
@@ -462,8 +464,7 @@ switch get(hObject,'value')
             copyfile(fileOut,fname_globals);
             % delete(fileOut);
             save([fname_base 'rig_config.mat'],'rig_config');
-            save([fname_base 'maze_config.mat'],'maze_config');
-            save([fname_base 'ps_sites.mat'],'ps_sites');
+            save([fname_base 'trial_config.mat'],'maze_config','maze_array','trial_vars');
             fid = fopen(fname_log,'w'); % Open text file on Windows Machine for saving values
             if fid == -1
                 error('File Not Created')
@@ -484,7 +485,7 @@ switch get(hObject,'value')
             handles.stream_fname_base = stream_fname_base;
             copyfile(fileOut,stream_fname_globals);
             save([stream_fname_base 'rig_config.mat'],'rig_config');
-            save([stream_fname_base 'maze_config.mat'],'maze_config');
+            save([stream_fname_base 'trial_config.mat'],'maze_config','maze_array','trial_vars');
         end
 
 
@@ -561,12 +562,16 @@ set(handles.maze_config_str,'String',FileName);
 load_dat = load([PathName,FileName]);
 maze_config = maze_dat_parser(load_dat);
 
-maze_array = cell(size(load_dat.maze_names,1),1);
+maze_array = cell(size(load_dat.maze_names,1),3);
 for ij = 1:size(load_dat.maze_names,1)
     [maze dat] = create_maze(load_dat.dat_array{ij},str2double(load_dat.start_branch_array{ij}));
-    maze_array{ij} = maze;
+    maze_array{ij,1} = maze;
+    maze_array{ij,2} = dat;
+    maze_array{ij,3} = load_dat.start_branch_array{ij};
+    maze_array{ij,4} = load_dat.maze_names{ij};
 end
-set(handles.maze_config_str,'UserData',{maze_config, maze_array});
+trial_vars = load_dat.trial_vars;
+set(handles.maze_config_str,'UserData',{maze_config, maze_array, trial_vars});
 %full_name = [PathName,FileName];
 %WGNR_trial_viewer_gui({full_name});
 
