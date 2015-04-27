@@ -8,7 +8,7 @@
 const unsigned Xnum_mazes = 0; /* Number of mazes */
 const unsigned Xmax_num_branches = 0; /* Max number of branches */
 
-const unsigned Xtrial_random_order = 0; /* 1 if in random order, 0 if in sequence */
+const unsigned Xtrial_random_order = 0; /* 1 if in random order, 0 if in sequence, 2 if repeat till correct */
 const unsigned Xtrial_num_sequence_length = 0; /* 0 if random, otherwise length of sequence */
 const unsigned Xtrial_num_sequence[] = {}; /* 1 if random, sequence */
 const unsigned Xtrial_num_repeats[] = {}; /* 1 if random, num repeats */
@@ -192,6 +192,7 @@ unsigned bv_time;
 unsigned cur_trial_block = 0;
 unsigned cur_trial_repeat = 0;
 unsigned led_pulse_on = 0;
+unsigned correct = 1;
 
 /* Define Wall Motion Variables and maze cords*/
 double l_lat_pos_target;
@@ -378,6 +379,12 @@ void tick_func(void) {
                 /* Pick new trial number */
                 if (trial_random_order == 1) {
                     cur_trial_num = (unsigned int) (num_mazes)*rand();
+                } else if (trial_random_order == 2) {
+                    if (correct) {
+                        cur_trial_num = (unsigned int) (num_mazes)*rand();                        
+                    } else {
+                        cur_trial_num = cur_trial_num;
+                    }
                 } else {
                     cur_trial_num = trial_num_sequence[cur_trial_block]-1;
                     cur_trial_repeat++;
@@ -399,7 +406,8 @@ void tick_func(void) {
                 cur_branch = maze_initial_branch[cur_trial_num];
                 cur_branch_lat_frac = maze_initial_branch_lat_fraction[cur_trial_num];
                 cur_branch_dist = maze_initial_branch_for_fraction[cur_trial_num]*branch_length[cur_trial_num][cur_branch];
-                
+                correct = 1;
+
                 left_angle = branch_left_angle[cur_trial_num][cur_branch];
                 right_angle = branch_right_angle[cur_trial_num][cur_branch];
                 
@@ -653,6 +661,10 @@ void tick_func(void) {
             writeAO(maze_for_ao_chan, maze_for_ao_offset  + maze_for_to_vlt(maze_for_cord));
             writeAO(maze_lat_ao_chan, maze_lat_ao_offset + maze_lat_to_vlt(maze_lat_cord));
             
+            if (right_dead_end || left_dead_end){
+                correct = 0;
+            }
+
             /* Check bounds and output AO for maze number */
             /* check in matlab not more than 100 mazes */
             writeAO(maze_num_ao_chan, maze_num_ao_offset  + maze_num_to_vlt(cur_trial_num));
