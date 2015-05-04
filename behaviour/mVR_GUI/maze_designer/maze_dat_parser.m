@@ -29,7 +29,7 @@ else
     maze_config.trial_num_sequence = 0;
     maze_config.trial_num_repeats = 0;
 end
-maze_config.session_timeout = 2*12; %load_dat.trial_vars.session_timeout;
+maze_config.session_timeout = 10*12; %load_dat.trial_vars.session_timeout;
 maze_config.session_iti = load_dat.trial_vars.session_iti;
 maze_config.session_drink_time = load_dat.trial_vars.session_drink_time;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

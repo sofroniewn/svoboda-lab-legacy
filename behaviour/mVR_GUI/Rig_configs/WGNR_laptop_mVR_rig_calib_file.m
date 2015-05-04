@@ -45,6 +45,7 @@ rig_config.dio_bv_trig = '3';
 rig_config.dio_screen_on_trig = '4';
 rig_config.dio_synch_pulse = '5';
 rig_config.dio_trial_on_trig = '6';
+rig_config.dio_sound_cue = '7';
 rig_config.dio_trial_ephys_trig = '8';
 
 
@@ -72,6 +73,8 @@ rig_config.valve_open_time = 50; % Time water valve open for at 500 Hz
 rig_config.ao_trial_trig_on = 1;
 
 rig_config.dist_thresh = 200;
+
+rig_config.sound_on_length = .1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 tmp = eval(rig_config.A_calib_str);

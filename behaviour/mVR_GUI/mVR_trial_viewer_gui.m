@@ -22,7 +22,7 @@ function varargout = mVR_trial_viewer_gui(varargin)
 
 % Edit the above text to modify the response to help mVR_trial_viewer_gui
 
-% Last Modified by GUIDE v2.5 23-Apr-2015 13:56:59
+% Last Modified by GUIDE v2.5 01-May-2015 16:31:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -84,11 +84,23 @@ end
 % set(handles.uitable_plotting,'Data',[]);
 % set(handles.uitable_trial_info,'Data',[]);
 
-% cla(handles.axes1)
-% cla(handles.axes2)
-% cla(handles.axes3)
-% cla(handles.axes4)
-% cla(handles.axes5)
+col_names = properties(branch);
+col_names = strrep(col_names, '_', ' ');
+set(handles.uitable_maze_param,'ColumnName',col_names);
+set(handles.uitable_maze_param,'ColumnEditable',true(1,numel(col_names)))
+ColumnFormat = repmat({'numeric'},1,numel(col_names));
+%ColumnFormat{find(strcmp(col_names,'reward'))} = 'char';
+set(handles.uitable_maze_param,'ColumnFormat',ColumnFormat)
+set(handles.uitable_maze_param,'Data',[]);
+set(handles.listbox_trajectories,'userdata',[]);
+
+cla(handles.axes_maze)
+set(handles.axes_maze,'Color',[0 0 0])
+set(handles.axes_maze,'xtick',[])
+set(handles.axes_maze,'ytick',[])
+
+cla(handles.axes_hist)
+cla(handles.axes_perf)
 
 
 % plot_list = dir(fullfile(handles.pathstr,'accessory_fns','plot_functions','time_series_plots','*.m'));
@@ -105,7 +117,7 @@ end
 % for ij = 1:numel(plot_list)
 %     plot_names{ij} = plot_list(ij).name;
 % end
-% set(handles.popupmenu_ax3,'string',plot_names)
+% set(handles.popupmenu_ax_hist,'string',plot_names)
 % set(handles.popupmenu_ax4,'string',plot_names)
 % set(handles.popupmenu_ax4,'value',5)
 
@@ -114,40 +126,7 @@ end
 % for ij = 1:numel(plot_list)
 %     plot_names{ij} = plot_list(ij).name;
 % end
-% set(handles.popupmenu_ax5,'string',plot_names)
-
-% set(handles.uitable_trial_info,'Enable','off');
-% set(handles.togglebutton_online_mode,'Enable','off')
-% set(handles.pushbutton_plot_data,'Enable','off')
-% set(handles.popupmenu_ax1,'Enable','off')
-% set(handles.popupmenu_ax2,'Enable','off')
-% set(handles.popupmenu_ax3,'Enable','off')
-% set(handles.popupmenu_ax4,'Enable','off')
-% set(handles.popupmenu_ax5,'Enable','off')
-% set(handles.edit_range_ax3,'Enable','off')
-% set(handles.edit_range_ax4,'Enable','off')
-% set(handles.edit_range_ax5,'Enable','off')
-% set(handles.edit_save_figs,'Enable','off')
-% set(handles.pushbutton_save_figs,'Enable','off')
-% set(handles.checkbox_last_trial,'Enable','off')
-% set(handles.checkbox_completed,'Enable','off')
-% set(handles.edit_trial_range,'Enable','off')
-% set(handles.text_trial_range,'Enable','off')
-% set(handles.text_anm,'Enable','off')
-% set(handles.text_date,'Enable','off')
-% set(handles.text_run_num,'Enable','off')
-% set(handles.text_elapsed_time,'Enable','off')
-% set(handles.pushbutton_trial_maker,'Enable','off')
-
-% %     list = get(hObject,'String');
-% %     item_selected = list{index_selected};
-% %
-% handles.data_dir = [];
-% clear global session;
-% if nargin > 3
-%     file_name = varargin{1};
-%     load_trial_Callback(handles.load_trial, eventdata, handles, file_name{1})
-% end
+% set(handles.popupmenu_ax_perf,'string',plot_names)
 
 % Update handles structure
 guidata(hObject, handles);
@@ -166,320 +145,6 @@ function varargout = mVR_trial_viewer_gui_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
-% --- Executes on button press in add_row.
-function add_row_Callback(hObject, eventdata, handles)
-% hObject    handle to add_row (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-default_data =  {'Left turn','Distance', 200, 12, 1, true, true, true, '{0, 1}','{15, 15}', '{0, 1}','{30, 30}', '{0, .25, .75, 1}', '{0, -10, 0}','{0, 1}','{1}', '{.25, .75}',true, '{.85}','{2}', '{28}','Wall distance (mm)','{100}','Off','{0, .75}',2,0,'Off','{.25, .75}','S1','Left',2,0,0,.1,true,false};
-default_plot_data =  {true,'[0 0 0]'};
-
-clear handles.trial_config.plot_options
-handles.trial_config.dat = get(handles.uitable1,'Data');
-handles.trial_config.plot_options.dat{1} = get(handles.uitable_plotting,'Data');
-handles.trial_config.plot_options.names = 'DEFAULT';
-set(handles.edit_plot_options_name,'String','DEFAULT');
-
-num_to_add = str2num(get(handles.add_row_number,'String'));
-if isnumeric(num_to_add) && isempty(num_to_add) ~=1
-    if size(handles.trial_config.dat,1) >= num_to_add && num_to_add > 0
-        handles.trial_config.dat = [handles.trial_config.dat;handles.trial_config.dat(num_to_add,:)];
-        handles.trial_config.plot_options.dat{1} = [handles.trial_config.plot_options.dat{1};handles.trial_config.plot_options.dat{1}(num_to_add,:)];
-    else
-        handles.trial_config.dat = [handles.trial_config.dat;default_data];
-        handles.trial_config.plot_options.dat{1} = [handles.trial_config.plot_options.dat{1};default_plot_data];
-    end
-else
-    handles.trial_config.dat = [handles.trial_config.dat;default_data];
-    handles.trial_config.plot_options.dat{1} = [handles.trial_config.plot_options.dat{1};default_plot_data];
-end
-
-set(handles.uitable1,'Data',handles.trial_config.dat);
-set(handles.uitable_plotting,'Data',handles.trial_config.plot_options.dat{1});
-set(handles.popupmenu_plot_options,'String',handles.trial_config.plot_options.names);
-set(handles.popupmenu_plot_options,'Value',1);
-
-% Update handles structure
-guidata(hObject, handles);
-
-function add_row_number_Callback(hObject, eventdata, handles)
-% hObject    handle to add_row_number (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of add_row_number as text
-%        str2double(get(hObject,'String')) returns contents of add_row_number as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function add_row_number_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to add_row_number (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in remove_row.
-function remove_row_Callback(hObject, eventdata, handles)
-% hObject    handle to remove_row (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-clear handles.trial_config.plot_options
-handles.trial_config.dat = get(handles.uitable1,'Data');
-handles.trial_config.plot_options.dat{1} = get(handles.uitable_plotting,'Data');
-handles.trial_config.plot_options.names = 'DEFAULT';
-set(handles.edit_plot_options_name,'String','DEFAULT');
-
-num_to_remove = str2num(get(handles.remove_row_number,'String'));
-if size(handles.trial_config.dat,1) > 0
-    if isnumeric(num_to_remove) && isempty(num_to_remove) ~=1
-        if size(handles.trial_config.dat,1) >= num_to_remove && num_to_remove > 0
-            handles.trial_config.dat(num_to_remove,:) = [];
-            handles.trial_config.plot_options.dat{1}(num_to_remove,:) = [];
-        else
-            handles.trial_config.dat(end,:) = [];
-            handles.trial_config.plot_options.dat{1}(end,:) = [];
-        end
-    else
-        handles.trial_config.dat(end,:) = [];
-        handles.trial_config.plot_options.dat{1}(end,:) = [];
-    end
-    set(handles.uitable1,'Data',handles.trial_config.dat);
-    set(handles.uitable_plotting,'Data',handles.trial_config.plot_options.dat{1});
-else
-end
-set(handles.popupmenu_plot_options,'String',handles.trial_config.plot_options.names);
-set(handles.popupmenu_plot_options,'Value',1);
-
-% Update handles structure
-guidata(hObject, handles);
-
-function remove_row_number_Callback(hObject, eventdata, handles)
-% hObject    handle to remove_row_number (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of remove_row_number as text
-%        str2double(get(hObject,'String')) returns contents of remove_row_number as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function remove_row_number_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to remove_row_number (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in random_trial_on.
-function random_trial_on_Callback(hObject, eventdata, handles)
-% hObject    handle to random_trial_on (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of random_trial_on
-toggle_value = get(hObject,'Value');
-
-if toggle_value == 1
-    set(handles.trial_repeat_label,'Enable','off');
-    set(handles.trial_repeat_string,'Enable','off');
-    set(handles.trial_repeat_string,'String','');
-    set(handles.text_num_reps,'Enable','off');
-    set(handles.edit_num_reps,'Enable','off');
-    set(handles.edit_num_reps,'String','');
-else
-    set(handles.trial_repeat_label,'Enable','on');
-    set(handles.trial_repeat_string,'Enable','on');
-    set(handles.text_num_reps,'Enable','on');
-    set(handles.edit_num_reps,'Enable','on');
-end
-
-% --- Executes on button press in radiobutton_laser_calibration.
-function radiobutton_laser_calibration_Callback(hObject, eventdata, handles)
-% hObject    handle to radiobutton_laser_calibration (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of radiobutton_laser_calibration
-
-
-function trial_repeat_string_Callback(hObject, eventdata, handles)
-% hObject    handle to trial_repeat_string (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of trial_repeat_string as text
-%        str2double(get(hObject,'String')) returns contents of trial_repeat_string as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function trial_repeat_string_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to trial_repeat_string (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in save_trial.
-function save_trial_Callback(hObject, eventdata, handles)
-% hObject    handle to save_trial (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-[FileName,PathName,FilterIndex] = uiputfile(fullfile(handles.pathstr,'Trial_configs','*.mat'));
-if FilterIndex>0
-    handles.trial_config.dat = get(handles.uitable1,'Data');
-    handles.trial_config.random_order = get(handles.random_trial_on,'value');
-    handles.trial_config.repeating_order = get(handles.trial_repeat_string,'String');
-    handles.trial_config.repeating_numbers = get(handles.edit_num_reps,'String');
-    handles.trial_config.column_names = get(handles.uitable1,'ColumnName');
-    pushbutton_add_plot_options_Callback(handles.pushbutton_add_plot_options, eventdata, handles)
-    handles.trial_config.file_name = FileName;
-    handles.trial_config.laser_calibration = get(handles.radiobutton_laser_calibration,'Value');
-    set(handles.trial_config_name,'String',FileName);
-    trial_config = handles.trial_config;
-    trial_config = trial_dat_parser(trial_config);
-    save([PathName FileName],'trial_config');
-end
-
-% --- Executes on button press in load_trial.
-function load_trial_Callback(hObject, eventdata, handles, varargin)
-% hObject    handle to load_trial (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-if nargin > 3
-    PathName = [];
-    FileName = varargin{1};
-    FilterIndex = 1;
-else
-    [FileName,PathName,FilterIndex] = uigetfile(fullfile(handles.pathstr,'Trial_configs','*.mat'));
-end
-
-if FilterIndex>0
-    load([PathName FileName]);
-    handles.trial_config = trial_config;
-    set(handles.uitable1,'Data',handles.trial_config.dat);
-    set(handles.trial_config_name,'String',FileName);
-    set(handles.trial_repeat_string,'String',handles.trial_config.repeating_order);
-    set(handles.edit_num_reps,'String',handles.trial_config.repeating_numbers);
-    set(handles.random_trial_on,'Value',handles.trial_config.random_order);
-    random_trial_on_Callback(handles.random_trial_on, eventdata, handles)
-    set(handles.uitable_plotting,'Data',handles.trial_config.plot_options.dat{1});
-    set(handles.popupmenu_plot_options,'String',handles.trial_config.plot_options.names);
-    set(handles.popupmenu_plot_options,'Value',1);
-    set(handles.radiobutton_laser_calibration,'Value',handles.trial_config.laser_calibration);
-    
-    set(handles.trial_config_name,'String',handles.trial_config.file_name);
-    if iscell(handles.trial_config.plot_options.names) == 1
-        set(handles.edit_plot_options_name,'String',handles.trial_config.plot_options.names{1});
-    else
-        set(handles.edit_plot_options_name,'String',handles.trial_config.plot_options.names);
-    end
-end
-
-guidata(hObject, handles);
-
-
-% --- Executes on selection change in popupmenu_plot_options.
-function popupmenu_plot_options_Callback(hObject, eventdata, handles)
-% hObject    handle to popupmenu_plot_options (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu_plot_options contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu_plot_options
-
-contents = cellstr(get(hObject,'String'))
-value = get(hObject,'Value')
-set(handles.uitable_plotting,'Data',handles.trial_config.plot_options.dat{value});
-set(handles.edit_plot_options_name,'String',contents(value));
-
-pushbutton_plot_data_Callback(handles.pushbutton_plot_data, eventdata, handles)
-
-
-% --- Executes during object creation, after setting all properties.
-function popupmenu_plot_options_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popupmenu_plot_options (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-
-function edit_plot_options_name_Callback(hObject, eventdata, handles)
-% hObject    handle to edit_plot_options_name (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit_plot_options_name as text
-%        str2double(get(hObject,'String')) returns contents of edit_plot_options_name as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit_plot_options_name_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit_plot_options_name (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in pushbutton_add_plot_options.
-function pushbutton_add_plot_options_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton_add_plot_options (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-dat = get(handles.uitable_plotting,'Data');
-name_list = get(handles.popupmenu_plot_options,'String');
-cur_name = get(handles.edit_plot_options_name,'String');
-if iscell(name_list) ~= 1
-    name_list = {name_list};
-end
-value = find(strcmp(name_list,cur_name), 1);
-if isempty(value) == 1
-    name_list = [name_list;cur_name];
-    value = numel(name_list);
-end
-handles.trial_config.plot_options.dat{value} = dat;
-handles.trial_config.plot_options.names = name_list;
-set(handles.popupmenu_plot_options,'String',name_list);
-set(handles.popupmenu_plot_options,'Value',value);
-guidata(hObject, handles);
-
-% make check through input list
-
-% --- Executes on button press in pushbutton7.
-function pushbutton7_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton7 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
 % --- Executes on button press in pushbutton_set_data_dir.
 function pushbutton_set_data_dir_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_set_data_dir (see GCBO)
@@ -494,36 +159,22 @@ end
 
 set(handles.togglebutton_online_mode,'Enable','off')
 
-cla(handles.axes1)
-cla(handles.axes2)
-cla(handles.axes3)
-cla(handles.axes4)
-cla(handles.axes5)
-
 start_path = handles.datastr;
 folder_name = uigetdir(start_path);
 
 if folder_name ~= 0
+    cla(handles.axes_maze)
+    cla(handles.axes_hist)
+    cla(handles.axes_perf)
+
+    % Load in data
     handles.data_dir = fullfile(folder_name,'behaviour');
     clear global session
     global session;
-    session = load_session_data(handles.data_dir);
-    session = parse_session_data(1,[]);
-    handles.trial_config = session.trial_config;
-    set(handles.uitable1,'Data',handles.trial_config.dat);
-    set(handles.trial_repeat_string,'String',handles.trial_config.repeating_order);
-    set(handles.edit_num_reps,'String',handles.trial_config.repeating_numbers);    
-    set(handles.random_trial_on,'Value',handles.trial_config.random_order);
-    random_trial_on_Callback(handles.random_trial_on, eventdata, handles)
-    set(handles.trial_config_name,'String',handles.trial_config.file_name);
-    set(handles.uitable_plotting,'Data',handles.trial_config.plot_options.dat{1});
-    set(handles.popupmenu_plot_options,'String',handles.trial_config.plot_options.names);
-    set(handles.popupmenu_plot_options,'Value',1);
-    if iscell(handles.trial_config.plot_options.names) == 1
-        set(handles.edit_plot_options_name,'String',handles.trial_config.plot_options.names{1});
-    else
-        set(handles.edit_plot_options_name,'String',handles.trial_config.plot_options.names);
-    end
+    session = load_session_data_mVR(handles.data_dir);
+    handles.maze_config = session.maze_config;
+
+    session = parse_session_data_mVR(1,[]);
     
     set(handles.text_anm,'Enable','on')
     set(handles.text_date,'Enable','on')
@@ -532,44 +183,62 @@ if folder_name ~= 0
     set(handles.text_anm,'String',session.basic_info.anm_str)
     set(handles.text_date,'String',session.basic_info.date_str)
     set(handles.text_run_num,'String',session.basic_info.run_str)
-    
+
+    % setup fixed params associated with maze configs
+    set(handles.listbox_mazes,'Enable','on');
+    set(handles.checkbox_show_branch_ids,'Enable','on');
+    set(handles.text_list_mazes,'Enable','inactive');
+    set(handles.uitable_maze_param,'Enable','inactive');
+    set(handles.text_start_branch,'Enable','inactive');
+    set(handles.edit_start_branch,'Enable','inactive');
+    set(handles.text_ids,'Enable','inactive');
+    set(handles.edit_maze_ids,'Enable','inactive');
+    set(handles.text_repeats,'Enable','inactive');
+    set(handles.edit_repeats,'Enable','inactive');
+    set(handles.radiobutton_random_order,'Enable','inactive');
+    set(handles.radiobutton_repeat,'Enable','inactive');
+    set(handles.text_trajectories,'Enable','on');
+    set(handles.listbox_trajectories,'Enable','on');
+
+    set(handles.edit_trial_range,'Enable','on');
+    set(handles.text_trial_range,'Enable','on');
+    set(handles.checkbox_last_trial,'Enable','on');
+    set(handles.checkbox_rand_col,'Enable','on');
+
+
+    set(handles.listbox_mazes,'String',session.array.name);
+    set(handles.listbox_mazes,'UserData',session.array.dat);
+    set(handles.listbox_mazes,'Value',1);
+    set(handles.edit_start_branch,'UserData',session.array.start);
+    if session.trial_vars.random == 1
+        set(handles.radiobutton_random_order,'value',1)
+        set(handles.radiobutton_repeat,'value',0)
+    elseif session.trial_vars.random == 2
+        set(handles.radiobutton_random_order,'value',0)
+        set(handles.radiobutton_repeat,'value',1)
+    else
+        set(handles.radiobutton_random_order,'value',0)
+        set(handles.radiobutton_repeat,'value',0)        
+    end
+    set(handles.edit_repeats,'string',session.trial_vars.maze_repeats)
+    set(handles.edit_maze_ids,'string',session.trial_vars.maze_ids)
+        
     set(handles.uitable_trial_info,'Enable','on');
     set(handles.pushbutton_plot_data,'Enable','on')
-    set(handles.popupmenu_ax1,'Enable','on')
-    set(handles.popupmenu_ax2,'Enable','on')
-    set(handles.popupmenu_ax3,'Enable','on')
-    set(handles.popupmenu_ax4,'Enable','on')
-    set(handles.popupmenu_ax5,'Enable','on')
-    set(handles.edit_range_ax3,'Enable','on')
-    set(handles.edit_range_ax4,'Enable','on')
-    set(handles.edit_range_ax5,'Enable','on')
-    set(handles.edit_save_figs,'Enable','on')
-    set(handles.pushbutton_save_figs,'Enable','on')
-    set(handles.checkbox_last_trial,'Enable','on')
-    set(handles.checkbox_completed,'Enable','on')
-    set(handles.edit_trial_range,'Enable','on')
-    set(handles.text_trial_range,'Enable','on')
-    set(handles.pushbutton_trial_maker,'Enable','on')
-    set(handles.pushbutton_trial_maker,'Value',0)
+    set(handles.popupmenu_ax_hist,'Enable','on')
+    set(handles.popupmenu_ax_perf,'Enable','on')
+    set(handles.edit_range_ax_hist,'Enable','on')
+    set(handles.edit_range_ax_perf,'Enable','on')
+    % set(handles.edit_save_figs,'Enable','on')
+    % set(handles.pushbutton_save_figs,'Enable','on')
+    % set(handles.checkbox_last_trial,'Enable','on')
+    % set(handles.checkbox_completed,'Enable','on')
+    % set(handles.edit_trial_range,'Enable','on')
+    % set(handles.text_trial_range,'Enable','on')
     
-    set(handles.uitable1,'Enable','inactive')
-    set(handles.save_trial,'Enable','off')
-    set(handles.load_trial,'Enable','off')
-    set(handles.add_row,'Enable','off')
-    set(handles.add_row_number,'Enable','off')
-    set(handles.remove_row,'Enable','off')
-    set(handles.remove_row_number,'Enable','off')
-    set(handles.radiobutton_laser_calibration,'Enable','inactive')
-    set(handles.random_trial_on,'Enable','inactive')
 
-    if get(handles.random_trial_on,'Value') ~= 1;
-        set(handles.trial_repeat_label,'Enable','inactive');
-        set(handles.trial_repeat_string,'Enable','inactive');
-        set(handles.text_num_reps,'Enable','inactive');
-        set(handles.edit_num_reps,'Enable','inactive');
-    end
-       
-    pushbutton_plot_data_Callback(handles.pushbutton_plot_data, eventdata, handles)
+    listbox_mazes_Callback(hObject, eventdata, handles);       
+    %pushbutton_plot_data_Callback(handles.pushbutton_plot_data, eventdata, handles)
     
 else
 end
@@ -647,7 +316,7 @@ for ik = 1:length(axes_use)
 end
 
 set(handles.axes2,'userdata',[]);
-set(handles.axes1,'userdata',[]);
+set(handles.axes_maze,'userdata',[]);
 set(handles.togglebutton_online_mode,'Enable','on')
 guidata(hObject, handles);
 
@@ -778,17 +447,17 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in popupmenu_ax3.
-function popupmenu_ax3_Callback(hObject, eventdata, handles)
-% hObject    handle to popupmenu_ax3 (see GCBO)
+% --- Executes on selection change in popupmenu_ax_hist.
+function popupmenu_ax_hist_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenu_ax_hist (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 pushbutton_plot_data_Callback(handles.pushbutton_plot_data, eventdata, handles, 3)
 
 % --- Executes during object creation, after setting all properties.
-function popupmenu_ax3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popupmenu_ax3 (see GCBO)
+function popupmenu_ax_hist_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu_ax_hist (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -845,12 +514,12 @@ if value == 1
     set(handles.text_elapsed_time,'Enable','on')
     set(handles.popupmenu_ax1,'Enable','off')
     set(handles.popupmenu_ax2,'Enable','off')
-    set(handles.popupmenu_ax3,'Enable','off')
+    set(handles.popupmenu_ax_hist,'Enable','off')
     set(handles.popupmenu_ax4,'Enable','off')
-    set(handles.popupmenu_ax5,'Enable','off')
-    set(handles.edit_range_ax3,'Enable','off')
+    set(handles.popupmenu_ax_perf,'Enable','off')
+    set(handles.edit_range_ax_hist,'Enable','off')
     set(handles.edit_range_ax4,'Enable','off')
-    set(handles.edit_range_ax5,'Enable','off')
+    set(handles.edit_range_ax_perf,'Enable','off')
     set(handles.pushbutton_plot_data,'Enable','off')
     set(handles.pushbutton_set_data_dir,'Enable','off')
     set(handles.uitable_plotting,'Enable','off')
@@ -881,12 +550,12 @@ else
     
     set(handles.popupmenu_ax1,'Enable','on')
     set(handles.popupmenu_ax2,'Enable','on')
-    set(handles.popupmenu_ax3,'Enable','on')
+    set(handles.popupmenu_ax_hist,'Enable','on')
     set(handles.popupmenu_ax4,'Enable','on')
-    set(handles.popupmenu_ax5,'Enable','on')
-    set(handles.edit_range_ax3,'Enable','on')
+    set(handles.popupmenu_ax_perf,'Enable','on')
+    set(handles.edit_range_ax_hist,'Enable','on')
     set(handles.edit_range_ax4,'Enable','on')
-    set(handles.edit_range_ax5,'Enable','on')
+    set(handles.edit_range_ax_perf,'Enable','on')
     set(handles.pushbutton_plot_data,'Enable','on')
     set(handles.pushbutton_set_data_dir,'Enable','on')
     set(handles.uitable_plotting,'Enable','on')
@@ -905,19 +574,19 @@ end
 
 
 
-function edit_range_ax3_Callback(hObject, eventdata, handles)
-% hObject    handle to edit_range_ax3 (see GCBO)
+function edit_range_ax_hist_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_range_ax_hist (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit_range_ax3 as text
-%        str2double(get(hObject,'String')) returns contents of edit_range_ax3 as a double
+% Hints: get(hObject,'String') returns contents of edit_range_ax_hist as text
+%        str2double(get(hObject,'String')) returns contents of edit_range_ax_hist as a double
 pushbutton_plot_data_Callback(handles.pushbutton_plot_data, eventdata, handles, 3)
 
 
 % --- Executes during object creation, after setting all properties.
-function edit_range_ax3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit_range_ax3 (see GCBO)
+function edit_range_ax_hist_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_range_ax_hist (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -978,7 +647,7 @@ function edit_trial_range_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edit_trial_range as text
 %        str2double(get(hObject,'String')) returns contents of edit_trial_range as a double
-pushbutton_plot_data_Callback(handles.pushbutton_plot_data, eventdata, handles)
+listbox_trajectories_Callback(handles.listbox_trajectories, eventdata, handles)
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1017,11 +686,11 @@ if get(handles.random_trial_on,'Value') ~= 1;
    set(handles.edit_num_reps,'Enable','on');
 end
 
-cla(handles.axes1)
+cla(handles.axes_maze)
 cla(handles.axes2)
-cla(handles.axes3)
+cla(handles.axes_hist)
 cla(handles.axes4)
-cla(handles.axes5)
+cla(handles.axes_perf)
 
 set(handles.uitable_trial_info,'Data',[]);
 set(handles.uitable_trial_info,'Enable','off');
@@ -1029,12 +698,12 @@ set(handles.togglebutton_online_mode,'Enable','off')
 set(handles.pushbutton_plot_data,'Enable','off')
 set(handles.popupmenu_ax1,'Enable','off')
 set(handles.popupmenu_ax2,'Enable','off')
-set(handles.popupmenu_ax3,'Enable','off')
+set(handles.popupmenu_ax_hist,'Enable','off')
 set(handles.popupmenu_ax4,'Enable','off')
-set(handles.popupmenu_ax5,'Enable','off')
-set(handles.edit_range_ax3,'Enable','off')
+set(handles.popupmenu_ax_perf,'Enable','off')
+set(handles.edit_range_ax_hist,'Enable','off')
 set(handles.edit_range_ax4,'Enable','off')
-set(handles.edit_range_ax5,'Enable','off')
+set(handles.edit_range_ax_perf,'Enable','off')
 set(handles.edit_save_figs,'Enable','off')
 set(handles.pushbutton_save_figs,'Enable','off')
 set(handles.checkbox_last_trial,'Enable','off')
@@ -1071,20 +740,20 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in popupmenu_ax5.
-function popupmenu_ax5_Callback(hObject, eventdata, handles)
-% hObject    handle to popupmenu_ax5 (see GCBO)
+% --- Executes on selection change in popupmenu_ax_perf.
+function popupmenu_ax_perf_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenu_ax_perf (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu_ax5 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu_ax5
+% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu_ax_perf contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenu_ax_perf
 pushbutton_plot_data_Callback(handles.pushbutton_plot_data, eventdata, handles, 5)
 
 
 % --- Executes during object creation, after setting all properties.
-function popupmenu_ax5_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popupmenu_ax5 (see GCBO)
+function popupmenu_ax_perf_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu_ax_perf (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1096,19 +765,19 @@ end
 
 
 
-function edit_range_ax5_Callback(hObject, eventdata, handles)
-% hObject    handle to edit_range_ax5 (see GCBO)
+function edit_range_ax_perf_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_range_ax_perf (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit_range_ax5 as text
-%        str2double(get(hObject,'String')) returns contents of edit_range_ax5 as a double
+% Hints: get(hObject,'String') returns contents of edit_range_ax_perf as text
+%        str2double(get(hObject,'String')) returns contents of edit_range_ax_perf as a double
 pushbutton_plot_data_Callback(handles.pushbutton_plot_data, eventdata, handles, 5)
 
 
 % --- Executes during object creation, after setting all properties.
-function edit_range_ax5_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit_range_ax5 (see GCBO)
+function edit_range_ax_perf_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_range_ax_perf (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1119,28 +788,28 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in checkbox5.
+% --- Executes on button press in checkbox_show_branch_ids.
 function checkbox5_Callback(hObject, eventdata, handles)
-% hObject    handle to checkbox5 (see GCBO)
+% hObject    handle to checkbox_show_branch_ids (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of checkbox5
+% Hint: get(hObject,'Value') returns toggle state of checkbox_show_branch_ids
 
 
 
-function edit11_Callback(hObject, eventdata, handles)
-% hObject    handle to edit11 (see GCBO)
+function edit_start_branch_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_start_branch (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit11 as text
-%        str2double(get(hObject,'String')) returns contents of edit11 as a double
+% Hints: get(hObject,'String') returns contents of edit_start_branch as text
+%        str2double(get(hObject,'String')) returns contents of edit_start_branch as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit11_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit11 (see GCBO)
+function edit_start_branch_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_start_branch (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1152,18 +821,18 @@ end
 
 
 
-function edit12_Callback(hObject, eventdata, handles)
-% hObject    handle to edit12 (see GCBO)
+function edit_repeats_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_repeats (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit12 as text
-%        str2double(get(hObject,'String')) returns contents of edit12 as a double
+% Hints: get(hObject,'String') returns contents of edit_repeats as text
+%        str2double(get(hObject,'String')) returns contents of edit_repeats as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit12_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit12 (see GCBO)
+function edit_repeats_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_repeats (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1174,19 +843,18 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit13_Callback(hObject, eventdata, handles)
-% hObject    handle to edit13 (see GCBO)
+function edit_maze_ids_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_maze_ids (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit13 as text
-%        str2double(get(hObject,'String')) returns contents of edit13 as a double
+% Hints: get(hObject,'String') returns contents of edit_maze_ids as text
+%        str2double(get(hObject,'String')) returns contents of edit_maze_ids as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit13_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit13 (see GCBO)
+function edit_maze_ids_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_maze_ids (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1197,28 +865,44 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in radiobutton3.
-function radiobutton3_Callback(hObject, eventdata, handles)
-% hObject    handle to radiobutton3 (see GCBO)
+% --- Executes on button press in radiobutton_random_order.
+function radiobutton_random_order_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton_random_order (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of radiobutton3
+% Hint: get(hObject,'Value') returns toggle state of radiobutton_random_order
 
 
-% --- Executes on selection change in listbox2.
-function listbox2_Callback(hObject, eventdata, handles)
-% hObject    handle to listbox2 (see GCBO)
+% --- Executes on selection change in listbox_list_mazes.
+function listbox_mazes_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox_list_mazes (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns listbox2 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from listbox2
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox_list_mazes contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox_list_mazes
 
+value = get(handles.listbox_mazes,'Value');
+maze_names = get(handles.listbox_mazes,'String');
+dat_array = get(handles.listbox_mazes,'UserData');
+start_branch_array = get(handles.edit_start_branch,'UserData');
+
+if value <= numel(dat_array)
+        set(handles.uitable_maze_param,'Data',dat_array{value});
+        set(handles.edit_start_branch,'String',start_branch_array{value});
+        global session;
+        maze = session.array.maze{value};
+        show_branch_labels = get(handles.checkbox_show_branch_ids,'value');
+        axes(handles.axes_maze);
+        cla(handles.axes_maze);
+        plot_maze(handles.axes_maze,maze,show_branch_labels,1,1);
+        listbox_trajectories_Callback(handles.listbox_trajectories, eventdata, handles);
+end
 
 % --- Executes during object creation, after setting all properties.
-function listbox2_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to listbox2 (see GCBO)
+function listbox_mazes_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_list_mazes (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1227,3 +911,76 @@ function listbox2_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in radiobutton_repeat.
+function radiobutton_repeat_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton_repeat (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton_repeat
+
+% --- Executes on button press in checkbox_show_branch_ids.
+function checkbox_show_branch_ids_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_show_branch_ids (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_show_branch_ids
+    listbox_mazes_Callback(handles.listbox_mazes, eventdata, handles);       
+
+
+% --- Executes on selection change in listbox_trajectories.
+function listbox_trajectories_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox_trajectories (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox_trajectories contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox_trajectories
+
+contents = cellstr(get(hObject,'String'));
+traj_str = contents{get(hObject,'Value')};
+maze_id = get(handles.listbox_mazes,'Value');
+
+global session;
+keep_trials = keep_maze_traj(session,traj_str,maze_id);
+
+frac_str = get(handles.edit_trial_range,'string');
+frac_range = cell2mat(eval(frac_str));
+inds = zeros(length(keep_trials),1);
+inds(frac_range(1):min(frac_range(2),length(keep_trials))) = 1;
+keep_trials = keep_trials & inds;
+ 
+rand_col = get(handles.checkbox_rand_col,'Value');
+
+% plot only kept trials
+h_traj = get(handles.listbox_trajectories,'userdata');
+if ishandle(h_traj)
+    delete(h_traj);
+end
+h_traj = plot_mVR_maze_traj(handles.axes_maze,session,keep_trials,rand_col);
+set(handles.listbox_trajectories,'userdata',h_traj);
+
+% --- Executes during object creation, after setting all properties.
+function listbox_trajectories_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_trajectories (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in checkbox_rand_col.
+function checkbox_rand_col_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_rand_col (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_rand_col
+    listbox_mazes_Callback(handles.listbox_mazes, eventdata, handles);       

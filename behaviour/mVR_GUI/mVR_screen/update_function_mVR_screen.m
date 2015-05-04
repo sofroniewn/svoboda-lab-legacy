@@ -6,7 +6,6 @@ try
 if length(data) ~= 4
 	warning('Data wrong length')
 else
-profile on
     
 	screenOn = data(1);
 %	curTrialNum = 1+floor(100*data(2)/1024);
@@ -14,9 +13,12 @@ profile on
     init_y = data(3)/1024*100 - 2 - 0.0117;
 	init_x = data(4)/1024*100 - 50 + 0.0977;
     
+    init_y = init_y/2;
+    init_x = init_x/2;
+
     init_x = round(init_x*5)/5;
     init_y = round(init_y*5)/5;
-        
+    
     if ~screenOn && ~isempty(get(handles.axes_maze,'userdata'))
         dat = get(handles.axes_maze,'userdata');
         to_delete = dat{1};
@@ -72,7 +74,6 @@ profile on
      set(handles.plot_body,'Xdata',init_x);
      set(handles.plot_body,'Ydata',init_y);          
 end
-profile off
 
 catch
     	warning('Data could not evaluate')

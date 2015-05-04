@@ -53,10 +53,6 @@ for ij = 1:maze.num_branches
             reward_params.end_vals = cat(3,reward_params.end_vals,end_vals);
             reward_params.tform = cat(1,reward_params.tform,{tform});
     end
-	if show_branch_labels
-		[init_x init_y] = maze_coordinate_transform(maze,ij,.5,.5);
-		text(init_x,init_y,sprintf('%d',ij),'FontSize',20,'Color',[0 .75 0],'BackGroundColor',[.99 .99 .99])
-	end
 end
 
 % plot mouse
@@ -68,8 +64,21 @@ if show_mouse
 	plot(h_ax,init_x,init_y,'.','MarkerSize',100,'MarkerEdgeColor',.99*[1 1 1],'MarkerFaceColor',.99*[1 1 1],'LineWidth',1);
 end
 
+if show_branch_labels
+	for ij = 1:maze.num_branches
+		[init_x init_y] = maze_coordinate_transform(maze,ij,.5,.5);
+		h_t = text(init_x,init_y,sprintf('%d',ij),'FontSize',20,'Color',[0 .75 0],'BackGroundColor',[.99 .99 .99]);
+	end
+end
+
+
 if adjust_axes
 	xlim(maze.x_lim)
 	ylim(maze.y_lim)
 end
+
+
+
+
+
 

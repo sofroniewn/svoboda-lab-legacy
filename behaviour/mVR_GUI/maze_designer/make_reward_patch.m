@@ -4,8 +4,8 @@ function [gclipped xdata ydata tform] = make_reward_patch(x_cords,y_cords,scale,
 angle = 0; %+right_angle;
 
 % dimensions of image
-x = 256;
-y = 256;
+x = 128;
+y = 128;
 
 % frequency in cycles per image (assuming square)
 freq = 4*scale;
