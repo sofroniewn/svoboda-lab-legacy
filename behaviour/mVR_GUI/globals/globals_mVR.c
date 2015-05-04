@@ -8,7 +8,7 @@
 const unsigned Xnum_mazes = 0; /* Number of mazes */
 const unsigned Xmax_num_branches = 0; /* Max number of branches */
 
-const unsigned Xtrial_random_order = 0; /* 1 if in random order, 0 if in sequence */
+const unsigned Xtrial_random_order = 0; /* 1 if in random order, 0 if in sequence, 2 if repeat till correct */
 const unsigned Xtrial_num_sequence_length = 0; /* 0 if random, otherwise length of sequence */
 const unsigned Xtrial_num_sequence[] = {}; /* 1 if random, sequence */
 const unsigned Xtrial_num_repeats[] = {}; /* 1 if random, num repeats */
@@ -35,11 +35,11 @@ const double Xbranch_right_angle[][] = {{}}; /* Angle of right wall */
 const double Xbranch_for_start[][] = {{}}; /* forward start position branch, cm */
 const double Xbranch_l_lat_start[][] = {{}}; /* lateral left wall start mm */
 const double Xbranch_r_lat_start[][] = {{}}; /* lateral right wall start mm */
-const unsigned Xbranch_left_end[][] = {{}}; /* Left maze end condition */
-const unsigned Xbranch_right_end[][] = {{}}; /* Right maze end condition */
+const signed Xbranch_left_end[][] = {{}}; /* Left maze end condition */
+const signed Xbranch_right_end[][] = {{}}; /* Right maze end condition */
 const unsigned Xbranch_split[][] = {{}}; /* If split branch or not */
 const unsigned Xbranch_reward[][] = {{}}; /* If reward branch or not */
-const unsigned Xbranch_parent[][] = {{}}; /* Parent branch id */
+const signed Xbranch_parent[][] = {{}}; /* Parent branch id */
 
 /******************************************/
 /* DEFINE EXTERNAL AND INTERNAL FUNCTIONS */
@@ -109,7 +109,7 @@ const unsigned bv_trig = 0;
 const unsigned synch_pulse = 0;
 const unsigned trial_ephys_trig = 0;
 const unsigned screen_on_trig = 0;
-
+const unsigned sound_cue_trig = 0;
 
 /***************************************/
 /***************************************/
@@ -137,6 +137,8 @@ const double max_galvo_pos = 0;
 const unsigned ao_trial_trig_on = 0;
 
 const double update_scale = 2;
+
+const double sound_on_length = 0;
 
 double dist_thresh = 0;
 
@@ -182,8 +184,8 @@ unsigned left_side;
 unsigned left_dead_end;
 unsigned right_dead_end;
 unsigned screen_on;
-unsigned parent_branch;
-unsigned child_branch;
+signed parent_branch;
+signed child_branch;
 double gain_val;
 double left_angle;
 double right_angle;
@@ -192,6 +194,9 @@ unsigned bv_time;
 unsigned cur_trial_block = 0;
 unsigned cur_trial_repeat = 0;
 unsigned led_pulse_on = 0;
+unsigned correct = 1;
+unsigned dead_end = 0;
+unsigned sound_on = 0;
 
 /* Define Wall Motion Variables and maze cords*/
 double l_lat_pos_target;
@@ -257,30 +262,34 @@ double maze_for_to_vlt(double x) {
     if (x<0) {
         x = 0;
     }
-    if (x>1000) {
-        x = 1000;
+    if (x>200) {
+        x = 200;
     }
-    return x/200;
+    x = x/40;
+    
+    return x;
 }
 /* scale -499 to 499 to 0 to 5V*/
 double maze_lat_to_vlt(double x) {
-    if (x<-500) {
-        x = -500;
+    if (x<-100) {
+        x = -100;
     }
-    if (x>500) {
-        x = 500;
+    if (x>100) {
+        x = 100;
     }
-    return (x+500)/200;
+        
+    x = (x+100)/40;
+    return x; 
 }
 /* scale 0 to 99 to 0 to 5V*/
 double maze_num_to_vlt(double x) {
     if (x<0) {
         x = 0;
     }
-    if (x>100) {
-        x = 100;
+    if (x>20) {
+        x = 20;
     }
-    return x/20;
+    return x/4;
 }
 
 /***********************************/
@@ -378,6 +387,12 @@ void tick_func(void) {
                 /* Pick new trial number */
                 if (trial_random_order == 1) {
                     cur_trial_num = (unsigned int) (num_mazes)*rand();
+                } else if (trial_random_order == 2) {
+                    if (correct) {
+                        cur_trial_num = (unsigned int) (num_mazes)*rand();                        
+                    } else {
+                        cur_trial_num = cur_trial_num;
+                    }
                 } else {
                     cur_trial_num = trial_num_sequence[cur_trial_block]-1;
                     cur_trial_repeat++;
@@ -399,7 +414,9 @@ void tick_func(void) {
                 cur_branch = maze_initial_branch[cur_trial_num];
                 cur_branch_lat_frac = maze_initial_branch_lat_fraction[cur_trial_num];
                 cur_branch_dist = maze_initial_branch_for_fraction[cur_trial_num]*branch_length[cur_trial_num][cur_branch];
-                
+                correct = 0;
+                dead_end = 0;
+
                 left_angle = branch_left_angle[cur_trial_num][cur_branch];
                 right_angle = branch_right_angle[cur_trial_num][cur_branch];
                 
@@ -457,7 +474,7 @@ void tick_func(void) {
             } else {
                 /* During trial set inter trial trig to 0 */
                 inter_trial_trig = 0;
-                
+
                 /* update trial time */
                 cur_trial_time = cur_trial_time + 1/sample_freq;
                 
@@ -638,21 +655,29 @@ void tick_func(void) {
             writeAO(l_wall_lat_ao_chan, l_wall_lat_ao_offset + wall_mm_to_vlt(l_lat_pos));
             
             /* Check bounds and output AO for forward, lateral maze cords */
-            if (maze_for_cord > 999) {
-                maze_for_cord = 999;
+            if (maze_for_cord > 199) {
+                maze_for_cord = 199;
             }
             if (maze_for_cord < 0) {
                 maze_for_cord = 0;
             }
-            if (maze_lat_cord > 499) {
-                maze_lat_cord = 499;
+            if (maze_lat_cord > 99) {
+                maze_lat_cord = 99;
             }
-            if (maze_lat_cord < -500) {
-                maze_lat_cord = -500;
+            if (maze_lat_cord < -100) {
+                maze_lat_cord = -100;
             }
             writeAO(maze_for_ao_chan, maze_for_ao_offset  + maze_for_to_vlt(maze_for_cord));
             writeAO(maze_lat_ao_chan, maze_lat_ao_offset + maze_lat_to_vlt(maze_lat_cord));
             
+            if (right_dead_end || left_dead_end){
+                dead_end = 1;
+            }
+
+            if (water_on && dead_end == 0){
+                correct = 1;
+            }
+
             /* Check bounds and output AO for maze number */
             /* check in matlab not more than 100 mazes */
             writeAO(maze_num_ao_chan, maze_num_ao_offset  + maze_num_to_vlt(cur_trial_num));
@@ -718,7 +743,15 @@ void tick_func(void) {
                 wv_time = 0;
             }
             
+
+            if (cur_trial_time < sound_on_length){
+                sound_on = 1;
+            } else {
+                sound_on = 0;                
+            }
+
             /* Trial DO Triggers */
+            writeDIO(sound_cue_trig, sound_on);
             writeDIO(screen_on_trig, screen_on);
             writeDIO(trial_iti_trig, inter_trial_trig);
             writeDIO(trial_on_trig, 1-inter_trial_trig);
@@ -745,8 +778,9 @@ void tick_func(void) {
             log_cur_state = 10000*log_state_c+1000*log_state_b+100*log_state_a + cur_trial_num;
             log_ball_motion = cam_vel_steps[0] + 36*cam_vel_steps[1] + 36*36*cam_vel_steps[2]+ 36*36*36*cam_vel_steps[3]; /* convert to cam_motion_vect for logging */
             log_wall_pos = floor(10*cor_pos) + 1000*floor(10*(cor_width));
-            log_maze_cord = floor(maze_for_cord) + 1000*floor(maze_lat_cord+500);
-            
+            /*log_maze_cord = floor(5*maze_for_cord) + 1000*floor(5*maze_lat_cord+500);*/
+            log_maze_cord = floor(20*cur_branch_dist) + 1000*cur_branch + 100000*0;
+
             /* log_cor_pos = cam_vel_ai_vlt[0]*1000;*/
             logValue("m", log_maze_cord);    /* stim code */
             logValue("b", log_ball_motion); /* ball_motion_vector code */

@@ -86,6 +86,9 @@ replace    = ['const unsigned trial_on_trig = ', rig_config.dio_trial_on_trig ,'
 expression =  'const unsigned trial_ephys_trig = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['const unsigned trial_ephys_trig = ', rig_config.dio_trial_ephys_trig ,';'];     text = regexprep(text,expression,replace);
 
+expression =  'const unsigned sound_cue_trig = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
+replace    = ['const unsigned sound_cue_trig = ', rig_config.dio_sound_cue ,';'];     text = regexprep(text,expression,replace);
+
 
 % AO offsets
 expression =  'const double maze_num_ao_offset = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
@@ -114,7 +117,6 @@ replace    = ['const double x_mirror_maze_for = ', num2str(rig_config.ao_offsets
 
 expression =  'const double maze_lat_ao_offset = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['const double maze_lat_ao_offset = ',num2str(rig_config.ao_offsets(str2num(rig_config.ao_channels_maze_lat)+1)) ,';'];     text = regexprep(text,expression,replace);
-
 
 
 % Ball tracker
@@ -160,6 +162,9 @@ replace    = ['const unsigned ao_trial_trig_on =  ', num2str(rig_config.ao_trial
 
 expression =  'double dist_thresh = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['double dist_thresh =  ', num2str(rig_config.dist_thresh) ,';'];     text = regexprep(text,expression,replace);
+
+expression =  'const double sound_on_length = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
+replace    = ['const double sound_on_length =  ', num2str(rig_config.sound_on_length) ,';'];     text = regexprep(text,expression,replace);
 
 % replace maze field names
 names = fieldnames(maze_config);

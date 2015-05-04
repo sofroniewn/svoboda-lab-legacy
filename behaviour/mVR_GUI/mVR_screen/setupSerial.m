@@ -5,12 +5,12 @@ comPort = '/dev/tty.usbmodem1411'
 s = serial(comPort);
 set(s,'DataBits',8);
 set(s,'StopBits',1);
-set(s,'BaudRate',9600);
+set(s,'BaudRate',115200);
 set(s,'Parity','none');
 set(s,'inputbuffersize',1024);
 set(s,'terminator','LF');
 set(s,'BytesAvailableFcnMode','terminator');
-set(s,'bytesavailablefcn',{@mVR_baf});
+%set(s,'bytesavailablefcn',{@mVR_baf});
 
 %s.bytesavailablefcn={@baf,gui.fig}; %function called whenever data is available
 

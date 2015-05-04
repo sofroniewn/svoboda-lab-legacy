@@ -44,17 +44,18 @@ if isempty(varLog) == 0 && update_display_on == 1
     
     %handles.trial_mat_names = {'xSpeed','ySpeed','corPos','corWidth','forMazeCord','latMazeCord', ...
     %'screenOn','rEnd','lEnd','lickState','trialWater','extWater', ...
-    %'trialID','itiPeriod','scim_state','scim_logging'};
+    %'trialID','itiPeriod','scimState','scimLogging','curBranchDist','curBranchId'};
 
     trial_mat(1,:) = d_ball_pos(:,1);
     trial_mat(2,:) = d_ball_pos(:,2);
     
-    trial_mat(3,:) = mod(varLog(3:num_log_items:end),1000)/10; % left wall lat position
-    trial_mat(4,:) = floor(varLog(3:num_log_items:end)/1000)/10; % right wall lat position
+    trial_mat(3,:) = mod(varLog(3:num_log_items:end),1000)/10; % corPos
+    trial_mat(4,:) = floor(varLog(3:num_log_items:end)/1000)/10; % corWidth
 
-    trial_mat(5,:) = mod(varLog(1:num_log_items:end),1000); % forMaze coordinate
-    trial_mat(6,:) = floor(varLog(1:num_log_items:end)/1000)-500; % latMaze coordinate
-       
+    trial_mat(17,:) = mod(varLog(1:num_log_items:end),1000)/20; % branch forward position
+    trial_mat(18,:) = 1+mod(floor(varLog(1:num_log_items:end)/1000),10) % branch id;
+
+
     log_cur_state = varLog(4:num_log_items:end);
     trial_mat(13,:) = 1 + mod(log_cur_state,100); % trialID
     log_state_a = mod(floor(log_cur_state/100),10);
@@ -71,6 +72,22 @@ if isempty(varLog) == 0 && update_display_on == 1
     trial_mat(16,:) = mod(floor(log_state_c/2),2); % scim logging
     trial_mat(8,:) = mod(log_state_c,2); % right dead end
     
+    maze_all = get(handles.maze_config_str,'UserData');
+    maze_config = maze_all{1};
+
+    idx = sub2ind(size(maze_config.branch_for_start), trial_mat(13,:), trial_mat(18,:));
+    branch_start_for = maze_config.branch_for_start(idx);
+    branch_start_for = maze_config.branch_r_lat_start(idx);
+    right_angle = maze_config.branch_right_angle(idx);
+    gain_val = maze_config.maze_wall_gain(trial_mat(13,:));
+
+    trial_mat(5,:) = branch_start_for + trial_mat(17,:); % forMaze coordinate
+    trial_mat(6,:) = branch_r_lat_start + gain_val*trial_mat(17,:).*tand(right_angle) - trial_mat(3,:); % latMaze coordinate
+       
+    % if in iti set them to 0
+    trial_mat(5,trial_mat(14,:)) = 0;
+    trial_mat(6,trial_mat(14,:)) = 0;
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Check if new trial - if so chunck and save data
     trial_info = get(handles.text_num_trials,'UserData');
@@ -98,27 +115,42 @@ if isempty(varLog) == 0 && update_display_on == 1
 
         rewarded = any(trial_matrix(11,:));
         dead_end = any(trial_matrix(8,:)) || any(trial_matrix(9,:));
+        timeout = ~rewarded && ~dead_end;
+        if rewarded
+            ind_c = find(trial_matrix(11,:),1,'first');
+            correct = ~any(trial_matrix(8,1:ind_c)) && ~any(trial_matrix(9,1:ind_c));
+        else
+            correct = 0;
+        end
+
         cur_trial = trial_matrix(13,1);
         perf_data = get(handles.axes_performance,'UserData');
 
         perf_data.num_trials(cur_trial) = perf_data.num_trials(cur_trial) + 1;
-        perf_data.dead_end(cur_trial) = perf_data.dead_end(cur_trial) + dead_end;
+        perf_data.timeout(cur_trial) = perf_data.timeout(cur_trial) + timeout;
+        perf_data.correct(cur_trial) = perf_data.correct(cur_trial) + correct;
         perf_data.rewarded(cur_trial) = perf_data.rewarded(cur_trial) + rewarded;
         set(handles.axes_performance,'UserData',perf_data);
 
-        set(handles.plot_frac_rewarded,'ydata',perf_data.rewarded./perf_data.num_trials);
-        set(handles.plot_frac_dead_end,'ydata',perf_data.dead_end./perf_data.num_trials);
+        set(handles.plot_frac_timeout,'ydata',perf_data.timeout./perf_data.num_trials);
+        set(handles.plot_frac_rewarded,'ydata',perf_data.rewarded./(perf_data.num_trials - perf_data.timeout));
+        set(handles.plot_frac_correct,'ydata',perf_data.correct./(perf_data.num_trials - perf_data.timeout));
         
-        p_r = sum(perf_data.rewarded)/sum(perf_data.num_trials);
-        p_de = sum(perf_data.dead_end)/sum(perf_data.num_trials);
-        se_r = p_r*(1-p_r)/sqrt(sum(perf_data.num_trials));
-        se_de = p_de*(1-p_de)/sqrt(sum(perf_data.num_trials));
+        p_t = sum(perf_data.timeout)/sum(perf_data.num_trials);
+        p_r = sum(perf_data.rewarded)/sum(perf_data.num_trials - perf_data.timeout);
+        p_c = sum(perf_data.correct)/sum(perf_data.num_trials - perf_data.timeout);
+        se_t = p_t*(1-p_t)/sqrt(sum(perf_data.num_trials));
+        se_r = p_r*(1-p_r)/sqrt(sum(perf_data.num_trials - perf_data.timeout));
+        se_c = p_c*(1-p_c)/sqrt(sum(perf_data.num_trials - perf_data.timeout));
         
+        set(handles.plot_all_frac_timeout,'ydata',p_t);
         set(handles.plot_all_frac_rewarded,'ydata',p_r);
-        set(handles.plot_all_frac_dead_end,'ydata',p_de);
+        set(handles.plot_all_frac_correct,'ydata',p_c);
 
+        set(handles.plot_all_frac_timeout_SE,'ydata',p_t + [-se_t se_t]);
         set(handles.plot_all_frac_rewarded_SE,'ydata',p_r + [-se_r se_r]);
-        set(handles.plot_all_frac_dead_end_SE,'ydata',p_de + [-se_de se_de]);
+        set(handles.plot_all_frac_correct_SE,'ydata',p_c + [-se_c se_c]);
+
     end
     trial_info.trial_num = trial_num;
     trial_info.iti_end = trial_mat(handles.iti_ind,end);
@@ -248,9 +280,11 @@ if isempty(varLog) == 0 && update_display_on == 1
         maze_all = get(handles.maze_config_str,'UserData');
         maze_config = maze_all{1};
         maze_array = maze_all{2};
-        maze = maze_array{trial_mat(13,end)};
+        maze = maze_array{trial_mat(13,end),1};
         h_all = plot_maze(handles.axes_maze,maze,0,0,0);
         set(handles.axes_maze,'UserData',h_all);
+        uistack(handles.pos_plot, 'top');
+        uistack(handles.plot_body, 'top');
     end
 
     if ~trial_mat(14,end)
@@ -270,8 +304,8 @@ if isempty(varLog) == 0 && update_display_on == 1
          y_pos = zeros(5001,1) - 100;
      end
 
-     set(handles.plot_tail,'Xdata',[init_x init_x]);
-     set(handles.plot_tail,'Ydata',[init_y init_y-handles.tail_length]);
+     %set(handles.plot_tail,'Xdata',[init_x init_x]);
+     %set(handles.plot_tail,'Ydata',[init_y init_y-handles.tail_length]);
      set(handles.plot_body,'Xdata',init_x);
      set(handles.plot_body,'Ydata',init_y);
      set(handles.pos_plot,'Xdata',x_pos);

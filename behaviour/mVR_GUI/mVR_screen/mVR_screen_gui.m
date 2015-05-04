@@ -93,12 +93,17 @@ set(handles.text_run_time,'String',sprintf('%.2f s',0));
         
 
 % Setup Pos Figure
+handles.figure_maze = figure(287);
+set(gcf,'Position',[440   142   416   656])
+set(gcf, 'MenuBar', 'None')
+handles.axes_maze = gca;
+set(handles.axes_maze,'Position',[0   0   1   1])
 axes(handles.axes_maze)
 hold on
 set(handles.axes_maze,'color',[0 0 0])
 set(handles.axes_maze,'xtick',[])
 set(handles.axes_maze,'ytick',[])
-set(handles.axes_maze,'userdata',[]);
+set(handles.axes_maze,'userdata',{[],[],0});
 
 
 maze_x_lim = NaN(maze_config.num_mazes,1);
@@ -112,13 +117,14 @@ xlim([-max(maze_x_lim) max(maze_x_lim)])
 
 x_pos = zeros(2501,1);
 y_pos = zeros(2501,1)-100;
-handles.pos_plot =  plot(x_pos, y_pos,'Marker','.','MarkerSize',15,'LineStyle','none','MarkerEdgeColor',[.7 .7 .7]);
+handles.pos_plot =  plot(x_pos, y_pos,'Marker','.','MarkerSize',20,'LineStyle','none','MarkerEdgeColor',[.7 .7 .7]);
 
 init_x = 0;
-init_y = -100;
-handles.tail_length = (max(maze_y_lim)+20)/35;
-handles.plot_tail = plot([init_x init_x],[init_y init_y-handles.tail_length],'Color',[0.2 0.2 0.2],'LineWidth',4);
-handles.plot_body = plot(init_x,init_y,'^','MarkerSize',15,'MarkerEdgeColor',[0.2 0.2 0.2],'MarkerFaceColor',[.6 .6 .6],'LineWidth',2);
+init_y = 100;
+%handles.tail_length = (max(maze_y_lim)+20)/25;
+%handles.plot_tail = plot([init_x init_x],[init_y init_y-handles.tail_length],'Color',[0.2 0.2 0.2],'LineWidth',5);
+handles.plot_body = plot(init_x,init_y,'.','MarkerSize',100,'MarkerEdgeColor',.99*[1 1 1],'MarkerFaceColor',.99*[1 1 1],'LineWidth',1);
+
 
 % Prepare serial communication
 handles.s = serial(rig_config.screenComPort);
@@ -165,8 +171,7 @@ switch get(hObject,'value')
         maze_config = maze_all{1};
         maze_array = maze_all{2};
         rig_config = get(handles.figure1,'UserData');
-        show_path = get(handles.checkbox_path,'Value');
-        
+
         
         % Reset strings
         set(handles.text_cur_trial_num,'String',num2str(0));
@@ -188,20 +193,24 @@ switch get(hObject,'value')
         axes(handles.axes_maze)
         ylim([-20 max(maze_y_lim)])
         xlim([-max(maze_x_lim) max(maze_x_lim)])
-        handles.tail_length = (max(maze_y_lim)+20)/35;
+        handles.tail_length = (max(maze_y_lim)+20)/30;
 
         init_x = 0;
         init_y = -100;
-        set(handles.plot_tail,'Xdata',[init_x init_x]);
-        set(handles.plot_tail,'Ydata',[init_y init_y-handles.tail_length]);
+        %set(handles.plot_tail,'Xdata',[init_x init_x]);
+        %set(handles.plot_tail,'Ydata',[init_y init_y-handles.tail_length]);
         set(handles.plot_body,'Xdata',init_x);
         set(handles.plot_body,'Ydata',init_y);
-        to_delete = get(handles.axes_maze,'userdata');
+        dat = get(handles.axes_maze,'userdata');
+        to_delete = dat{1};
         if ~isempty(to_delete)
             delete(to_delete)
         end
-        set(handles.axes_maze,'userdata',[]);
+        set(handles.axes_maze,'userdata',{[],[],0});
 
+        cur_pos = get(gcf,'Position');
+        set(handles.plot_body,'MarkerSize',cur_pos(3)/6);
+        
 
         % Disable logging options
         set(handles.checkbox_path,'Enable','off')
