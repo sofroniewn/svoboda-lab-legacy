@@ -2,7 +2,7 @@ function [maze dat] = create_maze(dat,start_branch)
 
 maze.num_branches = size(dat,1);
 
-maze.wall_gain = 3; % wall ball gain cm to mm is -.2*10 --- default 2
+maze.wall_gain = 3; % wall ball gain 1 cm to # mm --- default 3
 
 maze.initial.branch_id = start_branch;
 maze.initial.branch_fraction = 0.5;
@@ -15,6 +15,8 @@ maze.reward_size = 1;
 maze.screen_on = 9999;
 
 maze.initial.corridor_frac = 0.5;
+maze.center_width = 30;
+maze.dead_end_width = 10;
 
 if maze.initial.branch_id > maze.num_branches || isnan(start_branch) || maze.initial.branch_id <= 0
     error('Starting branch must be valid branch id')
@@ -34,6 +36,10 @@ for ij = 1:maze.num_branches
     maze.left_angle(ij) = dat{ij,2};
     maze.right_angle(ij) = dat{ij,3};
     maze.left_end(ij) = dat{ij,4};
+    if dat{ij,4} == 0 || dat{ij,5} == 0
+        dat{ij,4} = 0;
+        dat{ij,5} = 0;
+    end
     maze.right_end(ij) = dat{ij,5};
     maze.reward_branch(ij) = dat{ij,6};
     maze.split_branch(ij) = maze.left_end(ij) ~= maze.right_end(ij);
@@ -53,6 +59,7 @@ for ij = 1:maze.num_branches
         init_left = [maze.start_wall_left 0];
         init_right = [maze.start_wall_right 0];
     else
+        
         % make sure each branch gets assigned correct parent node
         left_parent_branch = find(maze.left_end(:,1) == ij);
         right_parent_branch = find(maze.right_end(:,1) == ij);
@@ -61,11 +68,13 @@ for ij = 1:maze.num_branches
         elseif isempty(left_parent_branch)
             maze.parent_branch(ij) = right_parent_branch;
             init_left = (maze.right_wall_traj(maze.parent_branch(ij),3:4)+maze.left_wall_traj(maze.parent_branch(ij),3:4))/2;
+            init_left(1) = init_left(1) + maze.center_width/2;
             init_right = maze.right_wall_traj(maze.parent_branch(ij),3:4);
         elseif isempty(right_parent_branch)
             maze.parent_branch(ij) = left_parent_branch;
             init_left = maze.left_wall_traj(maze.parent_branch(ij),3:4);
             init_right = (maze.right_wall_traj(maze.parent_branch(ij),3:4)+maze.left_wall_traj(maze.parent_branch(ij),3:4))/2;
+            init_right(1) = init_right(1) - maze.center_width/2;
         elseif left_parent_branch == right_parent_branch
             maze.parent_branch(ij) = right_parent_branch;
             init_left = maze.left_wall_traj(maze.parent_branch(ij),3:4);
@@ -79,13 +88,24 @@ for ij = 1:maze.num_branches
     end
 
     if maze.split_branch(ij)
-        cur_width = init_right(1)-init_left(1);
+        cur_width = init_right(1)-init_left(1)+maze.center_width;
         ideal_length = cur_width/(tand(maze.right_angle(ij)) - tand(maze.left_angle(ij)))/maze.wall_gain;
         ideal_length = round(10*ideal_length)/10;
         maze.length(ij) = ideal_length;
         dat{ij,1} = ideal_length;
     end
     
+    if maze.left_end(ij) == 0 || maze.right_end(ij) == 0
+        cur_width = init_right(1)-init_left(1);
+        end_width = maze.dead_end_width;
+        maze.length(ij) = 10;
+        maze.left_angle(ij) = 90-180/pi*atan2(maze.length(ij)*maze.wall_gain,(cur_width - end_width)/2);
+        maze.right_angle(ij) = -maze.left_angle(ij);
+        dat{ij,1} = maze.length(ij);
+        dat{ij,2} = maze.left_angle(ij);
+        dat{ij,3} = maze.right_angle(ij);
+    end
+        
     traj_add = NaN(1,2);
     traj_add(1) = maze.wall_gain*tand(maze.left_angle(ij))*maze.length(ij);
     traj_add(2) = maze.length(ij);

@@ -53,7 +53,7 @@ if isempty(varLog) == 0 && update_display_on == 1
     trial_mat(4,:) = floor(varLog(3:num_log_items:end)/1000)/10; % corWidth
 
     trial_mat(17,:) = mod(varLog(1:num_log_items:end),1000)/20; % branch forward position
-    trial_mat(18,:) = 1+mod(floor(varLog(1:num_log_items:end)/1000),10) % branch id;
+    trial_mat(18,:) = 1+mod(floor(varLog(1:num_log_items:end)/1000),100); % branch id;
 
 
     log_cur_state = varLog(4:num_log_items:end);
@@ -77,16 +77,18 @@ if isempty(varLog) == 0 && update_display_on == 1
 
     idx = sub2ind(size(maze_config.branch_for_start), trial_mat(13,:), trial_mat(18,:));
     branch_start_for = maze_config.branch_for_start(idx);
-    branch_start_for = maze_config.branch_r_lat_start(idx);
+    branch_r_lat_start = maze_config.branch_r_lat_start(idx);
     right_angle = maze_config.branch_right_angle(idx);
+
     gain_val = maze_config.maze_wall_gain(trial_mat(13,:));
 
     trial_mat(5,:) = branch_start_for + trial_mat(17,:); % forMaze coordinate
-    trial_mat(6,:) = branch_r_lat_start + gain_val*trial_mat(17,:).*tand(right_angle) - trial_mat(3,:); % latMaze coordinate
-       
+
+    trial_mat(6,:) = branch_r_lat_start + gain_val.*trial_mat(17,:).*tand(right_angle) - trial_mat(3,:); % latMaze coordinate
+
     % if in iti set them to 0
-    trial_mat(5,trial_mat(14,:)) = 0;
-    trial_mat(6,trial_mat(14,:)) = 0;
+    trial_mat(5,find(trial_mat(14,:))) = NaN;
+    trial_mat(6,find(trial_mat(14,:))) = NaN;
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Check if new trial - if so chunck and save data

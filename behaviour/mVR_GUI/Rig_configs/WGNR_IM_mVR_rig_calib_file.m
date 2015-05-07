@@ -27,10 +27,10 @@ rig_config.ai_channels_scim_logging = '7';
 rig_config.ao_channels_maze_num = '0';
 rig_config.ao_channels_synch = '8';
 rig_config.ao_channels_iti = '1';
-rig_config.ao_channels_l_wall_lat = '2';
-rig_config.ao_channels_l_wall_for = '3';
-rig_config.ao_channels_r_wall_lat = '4';
-rig_config.ao_channels_r_wall_for = '5';
+rig_config.ao_channels_c_wall_lat = '4';
+rig_config.ao_channels_c_wall_for = '5';
+rig_config.ao_channels_l_wall_lat = '3';
+rig_config.ao_channels_r_wall_lat = '2';
 rig_config.ao_channels_maze_for = '6';
 rig_config.ao_channels_maze_lat = '7';
 
@@ -62,7 +62,7 @@ rig_config.run_speed_thresh = 5;
 rig_config.speed_time_length = 250;
 
 rig_config.max_wall_pos = 40;
-rig_config.max_wall_for_pos = 25;
+rig_config.max_wall_for_pos = 30;
 
 % Video frame rates
 rig_config.bv_period = 5; % behavioural video frame period / 2 in ms
