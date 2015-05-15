@@ -134,6 +134,7 @@ hold on
 zero_init = zeros(2501,1);
 x_axis = -5+[0:.002:5];
 
+handles.branch_pos_plot = plot(x_axis,zero_init,'Color',[.4 0 .8],'LineWidth',3);
 handles.cor_width_plot = plot(x_axis,zero_init,'Color',[.4 .4 .4],'LineWidth',3);
 handles.screen_on_plot = plot(x_axis,zero_init,'Marker','.','MarkerSize',10,'LineStyle','none','MarkerEdgeColor',[1 .5 0]);
 handles.speed_plot = plot(x_axis,zero_init,'r','LineWidth',3);
@@ -341,7 +342,8 @@ switch get(hObject,'value')
         set(handles.lick_plot,'Ydata',zero_init);
         set(handles.screen_on_plot,'Ydata',zero_init);
         set(handles.cor_width_plot,'Ydata',zero_init);
-        
+        set(handles.branch_pos_plot,'Ydata',zero_init);
+
         x_pos = zeros(5001,1);
         y_pos = zeros(5001,1) - 100;
         set(handles.pos_plot,'Xdata',x_pos);

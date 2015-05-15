@@ -142,8 +142,8 @@ const double update_scale = 2;
 
 const double sound_on_length = 0;
 
-const double branch_compensate_dist = 5; /* split_child >= 15, split >=5, split ~= dead_end ~= split_child */
-const double offset_dist = 5;
+const double branch_compensate_dist = 7; /* split_child >= 9, split >=31, split ~= dead_end ~= split_child */
+const double offset_dist = 3;
 
 double dist_thresh = 0;
 
@@ -209,6 +209,11 @@ double r_lat_pos_target;
 double c_for_pos_target;
 double c_lat_pos_target;
 double c_ang_pos_target;
+double l_lat_pos_current;
+double r_lat_pos_current;
+double c_for_pos_current;
+double c_lat_pos_current;
+double c_ang_pos_current;
 double c_for_pos;
 double c_lat_pos;
 double c_ang_pos;
@@ -221,7 +226,6 @@ double maze_lat_cord;
 double update_dist = 0;
 double time_frac = 0;
 double c_lat_dist;
-double c_for_pos_send;
 double c_lat_pos_mid;
 double c_lat_pos_top;
 
@@ -433,6 +437,12 @@ void tick_func(void) {
                     }
                 }
                 
+                l_lat_pos_current = l_lat_pos;
+                r_lat_pos_current = r_lat_pos;
+                c_for_pos_current = c_for_pos;
+                c_lat_pos_current = c_lat_pos;
+                c_ang_pos_current = c_ang_pos;
+                
                 /* reset variables */
                 inter_trial_time = 0;
                 cur_trial_time = 0;
@@ -452,17 +462,18 @@ void tick_func(void) {
                 cor_pos = cur_branch_lat_frac*cor_width;
                 
                 /* Check if new branch is a split child branch, and if so change update_dist */
+                split_child = 0;
+                update_dist = 0;
                 parent_branch = branch_parent[cur_trial_num][cur_branch];
-                if (branch_split[cur_trial_num][parent_branch] == 1 && parent_branch ~= -1){
-                    if (cur_branch == branch_left_end[cur_trial_num][parent_branch]) {
-                        split_child = 1;
-                        update_dist = -(branch_r_lat_start[cur_trial_num][parent_branch] - branch_l_lat_start[cur_trial_num][parent_branch] + maze_center_width[cur_trial_num]);
-                    } else {
-                        split_child = 2;
-                        update_dist = (branch_r_lat_start[cur_trial_num][parent_branch] - branch_l_lat_start[cur_trial_num][parent_branch] + maze_center_width[cur_trial_num]);
+                if (parent_branch >=0) {
+                    if (branch_split[cur_trial_num][parent_branch] == 1){
+                        if (cur_branch == branch_left_end[cur_trial_num][parent_branch]) {
+                            split_child = 1;
+                        } else {
+                            split_child = 2;
+                        }
+                        update_dist = branch_r_lat_start[cur_trial_num][parent_branch] - branch_l_lat_start[cur_trial_num][parent_branch] + maze_center_width[cur_trial_num];
                     }
-                } else {
-                    split_child = 0;
                 }
                 
                 /* update wall positions */
@@ -470,21 +481,21 @@ void tick_func(void) {
                     /* if in left child of split branch */
                     if (cur_branch_dist < branch_compensate_dist) {
                         /* move far lateral wall in behind rotated center wall */
-                        c_ang_pos_target = 90;
+                        c_ang_pos_target = -90;
                         r_lat_pos_target = cor_pos + update_dist*(1-cur_branch_dist/branch_compensate_dist)+offset_dist*cur_branch_dist/branch_compensate_dist;
                         c_lat_pos_target = cor_pos - cor_width/2 + update_dist/2;
                         l_lat_pos_target = cor_width - cor_pos;
                         c_for_pos_target = 0;
                     } else if (cur_branch_dist >= branch_compensate_dist && cur_branch_dist < branch_compensate_dist*2) {
                         /* move rotated center wall away from mouse */
-                        c_ang_pos_target = 90;
+                        c_ang_pos_target = -90;
                         r_lat_pos_target = cor_pos + offset_dist;
                         c_lat_pos_target = cor_pos - cor_width/2 + update_dist/2;
                         l_lat_pos_target = cor_width - cor_pos;
                         c_for_pos_target = max_wall_for_pos*(cur_branch_dist/branch_compensate_dist - 1);
                     } else if (cur_branch_dist >= branch_compensate_dist*2 && cur_branch_dist < branch_compensate_dist*3) {
                         /* move center wall back to center, rotate center wall back to straight and move in lateral wall*/
-                        c_ang_pos_target = 90;
+                        c_ang_pos_target = -90*(3 - cur_branch_dist/branch_compensate_dist);
                         r_lat_pos_target = cor_pos + offset_dist*(3 - cur_branch_dist/branch_compensate_dist);
                         c_lat_pos_target = cor_pos - cor_width/2 + update_dist/2*(3 - cur_branch_dist/branch_compensate_dist);
                         l_lat_pos_target = cor_width - cor_pos;
@@ -503,21 +514,21 @@ void tick_func(void) {
                         c_ang_pos_target = 90;
                         r_lat_pos_target = cor_pos;
                         c_lat_pos_target = cor_pos - cor_width/2 - update_dist/2;
-                        l_lat_pos_target = cor_width - cor_pos + update_dist*(1-cur_branch_dist/branch_compensate_dist)-offset_dist*cur_branch_dist/branch_compensate_dist;
+                        l_lat_pos_target = cor_width - cor_pos + update_dist*(1-cur_branch_dist/branch_compensate_dist)+offset_dist*cur_branch_dist/branch_compensate_dist;
                         c_for_pos_target = 0;
                     } else if (cur_branch_dist >= branch_compensate_dist && cur_branch_dist < branch_compensate_dist*2) {
                         /* move rotated center wall away from mouse */
                         c_ang_pos_target = 90;
                         r_lat_pos_target = cor_pos;
                         c_lat_pos_target = cor_pos - cor_width/2 - update_dist/2;
-                        l_lat_pos_target = cor_width - cor_pos - offset_dist;
+                        l_lat_pos_target = cor_width - cor_pos + offset_dist;
                         c_for_pos_target = max_wall_for_pos*(cur_branch_dist/branch_compensate_dist - 1);
                     } else if (cur_branch_dist >= branch_compensate_dist*2 && cur_branch_dist < branch_compensate_dist*3) {
                         /* move center wall back to center, rotate center wall back to straight and move in lateral wall*/
-                        c_ang_pos_target = 90;
+                        c_ang_pos_target = 90*(3 - cur_branch_dist/branch_compensate_dist);
                         r_lat_pos_target = cor_pos;
                         c_lat_pos_target = cor_pos - cor_width/2 - update_dist/2*(3 - cur_branch_dist/branch_compensate_dist);
-                        l_lat_pos_target = cor_width - cor_pos - offset_dist*(3 - cur_branch_dist/branch_compensate_dist);
+                        l_lat_pos_target = cor_width - cor_pos + offset_dist*(3 - cur_branch_dist/branch_compensate_dist);
                         c_for_pos_target = max_wall_for_pos;
                     } else {
                         c_ang_pos_target = 0;
@@ -531,7 +542,7 @@ void tick_func(void) {
                     r_lat_pos_target = cor_pos;
                     l_lat_pos_target = cor_width - cor_pos;
                     c_lat_pos_target = cor_pos - cor_width/2;
-                    c_ang_pos_target = c_lat_pos_target/(maze_center_width[cur_branch]/2)*90;
+                    c_ang_pos_target = -180*c_lat_pos_target/maze_center_width[cur_trial_num];
                     if (c_ang_pos_target > 90) {
                         c_ang_pos_target = 90;
                     } else if (c_ang_pos_target < -90){
@@ -547,7 +558,7 @@ void tick_func(void) {
                     } else {
                         c_for_pos_target = max_wall_for_pos;
                     }
-                } else if ((branch_left_end[cur_trial_num][cur_branch] == -1 ||  branch_right_end[cur_trial_num][cur_branch] == -1)) {
+                } else if (branch_left_end[cur_trial_num][cur_branch] == -1 ||  branch_right_end[cur_trial_num][cur_branch] == -1) {
                     /* if in dead end branch */
                     c_ang_pos_target = 0;
                     r_lat_pos_target = cor_pos;
@@ -576,7 +587,6 @@ void tick_func(void) {
                 wv_time = 0;
                 bv_time = 0;
                 water_on = 0;
-                update_dist = 0;
             }
             
             
@@ -588,12 +598,14 @@ void tick_func(void) {
             if (inter_trial_time <= session_iti) {
                 inter_trial_trig = 1;
                 inter_trial_time = inter_trial_time + 1/sample_freq;
+                
                 /* send left and right walls to target positions */
-                l_lat_pos = l_lat_pos + .01*(l_lat_pos_target - l_lat_pos);
-                r_lat_pos = r_lat_pos + .01*(r_lat_pos_target - r_lat_pos);
-                c_for_pos = c_for_pos + .01*(c_for_pos_target - c_for_pos);
-                c_lat_pos = c_lat_pos + .01*(c_lat_pos_target - c_lat_pos);
-                c_ang_pos = c_ang_pos + .01*(c_ang_pos_target - c_ang_pos);
+                l_lat_pos = l_lat_pos_current*(1-inter_trial_time/session_iti) + l_lat_pos_target*(inter_trial_time/session_iti);
+                r_lat_pos = r_lat_pos_current*(1-inter_trial_time/session_iti) + r_lat_pos_target*(inter_trial_time/session_iti);
+                c_lat_pos = c_lat_pos_current*(1-inter_trial_time/session_iti) + c_lat_pos_target*(inter_trial_time/session_iti);
+                c_for_pos = c_for_pos_current*(1-inter_trial_time/session_iti) + c_for_pos_target*(inter_trial_time/session_iti);
+                c_ang_pos = c_ang_pos_current*(1-inter_trial_time/session_iti) + c_ang_pos_target*(inter_trial_time/session_iti);
+                
                 screen_on = 0;
             } else {
                 /* During trial set inter trial trig to 0 */
@@ -605,8 +617,38 @@ void tick_func(void) {
                 /* update forward position along branch */
                 /*for_ball_motion = 10; lat_ball_motion = -1;*/
                 cur_branch_dist = cur_branch_dist + for_ball_motion/sample_freq;
+                                
+                /* Check limits and make branch transition forwards */
+                if (cur_branch_dist > branch_length[cur_trial_num][cur_branch]){
+                    /* Transition to child branch */
+                    if (branch_left_end[cur_trial_num][cur_branch] == -1 || branch_right_end[cur_trial_num][cur_branch] == -1) {
+                        /* if no child stay */
+                        cur_branch_dist = branch_length[cur_trial_num][cur_branch];
+                    } else {
+                        if (branch_split[cur_trial_num][cur_branch] == 1) {
+                            if (cur_branch_lat_frac > (branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch] + maze_center_width[cur_trial_num])/(2*branch_r_lat_start[cur_trial_num][cur_branch] - 2*branch_l_lat_start[cur_trial_num][cur_branch] + maze_center_width[cur_trial_num])) {
+                                update_dist = branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch] + maze_center_width[cur_trial_num];
+                                cor_pos = cor_pos - update_dist;
+                                split_child = 1;
+                                cur_branch_dist = cur_branch_dist - branch_length[cur_trial_num][cur_branch];
+                                cur_branch = branch_left_end[cur_trial_num][cur_branch];
+                            } else if (cur_branch_lat_frac < (branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch])/(2*branch_r_lat_start[cur_trial_num][cur_branch] - 2*branch_l_lat_start[cur_trial_num][cur_branch] + maze_center_width[cur_trial_num])) {
+                                update_dist = branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch] + maze_center_width[cur_trial_num];
+                                split_child = 2;
+                                cur_branch_dist = cur_branch_dist - branch_length[cur_trial_num][cur_branch];
+                                cur_branch = branch_right_end[cur_trial_num][cur_branch];
+                            } else {
+                               cur_branch_dist = branch_length[cur_trial_num][cur_branch];
+                            }
+                        } else {
+                            cur_branch_dist = cur_branch_dist - branch_length[cur_trial_num][cur_branch];
+                            cur_branch = branch_left_end[cur_trial_num][cur_branch];
+                            split_child = 0;
+                        }
+                    }
+                }
                 
-                /* Check limits and make branch transitions */
+                /* Check limits and make branch transition backwards */
                 if (cur_branch_dist < 0){
                     /* Transition to parent branch */
                     if (branch_parent[cur_trial_num][cur_branch] == -1) {
@@ -618,57 +660,27 @@ void tick_func(void) {
                         if (branch_split[cur_trial_num][parent_branch] == 1) {
                             /* if split branch - check which side to go */
                             if (branch_left_end[cur_trial_num][parent_branch] == cur_branch){
-                                cor_pos = cor_pos + (branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch]) + maze_center_width[cur_trial_num];
+                                cor_pos = cor_pos + branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch] + maze_center_width[cur_trial_num];
                             }
                         }
                         cur_branch_dist = cur_branch_dist + branch_length[cur_trial_num][parent_branch];
                         cur_branch = parent_branch;
+                        split_child = 0;
                         /* Check if new branch is a split child branch, and if so change update_dist */
                         parent_branch = branch_parent[cur_trial_num][cur_branch];
-                        if (branch_split[cur_trial_num][parent_branch] == 1 && parent_branch ~= -1){
-                            if (cur_branch == branch_left_end[cur_trial_num][parent_branch]) {
-                                split_child = 1;
-                                update_dist = -(branch_r_lat_start[cur_trial_num][parent_branch] - branch_l_lat_start[cur_trial_num][parent_branch] + maze_center_width[cur_trial_num]);
-                            } else {
-                                split_child = 2;
-                                update_dist = (branch_r_lat_start[cur_trial_num][parent_branch] - branch_l_lat_start[cur_trial_num][parent_branch] + maze_center_width[cur_trial_num]);
+                        if (parent_branch >=0) {
+                            if (branch_split[cur_trial_num][parent_branch] == 1){
+                                if (cur_branch == branch_left_end[cur_trial_num][parent_branch]) {
+                                    split_child = 1;
+                                } else {
+                                    split_child = 2;
+                                }
+                                update_dist = branch_r_lat_start[cur_trial_num][parent_branch] - branch_l_lat_start[cur_trial_num][parent_branch] + maze_center_width[cur_trial_num];
                             }
-                        } else {
-                            split_child = 0;
                         }
                     }
                 }
-                
-                /* Check limits and make branch transitions */
-                if (cur_branch_dist > branch_length[cur_trial_num][cur_branch]){
-                    /* Transition to child branch */
-                    if (branch_split[cur_trial_num][cur_branch] == 1) {
-                        if (cur_branch_lat_frac > (branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch] + maze_center_width[cur_trial_num])/(2*branch_r_lat_start[cur_trial_num][cur_branch] - 2*branch_l_lat_start[cur_trial_num][cur_branch] + maze_center_width[cur_trial_num])) {
-                            child_branch = branch_left_end[cur_trial_num][cur_branch];
-                            update_dist = -(branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch] + maze_center_width[cur_trial_num]);
-                            cor_pos = cor_pos + update_dist;
-                            split_child = 1;
-                        } else if (cur_branch_lat_frac < (branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch])/(2*branch_r_lat_start[cur_trial_num][cur_branch] - 2*branch_l_lat_start[cur_trial_num][cur_branch] + maze_center_width[cur_trial_num])) {
-                            split_child = 2;
-                            child_branch = branch_right_end[cur_trial_num][cur_branch];
-                            update_dist = -(branch_r_lat_start[cur_trial_num][cur_branch] - branch_l_lat_start[cur_trial_num][cur_branch] + maze_center_width[cur_trial_num]);
-                        } else {
-                            child_branch = -1;
-                        }
-                    } else {
-                        child_branch = branch_left_end[cur_trial_num][cur_branch];
-                        split_child = 0;
-                    }
-                    if (child_branch == -1) {
-                        /* if no child stay */
-                        cur_branch_dist = branch_length[cur_trial_num][cur_branch];
-                    } else {
-                        /* update branch id */
-                        cur_branch_dist = cur_branch_dist - branch_length[cur_trial_num][cur_branch];
-                        cur_branch = child_branch;
-                    }
-                }
-                
+
                 /* set angles */
                 left_angle = branch_left_angle[cur_trial_num][cur_branch];
                 right_angle = branch_right_angle[cur_trial_num][cur_branch];
@@ -692,21 +704,21 @@ void tick_func(void) {
                     /* if in left child of split branch */
                     if (cur_branch_dist < branch_compensate_dist) {
                         /* move far lateral wall in behind rotated center wall */
-                        c_ang_pos = 90;
+                        c_ang_pos = -90;
                         r_lat_pos = cor_pos + update_dist*(1-cur_branch_dist/branch_compensate_dist)+offset_dist*cur_branch_dist/branch_compensate_dist;
                         c_lat_pos = cor_pos - cor_width/2 + update_dist/2;
                         l_lat_pos = cor_width - cor_pos;
                         c_for_pos = 0;
                     } else if (cur_branch_dist >= branch_compensate_dist && cur_branch_dist < branch_compensate_dist*2) {
                         /* move rotated center wall away from mouse */
-                        c_ang_pos = 90;
+                        c_ang_pos = -90;
                         r_lat_pos = cor_pos + offset_dist;
                         c_lat_pos = cor_pos - cor_width/2 + update_dist/2;
                         l_lat_pos = cor_width - cor_pos;
                         c_for_pos = max_wall_for_pos*(cur_branch_dist/branch_compensate_dist - 1);
                     } else if (cur_branch_dist >= branch_compensate_dist*2 && cur_branch_dist < branch_compensate_dist*3) {
                         /* move center wall back to center, rotate center wall back to straight and move in lateral wall*/
-                        c_ang_pos = 90;
+                        c_ang_pos = -90*(3 - cur_branch_dist/branch_compensate_dist);
                         r_lat_pos = cor_pos + offset_dist*(3 - cur_branch_dist/branch_compensate_dist);
                         c_lat_pos = cor_pos - cor_width/2 + update_dist/2*(3 - cur_branch_dist/branch_compensate_dist);
                         l_lat_pos = cor_width - cor_pos;
@@ -725,21 +737,21 @@ void tick_func(void) {
                         c_ang_pos = 90;
                         r_lat_pos = cor_pos;
                         c_lat_pos = cor_pos - cor_width/2 - update_dist/2;
-                        l_lat_pos = cor_width - cor_pos + update_dist*(1-cur_branch_dist/branch_compensate_dist)-offset_dist*cur_branch_dist/branch_compensate_dist;
+                        l_lat_pos = cor_width - cor_pos + update_dist*(1-cur_branch_dist/branch_compensate_dist)+offset_dist*cur_branch_dist/branch_compensate_dist;
                         c_for_pos = 0;
                     } else if (cur_branch_dist >= branch_compensate_dist && cur_branch_dist < branch_compensate_dist*2) {
                         /* move rotated center wall away from mouse */
                         c_ang_pos = 90;
                         r_lat_pos = cor_pos;
                         c_lat_pos = cor_pos - cor_width/2 - update_dist/2;
-                        l_lat_pos = cor_width - cor_pos - offset_dist;
+                        l_lat_pos = cor_width - cor_pos + offset_dist;
                         c_for_pos = max_wall_for_pos*(cur_branch_dist/branch_compensate_dist - 1);
                     } else if (cur_branch_dist >= branch_compensate_dist*2 && cur_branch_dist < branch_compensate_dist*3) {
                         /* move center wall back to center, rotate center wall back to straight and move in lateral wall*/
-                        c_ang_pos = 90;
+                        c_ang_pos = 90*(3 - cur_branch_dist/branch_compensate_dist);
                         r_lat_pos = cor_pos;
                         c_lat_pos = cor_pos - cor_width/2 - update_dist/2*(3 - cur_branch_dist/branch_compensate_dist);
-                        l_lat_pos = cor_width - cor_pos - offset_dist*(3 - cur_branch_dist/branch_compensate_dist);
+                        l_lat_pos = cor_width - cor_pos + offset_dist*(3 - cur_branch_dist/branch_compensate_dist);
                         c_for_pos = max_wall_for_pos;
                     } else {
                         c_ang_pos = 0;
@@ -753,7 +765,7 @@ void tick_func(void) {
                     r_lat_pos = cor_pos;
                     l_lat_pos = cor_width - cor_pos;
                     c_lat_pos = cor_pos - cor_width/2;
-                    c_ang_pos = c_lat_pos/(maze_center_width[cur_branch]/2)*90;
+                    c_ang_pos = -180*c_lat_pos/maze_center_width[cur_trial_num];
                     if (c_ang_pos > 90) {
                         c_ang_pos = 90;
                     } else if (c_ang_pos < -90){
@@ -769,7 +781,7 @@ void tick_func(void) {
                     } else {
                         c_for_pos = max_wall_for_pos;
                     }
-                } else if ((branch_left_end[cur_trial_num][cur_branch] == -1 ||  branch_right_end[cur_trial_num][cur_branch] == -1)) {
+                } else if (branch_left_end[cur_trial_num][cur_branch] == -1 ||  branch_right_end[cur_trial_num][cur_branch] == -1) {
                     /* if in dead end branch */
                     c_ang_pos = 0;
                     r_lat_pos = cor_pos;
@@ -832,11 +844,11 @@ void tick_func(void) {
             if (l_lat_pos < 0) {
                 l_lat_pos = 0;
             }
-            if (c_for_pos_send > max_wall_for_pos) {
-                c_for_pos_send = max_wall_for_pos;
+            if (c_for_pos > max_wall_for_pos) {
+                c_for_pos = max_wall_for_pos;
             }
-            if (c_for_pos_send < 0) {
-                c_for_pos_send = 0;
+            if (c_for_pos < 0) {
+                c_for_pos = 0;
             }
             if (c_lat_pos > max_wall_pos) {
                 c_lat_pos = max_wall_pos;
@@ -844,7 +856,7 @@ void tick_func(void) {
             if (c_lat_pos < -max_wall_pos) {
                 c_lat_pos = -max_wall_pos;
             }
-            
+                        
             if (c_lat_pos > max_wall_pos/2) {
                 c_lat_pos_mid = max_wall_pos/2;
                 c_lat_pos_top = c_lat_pos - max_wall_pos/2;
@@ -987,7 +999,7 @@ void tick_func(void) {
             log_state_c = 0 + 2*scim_logging + 4*water_on_ext;
             log_cur_state = 10000*log_state_c+1000*log_state_b+100*log_state_a + cur_trial_num;
             log_ball_motion = cam_vel_steps[0] + 36*cam_vel_steps[1] + 36*36*cam_vel_steps[2]+ 36*36*36*cam_vel_steps[3]; /* convert to cam_motion_vect for logging */
-            log_wall_pos = floor(10*cor_pos) + 1000*floor(10*(cor_width));
+            log_wall_pos = floor(10*cor_pos) + 1000*floor(10*cor_width);
             /*log_maze_cord = floor(5*maze_for_cord) + 1000*floor(5*maze_lat_cord+500);*/
             log_maze_cord = floor(20*cur_branch_dist) + 1000*cur_branch + 100000*0;
             
@@ -1059,7 +1071,7 @@ void tick_func(void) {
         writeAO(l_wall_lat_ao_chan, l_wall_lat_ao_offset + wall_mm_to_vlt(l_lat_pos));
         
         writeAO(maze_num_ao_chan, maze_num_ao_offset);
-        writeAO(maze_for_ao_chan, c_ang_pos);
+        writeAO(maze_for_ao_chan,  maze_for_ao_offset  + wall_ang_to_vlt(c_ang_pos));
         writeAO(maze_lat_ao_chan, maze_lat_ao_offset);
         
         writeAO(iti_ao_chan, iti_ao_offset);
@@ -1102,7 +1114,7 @@ void init_func(void) {
     writeAO(l_wall_lat_ao_chan, l_wall_lat_ao_offset + wall_mm_to_vlt(l_lat_pos));
     
     writeAO(maze_num_ao_chan, maze_num_ao_offset);
-    writeAO(maze_for_ao_chan, c_ang_pos);
+    writeAO(maze_for_ao_chan, maze_for_ao_offset  + wall_ang_to_vlt(c_ang_pos));
     writeAO(maze_lat_ao_chan, maze_lat_ao_offset);
     
     writeAO(iti_ao_chan, iti_ao_offset);

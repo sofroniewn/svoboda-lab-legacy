@@ -171,7 +171,7 @@ if isempty(varLog) == 0 && update_display_on == 1
     cor_width = get(handles.cor_width_plot,'Ydata')';
     cor_width = [cor_width(num_samples+1:end);trial_mat(4,:)'];
     branch_pos = get(handles.branch_pos_plot,'Ydata')';
-    branch_pos = [branch_pos(num_samples+1:end);trial_mat(17,:)'];
+    branch_pos = [branch_pos(num_samples+1:end);trial_mat(1,:)'];
     
 
     rEnd = get(handles.rEnd_plot,'Ydata')';
@@ -218,7 +218,6 @@ if isempty(varLog) == 0 && update_display_on == 1
     set(handles.screen_on_plot,'Ydata',screen_on);
     set(handles.lick_plot,'Ydata',licks);
     set(handles.trial_period_plot,'Ydata',trial_period);
-    set(handles.branch_pos_plot,'Ydata',branch_pos);
 
     set(handles.text_cur_trial_num,'String',num2str(trial_mat(13,end)));
     set(handles.text_cur_cor_pos,'String',num2str(mean(trial_mat(4,:))));
