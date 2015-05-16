@@ -22,7 +22,7 @@ function varargout = maze_designer(varargin)
 
 % Edit the above text to modify the response to help maze_designer
 
-% Last Modified by GUIDE v2.5 27-Apr-2015 19:40:45
+% Last Modified by GUIDE v2.5 15-May-2015 22:58:31
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -447,9 +447,10 @@ if FilterIndex>0
     end
     trial_vars.maze_ids = get(handles.edit_maze_id,'string');
     trial_vars.maze_repeats = get(handles.edit_maze_repeats,'string');
-    trial_vars.session_timeout = 9999;
+    trial_vars.session_timeout = str2double(get(handles.edit_trial_timeout,'string'));
     trial_vars.session_iti = 1;
-    trial_vars.session_drink_time = 1;
+    trial_vars.session_drink_time = str2double(get(handles.edit_water_timeout,'string'));
+    trial_vars.session_continuous_trials = get(handles.radiobutton_cts_trials,'value');
     save([PathName FileName],'maze_names','dat_array','start_branch_array','trial_vars');
 end
 
@@ -482,6 +483,9 @@ if FilterIndex>0
     end
     set(handles.edit_maze_repeats,'string',load_dat.trial_vars.maze_repeats)
     set(handles.edit_maze_id,'string',load_dat.trial_vars.maze_ids)
+    set(handles.edit_water_timeout,'string',num2str(load_dat.trial_vars.session_drink_time))
+    set(handles.edit_trial_timeout,'string',num2str(load_dat.trial_vars.session_timeout))
+    set(handles.radiobutton_cts_trials,'value',load_dat.trial_vars.session_continuous_trials)
     radiobutton_random_order_Callback(handles.radiobutton_random_order, eventdata, handles);
     radiobutton_repeat_Callback(handles.radiobutton_repeat, eventdata, handles);
 end
@@ -568,4 +572,59 @@ elseif get(handles.radiobutton_random_order,'value') == 0
       set(handles.text_maze_id,'enable','on');
       set(handles.edit_maze_id,'enable','on'); 
 else
+end
+
+
+% --- Executes on button press in radiobutton_cts_trials.
+function radiobutton_cts_trials_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton_cts_trials (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton_cts_trials
+
+
+
+function edit_water_timeout_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_water_timeout (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_water_timeout as text
+%        str2double(get(hObject,'String')) returns contents of edit_water_timeout as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_water_timeout_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_water_timeout (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_trial_timeout_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_trial_timeout (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_trial_timeout as text
+%        str2double(get(hObject,'String')) returns contents of edit_trial_timeout as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_trial_timeout_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_trial_timeout (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end

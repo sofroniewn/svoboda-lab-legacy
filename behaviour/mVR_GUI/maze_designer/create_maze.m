@@ -163,3 +163,4 @@ maze.y_lim = [0 max(maze.y_lim)] +[-20 20];
 maze.x_lim = [-max(abs(maze.x_lim)), max(abs(maze.x_lim))];
 
 
+% if continuous trials check start and end are of same width

@@ -166,11 +166,16 @@ replace    = ['double dist_thresh =  ', num2str(rig_config.dist_thresh) ,';'];  
 expression =  'const double sound_on_length = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['const double sound_on_length =  ', num2str(rig_config.sound_on_length) ,';'];     text = regexprep(text,expression,replace);
 
+
+expression =  'unsigned water_trig_on\[\w*\];'; %replace expressions of format [sign][digits][decimal][digits]
+replace    = ['unsigned water_trig_on\[', num2str(maze_config.max_num_branches),'\];'];     text = regexprep(text,expression,replace);
+
+
 % replace maze field names
 names = fieldnames(maze_config);
 for ij = 1:length(names)
     opt = 0;
-    if ismember(ij,[1:4,7:9])
+    if ismember(ij,[1:4,7:10])
         old_size_str = '';
         new_size_str = '';
         old_val_str = '0';
@@ -187,11 +192,11 @@ for ij = 1:length(names)
         end
         old_val_str = '{}';
         new_val_str = mat2strC(maze_config.(names{ij})-opt,1);
-    elseif ismember(ij,[10,12:20])
+    elseif ismember(ij,[11,13:21])
         old_size_str = '\[\]';
         new_size_str = ['[' num2str(maze_config.num_mazes) ']'];
         old_val_str = '{}';
-        if ij == 16
+        if ij == 17
             opt = 1;
         end
         new_val_str = mat2strC(maze_config.(names{ij})-opt,1);
@@ -199,7 +204,7 @@ for ij = 1:length(names)
         old_size_str = '\[\]\[\]';
         new_size_str = ['[' num2str(maze_config.num_mazes) '][' num2str(size(maze_config.(names{ij}),2)) ']'];
         old_val_str = '{{}}';
-        if ismember(ij,[27,28,31])
+        if ismember(ij,[28,29,32])
             opt = 1;
         end
         new_val_str = mat2strC(maze_config.(names{ij})-opt,0);
