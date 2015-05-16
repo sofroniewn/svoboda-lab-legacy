@@ -17,7 +17,7 @@ const unsigned Xtrial_num_repeats[] = {}; /* 1 if random, num repeats */
 const double Xsession_timeout = 0; /* time for trial to time out */
 const double Xsession_iti = 0; /* inter trial interal time */
 const double Xsession_drink_time = 0; /* time to drink water before trial ends */
-const double Xsession_continuous_world = 0; /* whether to have a continuous world or not */
+const unsigned Xsession_continuous_world = 0; /* whether to have a continuous world or not */
 
 /* params - one per maze */
 const unsigned Xmaze_num_branches[] = {}; /* Number of branches for each maze */
@@ -203,6 +203,7 @@ signed child_branch;
 unsigned split_child; /* 0 if not a child of y branch, 1 if left child, 2 if right child */
 unsigned first_trial = 1;
 unsigned maze_end_reached = 0;
+unsigned iti_reset;
 
 /* Define Wall Motion Variables and maze cords*/
 double left_angle;
@@ -418,7 +419,7 @@ void tick_func(void) {
             /***********************************************************************************/
             /**************** INITIALIZE NEW TRIAL *********************************************/
             /* Check if trial has ended, and if so make a new one */
-            if ((cur_drink_time-1)/sample_freq >= session_drink_time || cur_trial_time >= session_timeout || (maze_end_reached && session_continuous_world)) {
+            if ((cur_drink_time-1)/sample_freq >= session_drink_time || cur_trial_time >= session_timeout || (maze_end_reached == 1 && session_continuous_world == 1)) {
                 /* Pick new trial number */
                 if (trial_random_order == 1) {
                     cur_trial_num = (unsigned int) (num_mazes)*rand();
@@ -457,15 +458,17 @@ void tick_func(void) {
                 dead_end = 0;
                 gain_val = maze_wall_gain[cur_trial_num];
                 
-                if (maze_end_reached && session_continuous_world) {
+                if (maze_end_reached == 1 && session_continuous_world == 1) {
                     cur_branch = 0;
                     cur_branch_lat_frac = cor_pos/cor_width;
-                    cur_branch_dist = maze_start_dist;
+                    cur_branch_dist = 0; /* maze_start_dist */
+                    iti_reset = 0;
                     
                 } else {
                     cur_branch = maze_initial_branch[cur_trial_num];
                     cur_branch_lat_frac = maze_initial_branch_lat_fraction[cur_trial_num];
                     cur_branch_dist = maze_initial_branch_for_fraction[cur_trial_num]*branch_length[cur_trial_num][cur_branch];
+                    iti_reset = 1;
                 }
                 
                 left_angle = branch_left_angle[cur_trial_num][cur_branch];
@@ -600,6 +603,8 @@ void tick_func(void) {
                 wv_time = 0;
                 bv_time = 0;
                 water_on = 0;
+                screen_on = 0;
+                maze_end_reached = 0;
             }
             
             
@@ -608,7 +613,7 @@ void tick_func(void) {
             /***********************************************************************************/
             /**************** Execute main trial loop ******************************************/
             /* Check if in iti */
-            if (inter_trial_time <= session_iti && ((maze_end_reached == 1 && session_continuous_world == 0) || first_trial == 1)) {
+            if (inter_trial_time < session_iti && (session_continuous_world == 0 || (iti_reset == 1 && session_continuous_world == 1) || first_trial == 1)) {
                 inter_trial_trig = 1;
                 inter_trial_time = inter_trial_time + 1/sample_freq;
                 /* send left and right walls to target positions */
@@ -620,12 +625,12 @@ void tick_func(void) {
                 
                 screen_on = 0;
             } else {
-                maze_end_reached = 0;
                 first_trial = 0;
+                iti_reset = 0;
                 /* During trial set inter trial trig to 0 */
                 if (inter_trial_time == 0) {
                     inter_trial_trig = 1;
-                    inter_trial_time = inter_trial_time + 1;
+                    inter_trial_time = session_iti;
                 } else {
                     inter_trial_trig = 0;
                 }
@@ -1137,6 +1142,7 @@ void init_func(void) {
     cor_pos = cor_width/2;
     maze_start_dist = 0;
     maze_end_reached = 1;
+    iti_reset = 1;
 
     for (ii = 0; ii < max_num_branches; ii++) {
         water_trig_on[ii] = 0;
