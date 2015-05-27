@@ -96,7 +96,7 @@ for ij = 1:maze.num_branches
         dat{ij,1} = ideal_length;
     end
     
-    if maze.left_end(ij) == 0 || maze.right_end(ij) == 0
+    if maze.left_end(ij) == 0 || maze.right_end(ij) == 0 && maze.split_branch(maze.parent_branch(ij)) == 0
         cur_width = init_right(1)-init_left(1);
         end_width = maze.dead_end_width;
         orig_ang = (maze.left_angle(maze.parent_branch(ij)) + maze.right_angle(maze.parent_branch(ij)))/2;
@@ -108,7 +108,20 @@ for ij = 1:maze.num_branches
         dat{ij,2} = maze.left_angle(ij);
         dat{ij,3} = maze.right_angle(ij);
     end
-        
+    
+    if maze.left_end(ij) == 0 || maze.right_end(ij) == 0 && maze.split_branch(maze.parent_branch(ij)) == 1
+        cur_width = init_right(1)-init_left(1);
+        end_width = maze.dead_end_width;
+        orig_ang = (maze.left_angle(maze.parent_branch(ij)) + maze.right_angle(maze.parent_branch(ij)))/2;
+        maze.length(ij) = 14;
+        lat_displacement = tand(orig_ang)*maze.length(ij)*maze.wall_gain;
+        maze.left_angle(ij) = 90-180/pi*atan2(maze.length(ij)*maze.wall_gain,(cur_width - end_width)/2+lat_displacement);
+        maze.right_angle(ij) = -(90-180/pi*atan2(maze.length(ij)*maze.wall_gain,(cur_width - end_width)/2-lat_displacement));
+        dat{ij,1} = maze.length(ij);
+        dat{ij,2} = maze.left_angle(ij);
+        dat{ij,3} = maze.right_angle(ij);
+    end
+
     traj_add = NaN(1,2);
     traj_add(1) = maze.wall_gain*tand(maze.left_angle(ij))*maze.length(ij);
     traj_add(2) = maze.length(ij);

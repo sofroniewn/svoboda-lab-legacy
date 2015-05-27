@@ -2,8 +2,12 @@ function convert_ref(base_path)
 
 ref_images_path = dir(fullfile(base_path,'ref_images*.mat'));
 if numel(ref_images_path) ~= 1
-	display(numel(cur_base_path));
-	error('Need to have one reference image');
+	display(numel(ref_images_path));
+	%display('Generate ref');
+    %all_ims = dir(fullfile(base_path,'raw','*_main_*.tif'));
+    %base_im_path = fullfile(base_path,'raw',all_ims(2).name);
+	%generate_reference(base_im_path,1,1)
+    error('Need to have one reference image');
 end
 
 load(fullfile(base_path,ref_images_path(1).name),'ref');

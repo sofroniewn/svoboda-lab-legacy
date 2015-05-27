@@ -81,6 +81,9 @@ if isempty(varLog) == 0 && update_display_on == 1
     right_angle = maze_config.branch_right_angle(idx);
 
     gain_val = maze_config.maze_wall_gain(trial_mat(13,:))';
+    if ~isrow(gain_val)
+        gain_val = gain_val';
+    end
 
     trial_mat(5,:) = branch_start_for + trial_mat(17,:); % forMaze coordinate
 
