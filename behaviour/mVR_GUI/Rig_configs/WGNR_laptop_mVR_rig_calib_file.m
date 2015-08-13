@@ -12,6 +12,7 @@ rig_config.treadmill_str = 'treadmill';
 rig_config.data_dir = '/Users/sofroniewn/Documents/DATA/mVR_DATA'; % DATA DIRECTORY
 rig_config.TCP_IP_address = '127.0.0.1';
 rig_config.accesory_path = '.';
+rig_config.screenComPort = '/dev/tty.usbmodem1411';
 
 
 % Parameters for globals file
@@ -44,6 +45,7 @@ rig_config.dio_bv_trig = '3';
 rig_config.dio_screen_on_trig = '4';
 rig_config.dio_synch_pulse = '5';
 rig_config.dio_trial_on_trig = '6';
+rig_config.dio_sound_cue = '7';
 rig_config.dio_trial_ephys_trig = '8';
 
 
@@ -60,7 +62,7 @@ rig_config.run_speed_thresh = 5;
 rig_config.speed_time_length = 250;
 
 rig_config.max_wall_pos = 40;
-rig_config.max_wall_for_pos = 25;
+rig_config.max_wall_for_pos = 30;
 
 % Video frame rates
 rig_config.bv_period = 5; % behavioural video frame period / 2 in ms
@@ -71,6 +73,8 @@ rig_config.valve_open_time = 50; % Time water valve open for at 500 Hz
 rig_config.ao_trial_trig_on = 1;
 
 rig_config.dist_thresh = 200;
+
+rig_config.sound_on_length = .1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 tmp = eval(rig_config.A_calib_str);

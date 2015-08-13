@@ -223,15 +223,17 @@ layer_4 = 0;
 power_values = round(laser_data.max_power*10);
 power_range = unique(power_values(~isnan(power_values)));
 keep_powers = power_range(keep_powers_num);
+time_range = [];
 
 trial_range = [1:4000];
 CSD = get_CSD(laser_data,trial_range,power_values,keep_powers,ch_exclude,time_range);
-figure('Position',[443   376   789   430]); plot_CSD([],CSD,'CSD')
 figure('Position',[73   361   338   186]); plot_CSD([],CSD,'LFP')
 figure('Position',[73   103   338   186]); plot_CSD([],CSD,'traces')
 figure('Position',[73   103   338   186]); plot_CSD([],CSD,'profile')
-
-
+figure('Position',[443   376   789   430]); plot_CSD([],CSD,'CSD')
+set(gca,'ydir','normal')
+colormap('gray')
+set(gca,'visible', 'off') %%%%%%%%% range -1.5*10^-6 to 1.5*10^6
 
 base_dir = '/Volumes/svoboda/users/Sofroniewn/EPHYS_RIG/DATA/anm_250492/2014_08_15/run_03'; %laser
 lase_data_name = 'laser_data_short.mat';

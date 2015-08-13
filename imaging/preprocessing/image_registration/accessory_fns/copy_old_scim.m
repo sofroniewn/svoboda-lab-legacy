@@ -74,7 +74,7 @@ function copy_old_scim(base_path,target_base_path,overwrite)
     orig = fullfile(base_path,'scanimage','raw');
     target = fullfile(full_target_dir,'images-scanimage');
     if exist(orig) == 7 && ~(~overwrite && exist(target) == 7)
-        copyfile(orig,target);
+        movefile(orig,target);
     end
 
     %%%% delete empty folders

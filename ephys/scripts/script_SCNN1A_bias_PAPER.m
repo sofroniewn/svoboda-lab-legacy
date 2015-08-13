@@ -140,7 +140,6 @@ for ig = 1:8
     else
         x_val = 2.9;
         x_val = 2.0;
-        
     end
     
     data.trial_stats.laser_power = data.trial_stats.laser_power/10;
@@ -255,6 +254,15 @@ set(gca,'box','off')
 set(gca,'TickDir','out')
 set(gca,'layer','top')
 
+
+
+
+d = [];
+d.S00 = err{1}.data';
+d.S05 = err{2}.data';
+d.S12 = err{3}.data';
+d.S20 = err{4}.data';
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -347,4 +355,136 @@ set(gca,'LineWidth',2)
 set(gca,'box','off')
 set(gca,'TickDir','out')
 set(gca,'layer','top')
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+tmp_data_x = [];
+tmp_data_y = [];
+range = [0 20];
+freq = 4;
+
+err = cell(4,1);
+
+for ig = 1:8
+    tmp_data_x = [tmp_data_x;all_data_actv_S1{ig}.x_data];
+    tmp_data_y = [tmp_data_y;all_data_actv_S1{ig}.y_data];
+end
+tmp_data_y(tmp_data_x<0) = -tmp_data_y(tmp_data_x<0);
+tmp_data_x(tmp_data_x<0) = -tmp_data_x(tmp_data_x<0);
+
+tmp_data_y = -tmp_data_y;
+
+err{1} = trial_error(tmp_data_y(tmp_data_x==0),range,freq);
+err{2} = trial_error(tmp_data_y(tmp_data_x>0 & tmp_data_x<=.75),range,freq);
+err{3} = trial_error(tmp_data_y(tmp_data_x>.75 & tmp_data_x<=1.5),range,freq);
+err{4} = trial_error(tmp_data_y(tmp_data_x>1.5 & tmp_data_x<=3),range,freq);
+
+mean(tmp_data_x(tmp_data_x>0 & tmp_data_x<=.75))
+mean(tmp_data_x(tmp_data_x>.75 & tmp_data_x<=1.5))
+mean(tmp_data_x(tmp_data_x>1.5 & tmp_data_x<=3))
+
+tmp_data_x = [];
+tmp_data_y = [];
+range = [0 20];
+freq = 4;
+
+
+err{1}.col_mat = [0 0 0];
+err{2}.col_mat = [0 .5 0];
+err{3}.col_mat = [0 .5 0];
+err{4}.col_mat = [0 .5 0];
+err{1}.label = '';
+err{2}.label = '';
+err{3}.label = '';
+err{4}.label = '';
+%% P value on bias
+ih_1 = 4;
+ih_2 = 1;
+
+        [h p] = ttest2(err{ih_1}.data,err{ih_2}.data);
+err{ih_1}.mean - err{ih_2}.mean
+err{ih_1}.num + err{ih_2}.num
+
+p
+
+d = [];
+d.S00 = err{1}.data';
+d.S05 = err{2}.data';
+d.S12 = err{3}.data';
+d.S20 = err{4}.data';
+
+
+
+tmp_data_x = [];
+tmp_data_y = [];
+range = [0 20];
+freq = 4;
+
+err = cell(4,1);
+
+for ig = 1:8
+    tmp_data_x = [tmp_data_x;all_data_actv_CC{ig}.x_data];
+    tmp_data_y = [tmp_data_y;all_data_actv_CC{ig}.y_data];
+end
+tmp_data_y(tmp_data_x<0) = -tmp_data_y(tmp_data_x<0);
+tmp_data_x(tmp_data_x<0) = -tmp_data_x(tmp_data_x<0);
+
+tmp_data_y = -tmp_data_y;
+
+err{1} = trial_error(tmp_data_y(tmp_data_x==0),range,freq);
+err{2} = trial_error(tmp_data_y(tmp_data_x>0 & tmp_data_x<=.75),range,freq);
+err{3} = trial_error(tmp_data_y(tmp_data_x>.75 & tmp_data_x<=1.5),range,freq);
+err{4} = trial_error(tmp_data_y(tmp_data_x>1.5 & tmp_data_x<=3),range,freq);
+
+mean(tmp_data_x(tmp_data_x>0 & tmp_data_x<=.75))
+mean(tmp_data_x(tmp_data_x>.75 & tmp_data_x<=1.5))
+mean(tmp_data_x(tmp_data_x>1.5 & tmp_data_x<=3))
+
+tmp_data_x = [];
+tmp_data_y = [];
+range = [0 20];
+freq = 4;
+
+
+err{1}.col_mat = [0 0 0];
+err{2}.col_mat = [0 .5 0];
+err{3}.col_mat = [0 .5 0];
+err{4}.col_mat = [0 .5 0];
+err{1}.label = '';
+err{2}.label = '';
+err{3}.label = '';
+err{4}.label = '';
+%% P value on bias
+ih_1 = 4;
+ih_2 = 1;
+
+        [h p] = ttest2(err{ih_1}.data,err{ih_2}.data);
+err{ih_1}.mean - err{ih_2}.mean
+err{ih_1}.num + err{ih_2}.num
+
+p
+
+d.C00 = err{1}.data';
+d.C05 = err{2}.data';
+d.C12 = err{3}.data';
+d.C20 = err{4}.data';
+
+local_python_save_path = '/Users/sofroniewn/Documents/DATA/ephys_python';
+opt = [];
+opt.NaN = 'NaN';
+opt.Inf = 'NaN';
+opt.FileName = fullfile(local_python_save_path,'bias.json');
+savejson('',d,opt);
+
+
+
 

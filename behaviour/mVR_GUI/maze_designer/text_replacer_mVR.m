@@ -45,14 +45,14 @@ replace    = ['const unsigned iti_ao_chan = ', rig_config.ao_channels_iti ,';'];
 expression =  'const unsigned l_wall_lat_ao_chan = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['const unsigned l_wall_lat_ao_chan = ', rig_config.ao_channels_l_wall_lat ,';'];     text = regexprep(text,expression,replace);
 
-expression =  'const unsigned l_wall_for_ao_chan = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
-replace    = ['const unsigned l_wall_for_ao_chan = ', rig_config.ao_channels_l_wall_for ,';'];     text = regexprep(text,expression,replace);
+expression =  'const unsigned c_wall_for_ao_chan = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
+replace    = ['const unsigned c_wall_for_ao_chan = ', rig_config.ao_channels_c_wall_for ,';'];     text = regexprep(text,expression,replace);
 
 expression =  'const unsigned r_wall_lat_ao_chan = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['const unsigned r_wall_lat_ao_chan = ', rig_config.ao_channels_r_wall_lat ,';'];     text = regexprep(text,expression,replace);
 
-expression =  'const unsigned r_wall_for_ao_chan = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
-replace    = ['const unsigned r_wall_for_ao_chan = ', rig_config.ao_channels_r_wall_for ,';'];     text = regexprep(text,expression,replace);
+expression =  'const unsigned c_wall_lat_ao_chan = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
+replace    = ['const unsigned c_wall_lat_ao_chan = ', rig_config.ao_channels_c_wall_lat ,';'];     text = regexprep(text,expression,replace);
 
 expression =  'const unsigned maze_for_ao_chan = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['const unsigned maze_for_ao_chan = ', rig_config.ao_channels_maze_for ,';'];     text = regexprep(text,expression,replace);
@@ -86,6 +86,9 @@ replace    = ['const unsigned trial_on_trig = ', rig_config.dio_trial_on_trig ,'
 expression =  'const unsigned trial_ephys_trig = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['const unsigned trial_ephys_trig = ', rig_config.dio_trial_ephys_trig ,';'];     text = regexprep(text,expression,replace);
 
+expression =  'const unsigned sound_cue_trig = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
+replace    = ['const unsigned sound_cue_trig = ', rig_config.dio_sound_cue ,';'];     text = regexprep(text,expression,replace);
+
 
 % AO offsets
 expression =  'const double maze_num_ao_offset = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
@@ -100,21 +103,20 @@ replace    = ['const double iti_ao_offset = ', num2str(rig_config.ao_offsets(str
 expression =  'const double l_wall_lat_ao_offset = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['const double l_wall_lat_ao_offset = ', num2str(rig_config.ao_offsets(str2num(rig_config.ao_channels_l_wall_lat)+1)) ,';'];     text = regexprep(text,expression,replace);
 
-expression =  'const double l_wall_for_ao_offset = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
-replace    = ['const double l_wall_for_ao_offset = ', num2str(rig_config.ao_offsets(str2num(rig_config.ao_channels_l_wall_for)+1)) ,';'];     text = regexprep(text,expression,replace);
+expression =  'const double c_wall_for_ao_offset = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
+replace    = ['const double c_wall_for_ao_offset = ', num2str(rig_config.ao_offsets(str2num(rig_config.ao_channels_c_wall_for)+1)) ,';'];     text = regexprep(text,expression,replace);
 
 expression =  'const double r_wall_lat_ao_offset = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['const double r_wall_lat_ao_offset = ', num2str(rig_config.ao_offsets(str2num(rig_config.ao_channels_r_wall_lat)+1)) ,';'];     text = regexprep(text,expression,replace);
 
-expression =  'const double r_wall_for_ao_offset = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
-replace    = ['const double r_wall_for_ao_offset = ', num2str(rig_config.ao_offsets(str2num(rig_config.ao_channels_r_wall_for)+1)) ,';'];     text = regexprep(text,expression,replace);
+expression =  'const double c_wall_lat_ao_offset = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
+replace    = ['const double c_wall_lat_ao_offset = ', num2str(rig_config.ao_offsets(str2num(rig_config.ao_channels_c_wall_lat)+1)) ,';'];     text = regexprep(text,expression,replace);
 
 expression =  'const double x_mirror_maze_for = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['const double x_mirror_maze_for = ', num2str(rig_config.ao_offsets(str2num(rig_config.ao_channels_maze_for)+1)) ,';'];     text = regexprep(text,expression,replace);
 
 expression =  'const double maze_lat_ao_offset = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['const double maze_lat_ao_offset = ',num2str(rig_config.ao_offsets(str2num(rig_config.ao_channels_maze_lat)+1)) ,';'];     text = regexprep(text,expression,replace);
-
 
 
 % Ball tracker
@@ -161,11 +163,19 @@ replace    = ['const unsigned ao_trial_trig_on =  ', num2str(rig_config.ao_trial
 expression =  'double dist_thresh = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
 replace    = ['double dist_thresh =  ', num2str(rig_config.dist_thresh) ,';'];     text = regexprep(text,expression,replace);
 
+expression =  'const double sound_on_length = (\W*)(\w*)(\W*)(\w*);'; %replace expressions of format [sign][digits][decimal][digits]
+replace    = ['const double sound_on_length =  ', num2str(rig_config.sound_on_length) ,';'];     text = regexprep(text,expression,replace);
+
+
+expression =  'unsigned water_trig_on\[\w*\];'; %replace expressions of format [sign][digits][decimal][digits]
+replace    = ['unsigned water_trig_on\[', num2str(maze_config.max_num_branches),'\];'];     text = regexprep(text,expression,replace);
+
+
 % replace maze field names
 names = fieldnames(maze_config);
 for ij = 1:length(names)
     opt = 0;
-    if ismember(ij,[1:4,7:9])
+    if ismember(ij,[1:4,7:10])
         old_size_str = '';
         new_size_str = '';
         old_val_str = '0';
@@ -182,11 +192,11 @@ for ij = 1:length(names)
         end
         old_val_str = '{}';
         new_val_str = mat2strC(maze_config.(names{ij})-opt,1);
-    elseif ismember(ij,[10,12:19])
+    elseif ismember(ij,[11,13:21])
         old_size_str = '\[\]';
         new_size_str = ['[' num2str(maze_config.num_mazes) ']'];
         old_val_str = '{}';
-        if ij == 15
+        if ij == 17
             opt = 1;
         end
         new_val_str = mat2strC(maze_config.(names{ij})-opt,1);
@@ -194,7 +204,7 @@ for ij = 1:length(names)
         old_size_str = '\[\]\[\]';
         new_size_str = ['[' num2str(maze_config.num_mazes) '][' num2str(size(maze_config.(names{ij}),2)) ']'];
         old_val_str = '{{}}';
-        if ismember(ij,[26,27,30])
+        if ismember(ij,[28,29,32])
             opt = 1;
         end
         new_val_str = mat2strC(maze_config.(names{ij})-opt,0);

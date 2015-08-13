@@ -97,6 +97,17 @@ set(gca,'XtickLabel',str_labels)
 set(gca,'TickDir','out')
 
 
+local_python_save_path = '/Users/sofroniewn/Documents/DATA/ephys_python';
+d = [];
+d.row = err_abs_run_angle_error_mean{1}.data';
+d.V1 = err_abs_run_angle_error_mean{2}.data';
+d.S1 = err_abs_run_angle_error_mean{3}.data';
+d.none = err_abs_run_angle_error_mean{4}.data';
+opt = [];
+opt.NaN = 'NaN';
+opt.Inf = 'NaN';
+opt.FileName = fullfile(local_python_save_path,'silencing.json');
+savejson('',d,opt);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

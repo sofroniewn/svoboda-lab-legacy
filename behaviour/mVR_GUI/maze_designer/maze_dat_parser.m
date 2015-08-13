@@ -29,9 +29,10 @@ else
     maze_config.trial_num_sequence = 0;
     maze_config.trial_num_repeats = 0;
 end
-maze_config.session_timeout = 2*12; %load_dat.trial_vars.session_timeout;
+maze_config.session_timeout = load_dat.trial_vars.session_timeout;
 maze_config.session_iti = load_dat.trial_vars.session_iti;
 maze_config.session_drink_time = load_dat.trial_vars.session_drink_time;
+maze_config.session_continuous_world = load_dat.trial_vars.session_continuous_trials;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % maze variables
 maze_config.maze_num_branches = num_branches;
@@ -46,6 +47,10 @@ end
 maze_config.maze_wall_gain = NaN(num_mazes,1);
 for ij = 1:num_mazes
     maze_config.maze_wall_gain(ij) = maze_array{ij}.wall_gain;
+end
+maze_config.maze_center_width = NaN(num_mazes,1);
+for ij = 1:num_mazes
+    maze_config.maze_center_width(ij) = maze_array{ij}.center_width;
 end
 maze_config.maze_screen_on_time = NaN(num_mazes,1);
 for ij = 1:num_mazes

@@ -210,7 +210,6 @@ first_file = load(fullfile(base_name,'scanimage/summary/an216166_2013_07_20_run_
 scim_first_offset = first_file.im_summary.props.firstFrame -1-4;
 remove_first = 1;
 save(fullfile(base_name,'scanimage','sync_offsets.mat'),'remove_first','scim_first_offset')
-
 data_dir = '/Volumes/wdbp/imreg/sofroniewn/anm_0216166/2013_07_20/run_01/';
 over_write = 0;
 convert_name = 'Early JaeSung mice';
@@ -260,6 +259,24 @@ first_file = load(fullfile(base_name,'scanimage/summary/an216166_2013_07_17_run_
 
 base_name = '/Volumes/wdbp/imreg/sofroniewn/anm_0216166/2013_07_16/run_02';
 first_file = load(fullfile(base_name,'scanimage/summary/an216166_2013_07_16_run_02_sbv_01_summary_002.mat'));
+
+
+
+
+
+% remove file #001
+base_name = '/Volumes/freeman/Nick/svoboda.lab/originals/anm_0217488/2013_07_17/run_01/';
+first_file = load(fullfile(base_name,'scanimage/summary/an217488_2013_07_17_run_01_sbv_01_summary_002.mat'));
+scim_first_offset = first_file.im_summary.props.firstFrame -1-4;
+remove_first = 1;
+save(fullfile(base_name,'scanimage','sync_offsets.mat'),'remove_first','scim_first_offset')
+data_dir = base_name;
+over_write = 0;
+convert_name = 'Early JaeSung mice';
+wgnr_dir = '/Users/sofroniewn/github/wgnr/behaviour/WGNR_GUI';
+convert_legacy_behaviour(data_dir,convert_name,over_write,wgnr_dir);
+
+
 
 
 
