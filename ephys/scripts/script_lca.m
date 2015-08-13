@@ -156,6 +156,15 @@ set(gcf, 'PaperPositionMode', 'auto');
 set(gcf, 'PaperOrientation', 'portrait');
 print('-depsc', fig_fname);
 
+local_python_save_path = '/Users/sofroniewn/Documents/DATA/ephys_python';
+d = [];
+d.power = [0 pulse_power'];
+d.spikes = cat(1,repmat(0,1,size(mean_lp,2)), mean_lp);
+opt = [];
+opt.NaN = 'NaN';
+opt.Inf = 'NaN';
+opt.FileName = fullfile(local_python_save_path,'calibration.json');
+savejson('',d,opt);
 
 
 %%
