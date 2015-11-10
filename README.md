@@ -1,4 +1,8 @@
-wgnr
+Legacy matlab code from Svoboda lab 2010 - 2015
 ====
 
-Analysis and experimental code for wgnr
+Includes analysis and experimental code for wgnr
+Image processing code
+Ephys code
+Whisker tracking code
+Early mVR code
